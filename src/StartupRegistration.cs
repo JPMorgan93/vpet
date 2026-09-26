@@ -10,7 +10,10 @@ namespace Vpet
         public static string Command(string executable)
         {
             if(string.IsNullOrWhiteSpace(executable)||executable.IndexOf('"')>=0)throw new InvalidDataException("Invalid startup application path.");
-            string command="\""+Path.GetFullPath(executable)+"\" --startup";
+            string fullPath;
+            try{fullPath=Path.GetFullPath(executable);}
+            catch(PathTooLongException ex){throw new InvalidDataException("Move Vpet to a shorter folder path before enabling startup.",ex);}
+            string command="\""+fullPath+"\" --startup";
             if(command.Length>260)throw new InvalidDataException("Move Vpet to a shorter folder path before enabling startup.");
             return command;
         }

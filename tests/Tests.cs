@@ -25,6 +25,8 @@ namespace Vpet
         {
             try
             {
+                if(Array.IndexOf(args,"--startup-tests")>=0)
+                {StartupRegistry();Console.WriteLine("PASS: "+count+" startup registration assertions using a temporary registry key.");return 0;}
                 if(Array.IndexOf(args,"--window-tests")>=0)
                 {
                     Native.EnableDpi();Application.EnableVisualStyles();WindowLayers();MenuClicks();
@@ -38,10 +40,40 @@ namespace Vpet
                     Check(Updates.Hash(download)==hash,"Published installer download matches the public checksum");
                     Console.WriteLine("PASS: public GitHub release "+update.Version+" discovered and installer downloaded/verified. No installer was executed.");return 0;
                 }
-                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();
+                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();StartupSettings();
                 Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
             }
             catch(Exception ex){Console.Error.WriteLine(ex);return 1;}
+        }
+        static void StartupSettings()
+        {
+            var prefs=new Preferences();Check(!prefs.LaunchOnStartup,"Startup defaults to No");
+            string file=Path.Combine(artifacts,"startup-settings.json");File.WriteAllText(file,"{}");
+            Check(!Preferences.Load(file).LaunchOnStartup,"Older preferences default startup to No");
+            prefs.LaunchOnStartup=true;prefs.Save(file);Check(Preferences.Load(file).LaunchOnStartup,"Startup Yes survives restart");
+            prefs.LaunchOnStartup=false;prefs.Save(file);Check(!Preferences.Load(file).LaunchOnStartup,"Startup No survives restart");
+            Check(StartupRegistration.Command(@"C:\Pet Folder\Vpet.exe")=="\"C:\\Pet Folder\\Vpet.exe\" --startup","Startup command quotes paths with spaces");
+            Reject(delegate{StartupRegistration.Command("bad\"path");},"Startup command rejects quotes in path");
+            Reject(delegate{StartupRegistration.Command("C:\\"+new string('a',260)+"\\Vpet.exe");},"Startup command rejects paths exceeding the Run limit");
+        }
+        static void StartupRegistry()
+        {
+            string path=@"Software\VpetStartupTest-"+Guid.NewGuid().ToString("N");
+            try
+            {
+                using(var key=Microsoft.Win32.Registry.CurrentUser.CreateSubKey(path))
+                {
+                    key.SetValue("OtherApp","untouched");
+                    StartupRegistration.Apply(key,false,null);Check(key.GetValue("Vpet")==null,"No does not create a startup value");
+                    StartupRegistration.Apply(key,true,@"C:\Pet Folder\Vpet.exe");Check((string)key.GetValue("Vpet")=="\"C:\\Pet Folder\\Vpet.exe\" --startup","Yes registers the quoted executable");
+                    Check(key.GetValueKind("Vpet")==Microsoft.Win32.RegistryValueKind.String,"Startup value uses REG_SZ");
+                    StartupRegistration.Apply(key,true,@"C:\New Folder\Vpet.exe");Check(((string)key.GetValue("Vpet")).Contains("New Folder"),"Startup path can follow a moved installation");
+                    StartupRegistration.Apply(key,false,null);Check(key.GetValue("Vpet")==null,"No removes Vpet startup registration");
+                    StartupRegistration.Apply(key,false,null);Check(key.GetValue("Vpet")==null,"Disabling twice is safe");
+                    Check((string)key.GetValue("OtherApp")=="untouched","Other startup values are preserved");
+                }
+            }
+            finally{Microsoft.Win32.Registry.CurrentUser.DeleteSubKey(path,false);}
         }
         static void PetNames()
         {
