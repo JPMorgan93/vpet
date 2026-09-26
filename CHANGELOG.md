@@ -1,4 +1,11 @@
-# Vpet 1.1.4
+# Vpet 1.1.5
+
+- Accept custom emote PNGs up to 512 × 512 pixels and resize smoothly while preserving centering and proportions.
+- Reduce the gap above the uploaded-emote list.
+- Updates show download/install progress and a completion message, preserve shortcut choices, and reopen the pet without the setup wizard.
+- Existing installations launched through older updaters also use the progress-only installation flow.
+
+## Vpet 1.1.4
 
 - Custom emotes are centered horizontally and vertically by their visible artwork, ignoring transparent PNG padding.
 - Keeps the existing speech-bubble size and preserves image proportions for both extra emotes and default replacements.

@@ -26,6 +26,7 @@ AppMutex=Local\VpetPrototype
 CloseApplications=no
 RestartApplications=no
 DisableProgramGroupPage=yes
+UsePreviousTasks=yes
 InfoBeforeFile=Getting Started.txt
 
 [Tasks]
@@ -58,9 +59,32 @@ end;
 function InitializeSetup(): Boolean;
 var
   Release: Cardinal;
+  ExistingDirectory: String;
+  ExitCode: Integer;
 begin
   Result := RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Release', Release);
   if Result then Result := Release >= 528040;
   if not Result then
     MsgBox('Vpet requires Microsoft .NET Framework 4.8 or later. Install it from https://dotnet.microsoft.com/download/dotnet-framework/net48 and run this installer again.', mbError, MB_OK);
+  { Older Vpet updaters launch without silent flags. Upgrade existing installs
+    through the progress-only path too, preserving the previous tasks. }
+  if Result and not WizardSilent then
+    if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{25F79B0F-454A-4E2F-BE0C-C13D6F067F65}_is1', 'InstallLocation', ExistingDirectory) then
+      if FileExists(AddBackslash(ExistingDirectory) + 'Vpet.exe') then
+      begin
+        Result := False;
+        if Exec(ExpandConstant('{srcexe}'), '/SILENT /SP- /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode) then
+        begin
+          if ExitCode = 0 then
+          begin
+            MsgBox('Vpet {#AppVersion} is up to date. Your pet will now reopen.', mbInformation, MB_OK);
+            Exec(AddBackslash(ExistingDirectory) + 'Vpet.exe', '--startup', ExistingDirectory, SW_SHOWNORMAL, ewNoWait, ExitCode);
+          end
+          else if ExitCode = 3010 then
+            MsgBox('Vpet was updated. Restart Windows to finish the update.', mbInformation, MB_OK)
+          else
+            MsgBox('The update did not complete. Please close Vpet and try again.', mbError, MB_OK);
+        end
+        else MsgBox('Could not start the update. Please try again.', mbError, MB_OK);
+      end;
 end;
