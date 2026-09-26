@@ -1,0 +1,47 @@
+# Vpet 1.1.0
+
+## Files to distribute
+
+- `dist/Vpet-Setup-1.1.0-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
+- `dist/SHA256SUMS.txt` — SHA-256 checksum for that exact installer.
+
+The installer contains only the application, the reference sprite sheet, `Vpet.ico`, and the getting-started guide. Source code, tests, development settings, logs, and compiler tools are excluded. GitHub Actions attaches the installer and checksum to a public release after a successful main-branch build. See `GITHUB.md`.
+
+## Installation behavior
+
+- Windows 10 version 1903 or later / Windows 11; x64 application. .NET Framework 4.8 or later is checked before installation. ARM64 emulation has not been tested.
+- Installs to `%LOCALAPPDATA%\Programs\Vpet` for the current Windows user without requiring administrator rights.
+- Creates a Start menu shortcut and offers an optional desktop shortcut.
+- Uses the supplied icon in the application EXE, tray, settings window, installer, shortcuts, and Windows uninstall entry.
+- Offers to launch the app at the end of an interactive installation.
+- Blocks installation while Vpet is running. Close the pet from its menu first.
+- Registers an uninstaller. Personal settings and artwork in `%LOCALAPPDATA%\VpetPrototype` are preserved. That folder name and the existing single-instance mutex remain unchanged for compatibility.
+- Uses a stable installer AppId for updates. Startup and periodic update checks notify the user of newer public releases; installation is always user-approved. No startup-at-login behavior is added.
+
+## Rebuild
+
+Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-release.ps1`.
+
+This compiles to `bin/release`, runs the existing automated suite, builds the installer with Inno Setup, and generates its checksum. The separate release directory allows a development pet to remain running during compilation. The script finds the local compiler at `.tools/InnoSetup/ISCC.exe`, or accepts `-CompilerPath`.
+
+The build tool used for this release is Inno Setup 6.4.3, downloaded from its official GitHub release. Its installer Authenticode signature was verified as valid, with publisher Pyrsys B.V. The tool was installed under `.tools/InnoSetup` for the current user; it is not bundled with Vpet.
+
+For future versions, update `release.json` and `CHANGELOG.md`. The app metadata, generated manifest, settings title, and installer version derive from that single version value. Keep the installer AppId unchanged. Merge a tested candidate from `test` to `main` to publish it.
+
+## Original 1.0.0 installer validation on 2026-09-26
+
+- 628 existing application assertions passed using the release binary sources.
+- Actual EXE installer installed successfully into a workspace test folder.
+- Verified installed version 1.0.0, executable checksum, supplied icon checksum, and Start menu shortcut target/icon.
+- Launched the installed application in smoke-test mode: pet/reaction rendering, all three settings tabs, layer switching, and two connected displays passed.
+- Reinstalled the same release successfully.
+- Uninstalled successfully; executable, Start menu shortcut, and uninstall registry entry were removed. An unrelated file was preserved.
+- The running development pet was closed normally for testing and restarted afterward.
+
+Test logs and captures remain under `bin/installer-test-55ea0e81a5d844d0becc6e0c091ef414`. The repeatable test script is `installer/Test-Installer.ps1`; it changes the current user's installer registry and Start menu, and should be run on a test account without an installed Vpet release. Tests were performed on this development PC, not a clean second PC or every supported Windows version. Optional desktop shortcut creation was configured but not exercised by the automated installation test.
+
+## Signing status
+
+The Vpet application and installer are **unsigned**. No publisher certificate was provided or purchased. Windows may show an unknown-publisher or SmartScreen warning. The signed build-tool download does not sign Vpet.
+
+For publisher verification, sign and timestamp the release application with your code-signing certificate before packaging, configure Inno Setup signing for the installer/uninstaller, and regenerate the checksum after signing. Do not publish the existing checksum for a newly signed file. Signing is separate from version numbering and does not guarantee immediate SmartScreen reputation.

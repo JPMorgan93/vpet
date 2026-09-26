@@ -1,0 +1,26 @@
+Vpet
+Your virtual desktop companion
+
+Requires 64-bit Windows 10 version 1903 or later, or Windows 11,
+with Microsoft .NET Framework 4.8 or later.
+
+Open Vpet from the Start menu or optional desktop shortcut.
+Right-click the pet or notification-area icon to open settings.
+Left-click for Love and a brief shake. Drag to move your pet.
+Choose Close Vpet from its menu to quit; closing Settings keeps it running.
+
+The installer installs for your Windows account without administrator access.
+Close Vpet before reinstalling, updating, or uninstalling it.
+Uninstall through Windows Settings > Apps.
+
+Settings and custom artwork are kept in:
+%LOCALAPPDATA%\VpetPrototype
+This existing folder name is retained for compatibility with earlier builds.
+Updates and uninstalling preserve these personal files.
+
+The pet works offline. When connected, it checks the public releases at
+https://github.com/JPMorgan93/vpet on startup and every six hours.
+Updates are announced without interrupting your work. Use Check for updates
+or Install update in the pet menu to download a verified installer.
+Installation only starts after you agree, and your saved pet is preserved.
+Users on version 1.0.0 must install 1.1.0 once to enable update checks.

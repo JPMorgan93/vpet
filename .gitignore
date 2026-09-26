@@ -1,0 +1,10 @@
+bin/
+dist/
+.tools/
+*.user
+*.pfx
+*.p12
+*.pem
+.env
+.env.*
+*.log

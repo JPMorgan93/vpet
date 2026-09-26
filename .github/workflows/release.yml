@@ -1,0 +1,72 @@
+name: Build, test, and release Vpet
+
+on:
+  push:
+    branches: [test, main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vpet-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare the installer compiler
+        shell: powershell
+        run: ./scripts/Install-BuildTools.ps1
+      - name: Build and test the release
+        shell: powershell
+        run: ./build-release.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vpet-installer
+          path: |
+            dist/Vpet-Setup-*.exe
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-artwork
+          path: bin/release/test-artifacts/
+          if-no-files-found: ignore
+  publish:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: windows-2022
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: vpet-installer
+          path: dist
+      - name: Publish the tested installer
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (Get-Content release.json -Raw | ConvertFrom-Json).version
+          $tag = 'v' + $version
+          gh release view $tag --json tagName *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Output "Release $tag already exists. Increase release.json version to publish another update."
+            exit 0
+          }
+          $installer = "dist/Vpet-Setup-$version-Windows-x64.exe"
+          gh release create $tag $installer dist/SHA256SUMS.txt --draft --target $env:RELEASE_COMMIT --title "Vpet $version" --notes-file CHANGELOG.md
+          if ($LASTEXITCODE -ne 0) { throw 'Could not upload the draft release.' }
+          gh release edit $tag --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish the release. The draft is retained for review.' }

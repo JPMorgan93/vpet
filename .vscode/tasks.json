@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Vpet: Build and test",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/build.ps1", "-Test", "-OutputDirectory", "${workspaceFolder}/bin/development"],
+      "group": {"kind": "build", "isDefault": true},
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Vpet: Build installer",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/build-release.ps1"],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Vpet: Auto-sync saves to test",
+      "type": "process",
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/Sync-Test.ps1"],
+      "isBackground": true,
+      "runOptions": {"runOn": "folderOpen", "instanceLimit": 1},
+      "presentation": {"reveal": "silent", "panel": "dedicated"},
+      "problemMatcher": []
+    }
+  ]
+}

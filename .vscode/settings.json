@@ -1,0 +1,6 @@
+{
+  "git.autofetch": true,
+  "task.allowAutomaticTasks": "on",
+  "files.exclude": {"**/.tools": true},
+  "files.watcherExclude": {"**/bin/**": true, "**/dist/**": true, "**/.tools/**": true}
+}
