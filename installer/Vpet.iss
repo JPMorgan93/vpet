@@ -45,6 +45,16 @@ Name: "{autodesktop}\Vpet"; Filename: "{app}\Vpet.exe"; WorkingDir: "{app}"; Ico
 Filename: "{app}\Vpet.exe"; Description: "Launch Vpet"; Flags: nowait postinstall skipifsilent
 
 [Code]
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  Command: String;
+begin
+  if CurUninstallStep = usUninstall then
+    if RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run', 'Vpet', Command) then
+      if CompareText(Command, '"' + ExpandConstant('{app}\Vpet.exe') + '" --startup') = 0 then
+        RegDeleteValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run', 'Vpet');
+end;
+
 function InitializeSetup(): Boolean;
 var
   Release: Cardinal;

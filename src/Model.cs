@@ -33,13 +33,14 @@ namespace Vpet
         [DataMember] public bool CustomPet;
         [DataMember] public string PetName = "";
         [DataMember] public NameVisibility NameDisplay = NameVisibility.Always;
+        [DataMember] public bool LaunchOnStartup;
 
         [OnDeserializing]
         void InitializeDefaults(StreamingContext context)
         {
             Speed=50;Radius=250;DisplayRestrictedArea=true;Facing=2;
             X=Y=AnchorX=AnchorY=float.NaN;Frequency=Frequency.Sometimes;
-            PetName="";NameDisplay=NameVisibility.Always;
+            PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;
         }
 
         public void Validate()

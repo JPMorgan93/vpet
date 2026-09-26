@@ -1,4 +1,10 @@
-# Vpet 1.1.1
+# Vpet 1.1.2
+
+- Added Load Vpet on PC startup under Sprite, with No (Default) and Yes options.
+- Startup launches at Windows sign-in for the current user; choosing No removes it.
+- Uninstall removes this installation's startup entry while preserving personal settings.
+
+## Vpet 1.1.1
 
 - Pet names appear below the pet, with a white outline around the letters and no background box.
 - Clicking outside the pet's right-click menu closes it while allowing the click to reach the underlying application.

@@ -22,7 +22,7 @@ namespace Vpet
             bool first;
             using(var mutex=new Mutex(true,smoke?"Local\\VpetPrototypeSmoke":"Local\\VpetPrototype",out first))
             {
-                if(!first){MessageBox.Show("Vpet is already running. Use its tray icon to open settings.","Vpet");return;}
+                if(!first){if(Array.IndexOf(args,"--startup")<0)MessageBox.Show("Vpet is already running. Use its tray icon to open settings.","Vpet");return;}
                 Action<Exception> report=delegate(Exception ex)
                 {
                     try{Directory.CreateDirectory(data);File.WriteAllText(Path.Combine(data,"error.log"),ex.ToString());}catch{}

@@ -74,6 +74,8 @@ namespace Vpet
             using(var icon=new Icon(Path.Combine(Path.GetDirectoryName(referencePath),"Vpet.ico")))
             {tray.Icon=(Icon)icon.Clone();Icon=(Icon)icon.Clone();}
             tray.Text="Vpet · right-click for controls";tray.ContextMenuStrip=menu;tray.Visible=!smoke;
+            if(!smoke&&prefs.LaunchOnStartup)
+            {try{StartupRegistration.SetEnabled(true,Application.ExecutablePath);}catch(Exception ex){Notify("Startup could not be enabled",ex.Message);}}
             tray.DoubleClick+=delegate{OpenSettings(0);};
             tray.BalloonTipClicked+=delegate{if(availableUpdate!=null)OfferUpdate();};
             MouseDown+=BeginDrag;MouseMove+=ContinueDrag;MouseUp+=EndDrag;
@@ -159,6 +161,11 @@ namespace Vpet
         public void NameChanged()
         {
             Model.UpdateNameFootroom();Model.Place(Model.Position);Model.CancelRoute();Save();
+        }
+        public void SetLaunchOnStartup(bool enabled)
+        {
+            if(!smoke)StartupRegistration.SetEnabled(enabled,Application.ExecutablePath);
+            Model.Settings.LaunchOnStartup=enabled;Save();
         }
         public void ResetReactionTimer(){nextRandom=Now+Reactions.Interval(Model.Settings.Frequency,random);}
         public void PreviewReaction(int index){ShowReaction(index);}
