@@ -362,7 +362,7 @@ namespace Vpet
             string directory=Path.Combine(artifacts,"replacement-"+Guid.NewGuid().ToString("N"));
             string imagePath=Path.Combine(artifacts,"replacement-image.png"),invalid=Path.Combine(artifacts,"replacement-invalid.png");
             using(var image=new Bitmap(24,24)){using(var g=Graphics.FromImage(image))g.Clear(Color.HotPink);image.Save(imagePath,ImageFormat.Png);}
-            using(var image=new Bitmap(51,50))image.Save(invalid,ImageFormat.Png);
+            using(var image=new Bitmap(513,50))image.Save(invalid,ImageFormat.Png);
             using(var replacements=new EmoteReplacements(directory))
             {
                 replacements.Replace(0,imagePath);Check(replacements.Get(0).GetPixel(0,0).ToArgb()==Color.HotPink.ToArgb(),"Built-in Music image can be replaced");
@@ -486,9 +486,9 @@ namespace Vpet
                 }
             }
             Reject(delegate{using(var unused=SpriteSet.Import(reference)){}},"Annotated reference cannot be imported as a runtime sheet");
-            using(var image=new Bitmap(51,50)){string p=Path.Combine(artifacts,"large-emote.png");image.Save(p,ImageFormat.Png);Reject(delegate{using(var unused=SpriteSet.ReadPng(p,50,50)){}},"Oversized custom emote rejected");}
-            string fake=Path.Combine(artifacts,"fake.png");File.WriteAllText(fake,"This is not a PNG image.");Reject(delegate{using(var unused=SpriteSet.ReadPng(fake,50,50)){}},"Non-PNG contents rejected");
-            using(var image=new Bitmap(50,50)){string p=Path.Combine(artifacts,"emote.png");image.Save(p,ImageFormat.Png);using(var loaded=SpriteSet.ReadPng(p,50,50))Check(loaded.Width==50,"50 × 50 custom PNG accepted");}
+            using(var image=new Bitmap(513,50)){string p=Path.Combine(artifacts,"large-emote.png");image.Save(p,ImageFormat.Png);Reject(delegate{using(var unused=SpriteSet.ReadPng(p,Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize)){}},"Oversized custom emote rejected");}
+            string fake=Path.Combine(artifacts,"fake.png");File.WriteAllText(fake,"This is not a PNG image.");Reject(delegate{using(var unused=SpriteSet.ReadPng(fake,Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize)){}},"Non-PNG contents rejected");
+            using(var image=new Bitmap(50,50)){string p=Path.Combine(artifacts,"emote.png");image.Save(p,ImageFormat.Png);using(var loaded=SpriteSet.ReadPng(p,Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize))Check(loaded.Width==50,"50 × 50 custom PNG accepted");}
         }
     }
 }

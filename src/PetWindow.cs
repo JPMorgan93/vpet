@@ -264,17 +264,21 @@ namespace Vpet
         {
             if(availableUpdate==null||installingUpdate||closing)return;
             var update=availableUpdate;
-            if(MessageBox.Show("Download and install Vpet "+update.Version+"? Your pet will close after the download so the installer can run. Your name, settings, and artwork will be kept.","Vpet update",MessageBoxButtons.YesNo,MessageBoxIcon.Information)!=DialogResult.Yes)return;
-            installingUpdate=true;installUpdate.Enabled=false;Notify("Downloading Vpet update","Your pet will keep running while the installer downloads.");
+            if(MessageBox.Show("Update to Vpet "+update.Version+"? Your pet will briefly close during installation. Your name, settings, artwork, and shortcut choices will be kept.","Vpet update",MessageBoxButtons.YesNo,MessageBoxIcon.Information)!=DialogResult.Yes)return;
+            installingUpdate=true;installUpdate.Enabled=false;
+            using(var progress=new UpdateProgressWindow(update.Version))
+            {
+            progress.Show();
             try
             {
                 string hash=null;
-                string path=await Task.Factory.StartNew(delegate{return Updates.Download(update,DataDirectory,out hash);});
+                string path=await Task.Factory.StartNew(delegate{return Updates.Download(update,DataDirectory,out hash,progress.Report);});
                 if(closing)return;
                 Updates.StartInstallerAfterExit(path,hash);Close();
             }
             catch(Exception ex){if(!closing)MessageBox.Show("The update could not be installed. Your current pet is unchanged.\n\n"+ex.Message,"Vpet update",MessageBoxButtons.OK,MessageBoxIcon.Error);}
             finally{installingUpdate=false;if(!closing)installUpdate.Enabled=true;}
+            }
         }
         void SmokeStep(double now)
         {
@@ -374,7 +378,7 @@ namespace Vpet
                 foreach(var item in CustomEmotes)item.Dispose();CustomEmotes.Clear();var errors=new List<string>();
                 foreach(var file in files)
                 {
-                    try{CustomEmotes.Add(new CustomEmote{Name=Path.GetFileNameWithoutExtension(file),Image=SpriteSet.ReadPng(file,50,50)});}
+                    try{CustomEmotes.Add(new CustomEmote{Name=Path.GetFileNameWithoutExtension(file),Image=SpriteSet.ReadPng(file,Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize)});}
                     catch(Exception ex){errors.Add(Path.GetFileName(file)+": "+ex.Message);}
                 }
                 assetSignature=signature;EmoteStatus=CustomEmotes.Count+" custom emote(s) loaded.";

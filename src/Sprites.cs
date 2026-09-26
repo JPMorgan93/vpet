@@ -154,6 +154,7 @@ namespace Vpet
 
     internal static class Artwork
     {
+        public const int MaximumEmoteSize=512;
         public static Bitmap DisplayFragment(Bitmap frame,Size size,Point location,Rectangle work)
         {
             using(var scaled=Scale(frame,size))
@@ -195,8 +196,14 @@ namespace Vpet
                     {
                         float ratio=Math.Min(46f/visible.Width,42f/visible.Height);
                         float cw=visible.Width*ratio,ch=visible.Height*ratio;
-                        g.InterpolationMode=InterpolationMode.NearestNeighbor;g.PixelOffsetMode=PixelOffsetMode.Half;
-                        g.DrawImage(custom,new RectangleF(33.5f-cw/2,top+26-ch/2,cw,ch),visible,GraphicsUnit.Pixel);
+                        g.InterpolationMode=InterpolationMode.HighQualityBicubic;g.PixelOffsetMode=PixelOffsetMode.HighQuality;
+                        using(var cropped=custom.Clone(visible,PixelFormat.Format32bppArgb))
+                        using(var attributes=new ImageAttributes())
+                        {
+                            attributes.SetWrapMode(WrapMode.TileFlipXY);
+                            var target=new[]{new PointF(33.5f-cw/2,top+26-ch/2),new PointF(33.5f+cw/2,top+26-ch/2),new PointF(33.5f-cw/2,top+26+ch/2)};
+                            g.DrawImage(cropped,target,new RectangleF(0,0,cropped.Width,cropped.Height),GraphicsUnit.Pixel,attributes);
+                        }
                     }
                 }
                 else DrawReaction(g,reaction,top);

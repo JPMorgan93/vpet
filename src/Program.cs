@@ -10,11 +10,11 @@ namespace Vpet
         [STAThread]
         static void Main(string[] args)
         {
+            Native.EnableDpi();Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);
             if(args.Length>0&&args[0]=="--apply-update")
             {
                 try{Updates.ApplyUpdate(args);}catch(Exception ex){MessageBox.Show(ex.Message,"Vpet update could not start",MessageBoxButtons.OK,MessageBoxIcon.Error);}return;
             }
-            Native.EnableDpi();Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);
             bool smoke=Array.IndexOf(args,"--smoke-test")>=0;
             string root=AppDomain.CurrentDomain.BaseDirectory;
             string data=smoke?Path.Combine(root,"smoke-data"):Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"VpetPrototype");

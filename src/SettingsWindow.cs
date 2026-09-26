@@ -131,18 +131,18 @@ namespace Vpet
             emotePreview=new PictureBox{Location=new Point(490,438),Size=new Size(68,62)};page.Controls.Add(emotePreview);
             ButtonAt(page,"Choose image…",24,498,190,delegate
             {
-                using(var dialog=new OpenFileDialog{Filter="PNG image|*.png",Title="Replace "+Reactions.Names[emoteChoice.SelectedIndex]+" (up to 50 × 50)"})
+                using(var dialog=new OpenFileDialog{Filter="PNG image|*.png",Title="Replace "+Reactions.Names[emoteChoice.SelectedIndex]+" (up to 512 × 512)"})
                 {if(dialog.ShowDialog(this)!=DialogResult.OK)return;try{pet.ReplaceEmote(emoteChoice.SelectedIndex,dialog.FileName);}catch(Exception ex){ShowError(ex.Message);}}
             });
             ButtonAt(page,"Restore original",229,498,190,delegate{try{pet.RestoreEmote(emoteChoice.SelectedIndex);}catch(Exception ex){ShowError(ex.Message);}});
             replacementStatus=LabelAt(page,"",24,547,550,60,false);
             emoteChoice.SelectedIndexChanged+=delegate{RefreshEmotePreview();};RefreshEmotePreview();
             LabelAt(page,"Additional random emotes",24,610,550,28,true);
-            LabelAt(page,"Add PNG images up to 50 × 50 pixels. Images appear on white inside the speech bubble and refresh automatically.",24,651,550,47,false);
+            LabelAt(page,"Add PNG images up to 512 × 512 pixels. Images appear on white inside the speech bubble and refresh automatically.",24,651,550,47,false);
             ButtonAt(page,"Open emote folder",24,708,195,delegate{pet.OpenEmoteFolder();});
-            assetStatus.Location=new Point(24,758);assetStatus.Size=new Size(550,100);assetStatus.Text=pet.EmoteStatus??"No custom emotes yet.";page.Controls.Add(assetStatus);
-            LabelAt(page,"Your custom emotes",24,866,550,28,true);
-            customEmoteList=new TableLayoutPanel{Name="CustomEmoteList",Location=new Point(24,904),Width=550,MinimumSize=new Size(550,0),AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=2,Margin=Padding.Empty,Padding=Padding.Empty};
+            assetStatus.Location=new Point(24,758);assetStatus.Size=new Size(550,28);assetStatus.AutoEllipsis=true;assetStatus.Text=pet.EmoteStatus??"No custom emotes yet.";page.Controls.Add(assetStatus);
+            LabelAt(page,"Your custom emotes",24,792,550,28,true);
+            customEmoteList=new TableLayoutPanel{Name="CustomEmoteList",Location=new Point(24,826),Width=550,MinimumSize=new Size(550,0),AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=2,Margin=Padding.Empty,Padding=Padding.Empty};
             customEmoteList.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             customEmoteList.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,145));
             page.Controls.Add(customEmoteList);RefreshCustomEmotes();
@@ -240,7 +240,7 @@ namespace Vpet
         {
             if(emoteChoice==null||emotePreview==null||replacementStatus==null)return;
             int index=emoteChoice.SelectedIndex;var old=emotePreview.Image;emotePreview.Image=Artwork.Bubble(index,pet.Replacements.Get(index),1,false);if(old!=null)old.Dispose();
-            replacementStatus.Text=(pet.Replacements.Get(index)==null?"Using the original image.":"Using your saved image.")+" Replacements apply to greetings, pickups, and random reactions. PNG only, up to 50 × 50 pixels.";
+            replacementStatus.Text=(pet.Replacements.Get(index)==null?"Using the original image.":"Using your saved image.")+" Replacements apply to greetings, pickups, and random reactions. PNG only, up to 512 × 512 pixels.";
         }
         void RefreshCustomEmotes()
         {

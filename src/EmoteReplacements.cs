@@ -13,13 +13,13 @@ namespace Vpet
         {
             this.directory=directory;Directory.CreateDirectory(directory);
             for(int i=0;i<8;i++)if(File.Exists(PathFor(i)))
-                try{images[i]=SpriteSet.ReadPng(PathFor(i),50,50);}catch(Exception){/* Corrupt replacements fall back to the built-in symbol. */}
+                try{images[i]=SpriteSet.ReadPng(PathFor(i),Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize);}catch(Exception){/* Corrupt replacements fall back to the built-in symbol. */}
         }
         string PathFor(int index){if(index<0||index>=8)throw new ArgumentOutOfRangeException("index");return Path.Combine(directory,Reactions.Names[index]+".png");}
         public Bitmap Get(int index){return images[index];}
         public void Replace(int index,string source)
         {
-            var candidate=SpriteSet.ReadPng(source,50,50);
+            var candidate=SpriteSet.ReadPng(source,Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize);
             try
             {
                 string path=PathFor(index),temp=path+".pending";candidate.Save(temp,ImageFormat.Png);

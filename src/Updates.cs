@@ -67,7 +67,7 @@ namespace Vpet
                 if(response!=null)response.Dispose();throw;
             }
         }
-        static byte[] Fetch(string url,int maximum)
+        static byte[] Fetch(string url,int maximum,Action<int> progress=null,long expectedSize=0)
         {
             ServicePointManager.SecurityProtocol|=SecurityProtocolType.Tls12;
             var request=(HttpWebRequest)WebRequest.Create(url);
@@ -81,7 +81,7 @@ namespace Vpet
                 {
                     var buffer=new byte[16384];int count;
                     while((count=input.Read(buffer,0,buffer.Length))>0)
-                    {if(output.Length+count>maximum)throw new InvalidDataException("Update response is too large.");output.Write(buffer,0,count);}
+                    {if(output.Length+count>maximum)throw new InvalidDataException("Update response is too large.");output.Write(buffer,0,count);if(progress!=null&&expectedSize>0)progress((int)Math.Min(100,output.Length*100/expectedSize));}
                     return output.ToArray();
                 }
             }
@@ -102,10 +102,10 @@ namespace Vpet
             using(var stream=File.OpenRead(file))using(var sha=SHA256.Create())
                 return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-","").ToLowerInvariant();
         }
-        public static string Download(AvailableUpdate update,string dataDirectory,out string hash)
+        public static string Download(AvailableUpdate update,string dataDirectory,out string hash,Action<int> progress=null)
         {
             hash=ExpectedHash(Encoding.UTF8.GetString(Fetch(update.ChecksumUrl,16384)),update.FileName);
-            byte[] bytes=Fetch(update.DownloadUrl,MaximumInstallerSize);
+            byte[] bytes=Fetch(update.DownloadUrl,MaximumInstallerSize,progress,update.Size);
             if(bytes.LongLength!=update.Size)throw new InvalidDataException("The downloaded installer size does not match the release.");
             using(var sha=SHA256.Create())
                 if(BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-","").ToLowerInvariant()!=hash)
@@ -129,7 +129,30 @@ namespace Vpet
             string path=Path.GetFullPath(args[2]);
             string expectedRoot=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"VpetPrototype","Updates")+Path.DirectorySeparatorChar;
             if(!path.StartsWith(expectedRoot,StringComparison.OrdinalIgnoreCase)||!Regex.IsMatch(Path.GetFileName(path),"^Vpet-Setup-[0-9]+\\.[0-9]+\\.[0-9]+-Windows-x64\\.exe$")||!Regex.IsMatch(args[3],"^[a-f0-9]{64}$")||Hash(path)!=args[3])throw new InvalidDataException("Installer verification failed.");
-            Process.Start(new ProcessStartInfo(path){UseShellExecute=true});
+            using(var installer=Process.Start(new ProcessStartInfo(path,InstallerArguments){UseShellExecute=false}))
+            {
+                if(installer==null)throw new IOException("Could not start the update.");
+                installer.WaitForExit();
+                if(installer.ExitCode==3010)
+                {System.Windows.Forms.MessageBox.Show("Vpet was updated. Restart Windows to finish the update.","Vpet update complete");return;}
+                if(installer.ExitCode!=0)throw new IOException("The update did not complete (installer code "+installer.ExitCode+"). You can try again.");
+            }
+            string app=InstalledApp();
+            string version=Regex.Match(Path.GetFileName(path),"^Vpet-Setup-([0-9]+\\.[0-9]+\\.[0-9]+)-").Groups[1].Value;
+            if(app==null||FileVersionInfo.GetVersionInfo(app).ProductVersion!=version)throw new IOException("Could not verify the installed version. Please reopen Vpet and check its version.");
+            System.Windows.Forms.MessageBox.Show("Vpet "+version+" is up to date. Your pet will now reopen.","Vpet update complete",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Information);
+            Process.Start(new ProcessStartInfo(app,"--startup"){UseShellExecute=false});
+        }
+        internal const string InstallerArguments="/SILENT /SP- /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010 /VPETHELPER";
+        internal static string InstalledApp()
+        {
+            using(var root=Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.CurrentUser,Microsoft.Win32.RegistryView.Registry64))
+            using(var key=root.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{25F79B0F-454A-4E2F-BE0C-C13D6F067F65}_is1"))
+            {
+                string directory=key==null?null:key.GetValue("InstallLocation") as string;
+                if(string.IsNullOrEmpty(directory))return null;
+                string app=Path.Combine(directory,"Vpet.exe");return File.Exists(app)?app:null;
+            }
         }
     }
 }
