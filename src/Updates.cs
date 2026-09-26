@@ -53,10 +53,12 @@ namespace Vpet
             return new AvailableUpdate{Version=version.ToString(),FileName=name,DownloadUrl=installer.Url,ChecksumUrl=checksum.Url,Size=installer.Size};
         }
         public static AvailableUpdate Check()
+        {return CheckForVersion(ReleaseInfo.Version);}
+        public static AvailableUpdate CheckForVersion(string currentVersion)
         {
             try
             {
-                return Parse(Encoding.UTF8.GetString(Fetch("https://api.github.com/repos/"+ReleaseInfo.Repository+"/releases/latest",1024*1024)),ReleaseInfo.Version,ReleaseInfo.Repository);
+                return Parse(Encoding.UTF8.GetString(Fetch("https://api.github.com/repos/"+ReleaseInfo.Repository+"/releases/latest",1024*1024)),currentVersion,ReleaseInfo.Repository);
             }
             catch(WebException ex)
             {

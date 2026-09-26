@@ -31,6 +31,13 @@ namespace Vpet
                     Console.WriteLine("PASS: "+count+" native window-layer assertions.");return 0;
                 }
                 artifacts=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-artifacts");Directory.CreateDirectory(artifacts);
+                if(Array.IndexOf(args,"--public-release-test")>=0)
+                {
+                    var update=Updates.CheckForVersion("0.0.0");Check(update!=null,"Public stable release is discoverable without authentication");
+                    string hash;string download=Updates.Download(update,artifacts,out hash);
+                    Check(Updates.Hash(download)==hash,"Published installer download matches the public checksum");
+                    Console.WriteLine("PASS: public GitHub release "+update.Version+" discovered and installer downloaded/verified. No installer was executed.");return 0;
+                }
                 DirectionAndMotion();Interaction();Displays();ContinuousCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();
                 Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
             }
