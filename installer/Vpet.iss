@@ -85,6 +85,6 @@ begin
           else
             MsgBox('The update did not complete. Please close Vpet and try again.', mbError, MB_OK);
         end
-        else MsgBox('Could not start the update. Please try again.', mbError, MB_OK);
+        else MsgBox('Could not start the update: ' + SysErrorMessage(ExitCode), mbError, MB_OK);
       end;
 end;
