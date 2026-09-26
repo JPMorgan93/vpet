@@ -169,6 +169,13 @@ namespace Vpet
         }
         public void ResetReactionTimer(){nextRandom=Now+Reactions.Interval(Model.Settings.Frequency,random);}
         public void PreviewReaction(int index){ShowReaction(index);}
+        public void PreviewCustomEmote(string name)
+        {
+            // Resolve the current name after a refresh, since adding/removing files changes indices.
+            RefreshEmotes();
+            int index=CustomEmotes.FindIndex(emote=>string.Equals(emote.Name,name,StringComparison.OrdinalIgnoreCase));
+            if(index>=0)ShowReaction(Reactions.Names.Length+index);
+        }
         public void ReplaceEmote(int index,string path){Replacements.Replace(index,path);ShowReaction(index);if(AssetsChanged!=null)AssetsChanged();}
         public void RestoreEmote(int index){Replacements.Restore(index);ShowReaction(index);if(AssetsChanged!=null)AssetsChanged();}
         void ShowReaction(int index)

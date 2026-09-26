@@ -1,4 +1,10 @@
-# Vpet 1.1.2
+# Vpet 1.1.3
+
+- Personality settings list loaded custom emotes by name, with a Try It Out button next to each.
+- Includes added emotes and custom replacements for default reactions.
+- The list refreshes as images are added, replaced, or removed; previews use the pet's speech bubble.
+
+## Vpet 1.1.2
 
 - Added Load Vpet on PC startup under Sprite, with No (Default) and Yes options.
 - Startup launches at Windows sign-in for the current user; choosing No removes it.

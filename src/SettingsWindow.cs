@@ -25,6 +25,8 @@ namespace Vpet
         ComboBox emoteChoice;
         Label replacementStatus;
         CheckBox restrictedAreaCheckbox;
+        TableLayoutPanel customEmoteList;
+        readonly ToolTip customEmoteNames=new ToolTip();
 
         public SettingsWindow(PetWindow pet)
         {
@@ -39,7 +41,7 @@ namespace Vpet
             AddMovement();AddPersonality();AddArtwork();
             previewTimer.Tick+=delegate{if(animationPreview!=null&&tabs.SelectedIndex==2)animationPreview.Invalidate();};previewTimer.Start();
             pet.AssetsChanged+=AssetsChanged;
-            FormClosed+=delegate{pet.AssetsChanged-=AssetsChanged;previewTimer.Dispose();if(pending!=null)pending.Dispose();if(sheetPreview.Image!=null)sheetPreview.Image.Dispose();if(emotePreview.Image!=null)emotePreview.Image.Dispose();};
+            FormClosed+=delegate{pet.AssetsChanged-=AssetsChanged;previewTimer.Dispose();customEmoteNames.Dispose();if(pending!=null)pending.Dispose();if(sheetPreview.Image!=null)sheetPreview.Image.Dispose();if(emotePreview.Image!=null)emotePreview.Image.Dispose();};
         }
         public void SelectTab(int index){tabs.SelectedIndex=index;}
         public void SyncRestrictedAreaVisibility()
@@ -139,6 +141,11 @@ namespace Vpet
             LabelAt(page,"Add PNG images up to 50 × 50 pixels. Images appear on white inside the speech bubble and refresh automatically.",24,651,550,47,false);
             ButtonAt(page,"Open emote folder",24,708,195,delegate{pet.OpenEmoteFolder();});
             assetStatus.Location=new Point(24,758);assetStatus.Size=new Size(550,100);assetStatus.Text=pet.EmoteStatus??"No custom emotes yet.";page.Controls.Add(assetStatus);
+            LabelAt(page,"Your custom emotes",24,866,550,28,true);
+            customEmoteList=new TableLayoutPanel{Name="CustomEmoteList",Location=new Point(24,904),Width=550,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=2,Margin=Padding.Empty,Padding=Padding.Empty};
+            customEmoteList.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            customEmoteList.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,145));
+            page.Controls.Add(customEmoteList);RefreshCustomEmotes();
             // Leave the existing personality controls below the name options.
             foreach(Control control in page.Controls)control.Top+=152;
             LabelAt(page,"Pet name (optional)",24,20,550,28,true);
@@ -235,7 +242,39 @@ namespace Vpet
             int index=emoteChoice.SelectedIndex;var old=emotePreview.Image;emotePreview.Image=Artwork.Bubble(index,pet.Replacements.Get(index),1,false);if(old!=null)old.Dispose();
             replacementStatus.Text=(pet.Replacements.Get(index)==null?"Using the original image.":"Using your saved image.")+" Replacements apply to greetings, pickups, and random reactions. PNG only, up to 50 × 50 pixels.";
         }
-        void AssetsChanged(){assetStatus.Text=pet.EmoteStatus??"No custom emotes yet.";RefreshEmotePreview();}
+        void RefreshCustomEmotes()
+        {
+            if(customEmoteList==null)return;
+            customEmoteList.SuspendLayout();
+            try
+            {
+                customEmoteNames.RemoveAll();
+                while(customEmoteList.Controls.Count>0)customEmoteList.Controls[0].Dispose();
+                customEmoteList.RowStyles.Clear();customEmoteList.RowCount=0;
+                for(int i=0;i<Reactions.Names.Length;i++)if(pet.Replacements.Get(i)!=null)
+                {int reaction=i;AddCustomEmoteRow(Reactions.Names[i]+" (custom replacement)",delegate{pet.PreviewReaction(reaction);});}
+                foreach(var emote in pet.CustomEmotes)
+                {string name=emote.Name;AddCustomEmoteRow(name,delegate{pet.PreviewCustomEmote(name);});}
+                if(customEmoteList.RowCount==0)
+                {
+                    customEmoteList.RowCount=1;
+                    var empty=new Label{Text="No custom emotes yet. Add images to the emote folder or replace a default emote above.",AutoSize=true,MaximumSize=new Size(customEmoteList.Width,0),Margin=new Padding(0,4,0,12)};
+                    customEmoteList.Controls.Add(empty,0,0);customEmoteList.SetColumnSpan(empty,2);
+                }
+            }
+            finally{customEmoteList.ResumeLayout(true);}
+        }
+        void AddCustomEmoteRow(string name,EventHandler preview)
+        {
+            int row=customEmoteList.RowCount++;
+            int height=Math.Max(36,Font.Height+16);
+            customEmoteList.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            var label=new Label{Text=name,UseMnemonic=false,AutoEllipsis=true,TextAlign=ContentAlignment.MiddleLeft,Dock=DockStyle.Fill,Margin=new Padding(0,4,8,4)};
+            var button=new Button{Text="Try It Out",AccessibleName="Try "+name,Height=height,Dock=DockStyle.Fill,Margin=new Padding(0,4,0,4),FlatStyle=FlatStyle.Flat,BackColor=Color.White};
+            button.FlatAppearance.BorderColor=Color.FromArgb(205,194,222);button.Click+=preview;
+            customEmoteList.Controls.Add(label,0,row);customEmoteList.Controls.Add(button,1,row);customEmoteNames.SetToolTip(label,name);
+        }
+        void AssetsChanged(){assetStatus.Text=pet.EmoteStatus??"No custom emotes yet.";RefreshEmotePreview();RefreshCustomEmotes();}
         void ShowError(string message){MessageBox.Show(this,message,"Could not load artwork",MessageBoxButtons.OK,MessageBoxIcon.Information);}
     }
     internal sealed class DoubleBufferedPanel : Panel {public DoubleBufferedPanel(){DoubleBuffered=true;}}
