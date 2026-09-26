@@ -1,5 +1,9 @@
 # Prototype validation
 
+## Version 1.1.2
+
+695 automated assertions passed, including startup default/migration/persistence and safely quoted executable paths. Seven isolated registry tests verified enable, disable, repeated disable, relocation, and preservation of unrelated values without changing the real startup key. The three-tab GUI smoke test passed and the new Sprite startup setting was visually inspected. The installer compiled with startup cleanup on uninstall. A Windows sign-out/reboot was not performed.
+
 ## Version 1.1.1
 
 688 automated assertions passed, including bottom-edge name placement, transparent caption backgrounds, white letter outlines, and uninterrupted vertical display crossings. All 42 native window/input assertions passed, including an actual outside mouse click dismissing the menu and reaching the underlying test button, preserving submenu interaction, and dismissal after reopening. The caption artwork was visually inspected at 200% scaling.

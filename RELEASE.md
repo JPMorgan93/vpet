@@ -1,8 +1,8 @@
-# Vpet 1.1.1
+# Vpet 1.1.2
 
 ## Files to distribute
 
-- `dist/Vpet-Setup-1.1.1-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
+- `dist/Vpet-Setup-1.1.2-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
 - `dist/SHA256SUMS.txt` — SHA-256 checksum for that exact installer.
 
 The installer contains only the application, the reference sprite sheet, `Vpet.ico`, and the getting-started guide. Source code, tests, development settings, logs, and compiler tools are excluded. GitHub Actions attaches the installer and checksum to a public release after a successful main-branch build. See `GITHUB.md`.
@@ -16,7 +16,7 @@ The installer contains only the application, the reference sprite sheet, `Vpet.i
 - Offers to launch the app at the end of an interactive installation.
 - Blocks installation while Vpet is running. Close the pet from its menu first.
 - Registers an uninstaller. Personal settings and artwork in `%LOCALAPPDATA%\VpetPrototype` are preserved. That folder name and the existing single-instance mutex remain unchanged for compatibility.
-- Uses a stable installer AppId for updates. Startup and periodic update checks notify the user of newer public releases; installation is always user-approved. No startup-at-login behavior is added.
+- Uses a stable installer AppId for updates. Startup and periodic update checks notify the user of newer public releases; installation is always user-approved. Startup at Windows sign-in is optional under Sprite and defaults to No. Uninstall removes the startup entry for this installation.
 
 ## Rebuild
 

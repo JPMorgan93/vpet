@@ -25,6 +25,11 @@ jobs:
       - name: Build and test the release
         shell: powershell
         run: ./build-release.ps1
+      - name: Verify startup registration in an isolated registry key
+        shell: powershell
+        run: |
+          & ./bin/release/Vpet.Tests.exe --startup-tests
+          if ($LASTEXITCODE -ne 0) { throw 'Startup registration tests failed.' }
       - uses: actions/upload-artifact@v4
         with:
           name: vpet-installer

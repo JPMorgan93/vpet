@@ -1,14 +1,16 @@
-# Vpet 1.1.1
+# Vpet 1.1.2
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.1.1-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.1.2-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
 ## Run
+
+**Settings > Sprite > Load Vpet on PC startup** offers **No (Default)** and **Yes**. Yes launches the pet when you sign in to your Windows account; No disables it. The choice is saved, requires no administrator access, and uninstall removes this installation's startup entry.
 
 **Settings > Personality** starts with an optional pet name. Leave it blank to display nothing, or choose **Hide name**, **Show on hover**, or **Always display**. Names sit below the pet with white outlines around the letters and no background box. Up to 40 characters are saved; long names use an ellipsis on screen. Space is reserved below named pets to keep names clear of the taskbar. Clicking outside the right-click menu closes it, including when clicking another application.
 
