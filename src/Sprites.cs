@@ -189,9 +189,15 @@ namespace Vpet
                 using(var body=Rounded(new RectangleF(3,top+3,61,46),10))g.SetClip(body);
                 if(custom!=null)
                 {
-                    float ratio=Math.Min(46f/custom.Width,42f/custom.Height);float cw=custom.Width*ratio,ch=custom.Height*ratio;
-                    g.InterpolationMode=InterpolationMode.NearestNeighbor;g.PixelOffsetMode=PixelOffsetMode.Half;
-                    g.DrawImage(custom,new RectangleF(34-cw/2,top+26-ch/2,cw,ch));
+                    // Transparent canvas padding must not displace the visible emote.
+                    Rectangle visible=VisibleBounds(custom);
+                    if(!visible.IsEmpty)
+                    {
+                        float ratio=Math.Min(46f/visible.Width,42f/visible.Height);
+                        float cw=visible.Width*ratio,ch=visible.Height*ratio;
+                        g.InterpolationMode=InterpolationMode.NearestNeighbor;g.PixelOffsetMode=PixelOffsetMode.Half;
+                        g.DrawImage(custom,new RectangleF(33.5f-cw/2,top+26-ch/2,cw,ch),visible,GraphicsUnit.Pixel);
+                    }
                 }
                 else DrawReaction(g,reaction,top);
                 g.Restore(contentState);
@@ -200,6 +206,13 @@ namespace Vpet
                 using(var path=BubbleOutline(below))using(var pen=new Pen(Color.FromArgb(160,143,188),1.5f)){pen.LineJoin=LineJoin.Round;g.DrawPath(pen,path);}
             }
             return image;
+        }
+        static Rectangle VisibleBounds(Bitmap image)
+        {
+            int left=image.Width,top=image.Height,right=-1,bottom=-1;
+            for(int y=0;y<image.Height;y++)for(int x=0;x<image.Width;x++)
+                if(image.GetPixel(x,y).A>0){left=Math.Min(left,x);top=Math.Min(top,y);right=Math.Max(right,x);bottom=Math.Max(bottom,y);}
+            return right<left?Rectangle.Empty:Rectangle.FromLTRB(left,top,right+1,bottom+1);
         }
         static GraphicsPath BubbleOutline(bool below)
         {

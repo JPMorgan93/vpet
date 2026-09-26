@@ -1,10 +1,10 @@
-# Vpet 1.1.3
+# Vpet 1.1.4
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.1.3-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.1.4-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -81,7 +81,7 @@ Use **Download blank sprite sheet** below that button for a 500 × 1,500 PNG wit
 
 Column five must be transparent in idle rows. Right-facing cycles are mirrored from the corresponding left-facing rows. Align artwork to a consistent bottom-center anchor. Empty active cells, invalid dimensions, corrupt files, and non-PNG imports are rejected before replacing the current pet.
 
-Custom emotes must be PNGs with both dimensions at most **50 pixels**. They appear on a white speech-bubble background. Open their folder from the Personality tab; added, modified, and removed files refresh within three seconds. Each custom image has priority 2 (weight 3). Under **Your custom emotes**, each loaded image is listed by name with a **Try It Out** button to preview it on your pet. Custom replacements for default reactions appear here too, and the list refreshes as images change.
+Custom emotes must be PNGs with both dimensions at most **50 pixels**. They appear on a white speech-bubble background, centered horizontally and vertically using the visible artwork (transparent padding is ignored). At 100% display scaling, the complete bubble is 68 × 62 pixels including its tail and transparent margins; the rounded body is 65 × 50 pixels. Custom artwork fits proportionally inside a 46 × 42 pixel area. These dimensions scale with Windows display scaling. Open their folder from the Personality tab; added, modified, and removed files refresh within three seconds. Each custom image has priority 2 (weight 3). Under **Your custom emotes**, each loaded image is listed by name with a **Try It Out** button to preview it on your pet. Custom replacements for default reactions appear here too, and the list refreshes as images change.
 
 To replace a default emote, open **Personality → Replace a default emote**, select its name, then choose **Choose image…**. The replacement is copied into local storage and retains that emote's personality triggers and random-selection weight. **Restore original** reverses the replacement. The separate emote folder still adds extra random reactions.
 

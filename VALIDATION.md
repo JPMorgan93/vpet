@@ -1,5 +1,9 @@
 # Prototype validation
 
+## Version 1.1.4
+
+816 assertions passed. Pixel-level checks confirm horizontal and vertical centering of visible custom artwork with uneven transparent padding, portrait/landscape/square proportions, both tail orientations, and 100%, 125%, 150%, and 200% scaling. Bubble dimensions and complete outlines remain unchanged, and a fully transparent emote leaves the white body intact. Generated artwork was visually inspected, and the EXE installer compiled successfully.
+
 ## Version 1.1.3
 
 695 automated assertions passed. An isolated settings-window check verified the empty state, uploaded names, default replacements, live refresh after insertion/removal, readable preview buttons, and correct preview selection after filename sorting changes. The custom-emote list was visually inspected. The EXE installer compiled successfully.

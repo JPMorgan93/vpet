@@ -1,4 +1,9 @@
-# Vpet 1.1.3
+# Vpet 1.1.4
+
+- Custom emotes are centered horizontally and vertically by their visible artwork, ignoring transparent PNG padding.
+- Keeps the existing speech-bubble size and preserves image proportions for both extra emotes and default replacements.
+
+## Vpet 1.1.3
 
 - Personality settings list loaded custom emotes by name, with a Try It Out button next to each.
 - Includes added emotes and custom replacements for default reactions.

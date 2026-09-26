@@ -398,6 +398,31 @@ namespace Vpet
         }
         static void BubbleBorders()
         {
+            // Asymmetric transparent padding must not shift the visible artwork.
+            foreach(var ink in new[]{new Rectangle(2,4,12,20),new Rectangle(23,31,20,9),new Rectangle(0,0,50,50)})
+            using(var custom=new Bitmap(50,50))
+            {
+                using(var graphics=Graphics.FromImage(custom))graphics.FillRectangle(Brushes.Red,ink);
+                foreach(float scale in new[]{1f,1.25f,1.5f,2f})foreach(bool below in new[]{false,true})
+                using(var bubble=Artwork.Bubble(0,custom,scale,below))
+                {
+                    int left=bubble.Width,top=bubble.Height,right=-1,bottom=-1;
+                    for(int y=0;y<bubble.Height;y++)for(int x=0;x<bubble.Width;x++)
+                    {
+                        var pixel=bubble.GetPixel(x,y);
+                        if(pixel.R>200&&pixel.G<50&&pixel.B<50)
+                        {left=Math.Min(left,x);top=Math.Min(top,y);right=Math.Max(right,x);bottom=Math.Max(bottom,y);}
+                    }
+                    Check(right>=left,"Custom artwork remains visible");
+                    Near((left+right+1)/2f,33.5f*scale,1,"Visible artwork horizontally centered");
+                    Near((top+bottom+1)/2f,(below?34:26)*scale,1,"Visible artwork vertically centered in bubble body");
+                    Near((right-left+1f)/(bottom-top+1),ink.Width/(float)ink.Height,0.1f,"Custom artwork proportions preserved");
+                    Check(bubble.Size==new Size((int)Math.Ceiling(68*scale),(int)Math.Ceiling(62*scale)),"Bubble dimensions unchanged");
+                    if(scale==2)bubble.Save(Path.Combine(artifacts,"custom-centered-"+ink.Width+"-"+below+".png"));
+                }
+            }
+            using(var transparent=new Bitmap(50,50))using(var bubble=Artwork.Bubble(0,transparent,1,false))
+                Check(bubble.GetPixel(33,26).ToArgb()==Color.White.ToArgb(),"Fully transparent emote leaves white bubble body");
             using(var white=new Bitmap(50,50))
             {
                 using(var graphics=Graphics.FromImage(white))graphics.Clear(Color.White);
