@@ -15,6 +15,8 @@ New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
 $appDirectory = Join-Path $testRoot 'app'
 $group = 'Vpet'
 $shortcutPath = Join-Path ([Environment]::GetFolderPath('Programs')) ($group + '\Vpet.lnk')
+$desktopShortcut = Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'Vpet.lnk'
+if(Test-Path -LiteralPath $desktopShortcut){throw 'An existing desktop shortcut would be overwritten. Test on a clean account instead.'}
 if (-not $Resume -and (Test-Path $shortcutPath)) { throw 'An existing Vpet shortcut would be overwritten. Test on a clean account instead.' }
 $developmentApp = Join-Path $projectRoot 'bin\Vpet.exe'
 $runningPet = @(Get-Process Vpet -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $developmentApp })
@@ -63,10 +65,18 @@ try {
     # Reinstallation must work and leave unrelated files intact.
     $sentinel = Join-Path $appDirectory 'user-file.txt'
     [IO.File]::WriteAllText($sentinel, 'Preserve unrelated files')
-    Run-InstallerProcess $installer $arguments
-    if (-not (Test-Path $sentinel)) { throw 'Reinstall removed an unrelated file.' }
+    # Actual updater flags: show only progress, preserve destination and prior tasks.
+    $updateArguments='/SILENT /SP- /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010 /VPETHELPER'
+    Run-InstallerProcess $installer $updateArguments
+    if (-not (Test-Path $sentinel)) { throw 'Update removed an unrelated file.' }
+    if(Test-Path -LiteralPath $desktopShortcut){throw 'Update created an unrequested desktop shortcut.'}
+    if((Get-ItemProperty $uninstallKey).InstallLocation.TrimEnd('\') -ne $appDirectory){throw 'Update changed the install directory.'}
+    Run-InstallerProcess $installer ($arguments.Replace('/TASKS=""','/TASKS="desktopicon"'))
+    if(-not (Test-Path -LiteralPath $desktopShortcut)){throw 'Requested desktop shortcut missing.'}
+    Run-InstallerProcess $installer $updateArguments
+    if(-not (Test-Path -LiteralPath $desktopShortcut)){throw 'Update removed an existing desktop shortcut.'}
     Run-InstallerProcess (Join-Path $appDirectory 'unins000.exe') ('/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LOG="' + (Join-Path $testRoot 'uninstall.log') + '"')
-    if ((Test-Path $installedApp) -or (Test-Path $uninstallKey) -or (Test-Path $shortcutPath)) { throw 'Uninstall left a registered application, executable, or shortcut.' }
+    if ((Test-Path $installedApp) -or (Test-Path $uninstallKey) -or (Test-Path $shortcutPath) -or (Test-Path $desktopShortcut)) { throw 'Uninstall left a registered application, executable, or shortcut.' }
     if (-not (Test-Path $sentinel)) { throw 'Uninstall removed an unrelated file.' }
     Write-Output "PASS: installation, version, icon, shortcut, installed GUI launch, reinstall, and uninstall. Logs: $testRoot"
 }

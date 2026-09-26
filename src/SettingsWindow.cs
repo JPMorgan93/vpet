@@ -274,7 +274,7 @@ namespace Vpet
             button.FlatAppearance.BorderColor=Color.FromArgb(205,194,222);button.Click+=preview;
             customEmoteList.Controls.Add(label,0,row);customEmoteList.Controls.Add(button,1,row);customEmoteNames.SetToolTip(label,name);
         }
-        void AssetsChanged(){assetStatus.Text=pet.EmoteStatus??"No custom emotes yet.";RefreshEmotePreview();RefreshCustomEmotes();}
+        void AssetsChanged(){assetStatus.Text=pet.EmoteStatus??"No custom emotes yet.";RefreshEmotePreview();RefreshCustomEmotes();customEmoteNames.SetToolTip(assetStatus,assetStatus.Text);}
         void ShowError(string message){MessageBox.Show(this,message,"Could not load artwork",MessageBoxButtons.OK,MessageBoxIcon.Information);}
     }
     internal sealed class DoubleBufferedPanel : Panel {public DoubleBufferedPanel(){DoubleBuffered=true;}}

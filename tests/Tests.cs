@@ -373,6 +373,24 @@ namespace Vpet
             using(var restored=new EmoteReplacements(directory))
             {Check(restored.Get(0)!=null,"Emote replacement survives restart");restored.Restore(0);Check(restored.Get(0)==null,"Restore original removes replacement");}
             using(var restored=new EmoteReplacements(directory))Check(restored.Get(0)==null,"Restored original persists across restart");
+            using(var large=new Bitmap(512,512))
+            {
+                using(var graphics=Graphics.FromImage(large)){graphics.Clear(Color.White);graphics.FillEllipse(Brushes.Black,32,32,448,448);}
+                large.Save(imagePath,ImageFormat.Png);
+                using(var replacements=new EmoteReplacements(directory))
+                {
+                    replacements.Replace(0,imagePath);Check(replacements.Get(0).Size==new Size(512,512),"512 pixel replacement retains original resolution");
+                    using(var bubble=Artwork.Bubble(0,replacements.Get(0),2,false))
+                    {
+                        int blended=0;
+                        for(int y=12;y<92;y++)for(int x=26;x<108;x++)
+                        {var c=bubble.GetPixel(x,y);if(c.R==c.G&&c.G==c.B&&c.R>15&&c.R<240)blended++;}
+                        Check(blended>30,"High-resolution curved artwork has smooth sampled edges");
+                        bubble.Save(Path.Combine(artifacts,"high-resolution-emote.png"));
+                    }
+                }
+                using(var restored=new EmoteReplacements(directory))Check(restored.Get(0).Width==512,"High-resolution replacement survives restart");
+            }
         }
         static void ReactionsAndSettings()
         {
