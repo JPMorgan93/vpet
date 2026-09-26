@@ -142,7 +142,7 @@ namespace Vpet
             ButtonAt(page,"Open emote folder",24,708,195,delegate{pet.OpenEmoteFolder();});
             assetStatus.Location=new Point(24,758);assetStatus.Size=new Size(550,100);assetStatus.Text=pet.EmoteStatus??"No custom emotes yet.";page.Controls.Add(assetStatus);
             LabelAt(page,"Your custom emotes",24,866,550,28,true);
-            customEmoteList=new TableLayoutPanel{Name="CustomEmoteList",Location=new Point(24,904),Width=550,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=2,Margin=Padding.Empty,Padding=Padding.Empty};
+            customEmoteList=new TableLayoutPanel{Name="CustomEmoteList",Location=new Point(24,904),Width=550,MinimumSize=new Size(550,0),AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=2,Margin=Padding.Empty,Padding=Padding.Empty};
             customEmoteList.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             customEmoteList.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,145));
             page.Controls.Add(customEmoteList);RefreshCustomEmotes();

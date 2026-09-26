@@ -1,5 +1,9 @@
 # Prototype validation
 
+## Version 1.1.3
+
+695 automated assertions passed. An isolated settings-window check verified the empty state, uploaded names, default replacements, live refresh after insertion/removal, readable preview buttons, and correct preview selection after filename sorting changes. The custom-emote list was visually inspected. The EXE installer compiled successfully.
+
 ## Version 1.1.2
 
 695 automated assertions passed, including startup default/migration/persistence and safely quoted executable paths. Seven isolated registry tests verified enable, disable, repeated disable, relocation, and preservation of unrelated values without changing the real startup key. The three-tab GUI smoke test passed and the new Sprite startup setting was visually inspected. The installer compiled with startup cleanup on uninstall. A Windows sign-out/reboot was not performed.
