@@ -86,12 +86,13 @@ namespace Vpet
         public int NameHeadroom;
         public DisplayArea(string id, Rectangle work, float scale) { Id = id; Work = work; Scale = scale; }
         public Size PetSize(Size source) { return new Size((int)Math.Ceiling(source.Width * 2 * Scale), (int)Math.Ceiling(source.Height * 2 * Scale)); }
-        public RectangleF Allowed(Size source)
+        public RectangleF Allowed(Size source,bool includeName=true)
         {
             Size size = PetSize(source);
+            int headroom=includeName?NameHeadroom:0;
             // Position is the bottom-center ground anchor, with room for the full cell.
-            return RectangleF.FromLTRB(Work.Left + size.Width / 2f, Work.Top + size.Height + NameHeadroom,
-                Math.Max(Work.Left + size.Width / 2f, Work.Right - size.Width / 2f), Math.Max(Work.Top + size.Height + NameHeadroom, Work.Bottom));
+            return RectangleF.FromLTRB(Work.Left + size.Width / 2f, Work.Top + size.Height + headroom,
+                Math.Max(Work.Left + size.Width / 2f, Work.Right - size.Width / 2f), Math.Max(Work.Top + size.Height + headroom, Work.Bottom));
         }
     }
 

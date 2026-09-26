@@ -296,7 +296,7 @@ namespace Vpet
             var display=Model.Current;Size size=display.PetSize(Sprites.Cell);
             var frame=Sprites.Frame(Model.Walking,Model.Facing,(int)phase);
             float offset=Model.Shaking(Now)?(float)(Math.Sin(Now*65)*3*display.Scale):0;
-            PointF anchor=Geometry.Clamp(new PointF(Model.Position.X+offset,Model.Position.Y),display.Allowed(Sprites.Cell));
+            PointF anchor=Geometry.Clamp(new PointF(Model.Position.X+offset,Model.Position.Y),display.Allowed(Sprites.Cell,false));
             var location=new Point((int)Math.Round(anchor.X-size.Width/2f),(int)Math.Round(anchor.Y-size.Height));
             if(Model.Crossing!=null)
             {

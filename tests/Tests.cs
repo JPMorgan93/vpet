@@ -72,6 +72,11 @@ namespace Vpet
                 Check(pet.Anchor==anchor,"Name headroom does not move restricted fence");
                 pet.Settings.NameDisplay=NameVisibility.Hidden;pet.UpdateNameHeadroom();Check(pet.Current.NameHeadroom==0,"Hidden names reserve no headroom");
             }
+            var upper=new DisplayArea("upper",new Rectangle(0,0,800,600),1){NameHeadroom=94};
+            var lower=new DisplayArea("lower",new Rectangle(0,600,800,600),1){NameHeadroom=94};
+            foreach(var crossing in new[]{DisplayCrossing.Plan(upper,lower,new Size(32,36),new PointF(400,900)),DisplayCrossing.Plan(lower,upper,new Size(32,36),new PointF(400,300))})
+                foreach(float progress in new[]{0f,.25f,.5f,.75f,1f})
+                {crossing.Progress=progress;Check(crossing.SourceAnchor==crossing.DestinationAnchor,"Named sprites remain continuous across vertical display edges");}
         }
         static string ReleaseJson(GitHubRelease release)
         {

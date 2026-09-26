@@ -60,8 +60,9 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $version = (Get-Content release.json -Raw | ConvertFrom-Json).version
           $tag = 'v' + $version
-          gh release view $tag --json tagName *> $null
-          if ($LASTEXITCODE -eq 0) {
+          $releases = gh release list --limit 100 --json tagName
+          if ($LASTEXITCODE -ne 0) { throw 'Could not list releases.' }
+          if (($releases | ConvertFrom-Json) | Where-Object { $_.tagName -eq $tag }) {
             Write-Output "Release $tag already exists. Increase release.json version to publish another update."
             exit 0
           }
