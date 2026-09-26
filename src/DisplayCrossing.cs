@@ -63,7 +63,7 @@ namespace Vpet
             }
             else
             {
-                // Cross the physical sprite edge; caption headroom only constrains normal destinations.
+                // Cross the physical sprite edge; caption space only constrains normal destinations.
                 a=from.Allowed(cell,false);b=to.Allowed(cell,false);
                 float low=Math.Max(a.Left,b.Left),high=Math.Min(a.Right,b.Right);
                 float x=low<=high?Math.Max(low,Math.Min(high,destination.X)):destination.X;

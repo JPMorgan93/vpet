@@ -29,6 +29,7 @@ namespace Vpet
         readonly RestrictedAreaOverlay restrictedOverlay;
         readonly NotifyIcon tray=new NotifyIcon();
         readonly ContextMenuStrip menu=new ContextMenuStrip();
+        readonly MenuDismissal menuDismissal;
         SettingsWindow settingsWindow;
         Bitmap rendered,crossingRendered,customReaction;
         Form dragWindow;
@@ -69,6 +70,7 @@ namespace Vpet
             restrictedOverlay=new RestrictedAreaOverlay(Model,Save,this,crossingWindow);
             Text="Vpet";bubble.Text="Vpet reaction";bubble.Owner=this;
             BuildMenu();ContextMenuStrip=menu;
+            menuDismissal=new MenuDismissal(menu);
             using(var icon=new Icon(Path.Combine(Path.GetDirectoryName(referencePath),"Vpet.ico")))
             {tray.Icon=(Icon)icon.Clone();Icon=(Icon)icon.Clone();}
             tray.Text="Vpet · right-click for controls";tray.ContextMenuStrip=menu;tray.Visible=!smoke;
@@ -156,7 +158,7 @@ namespace Vpet
         }
         public void NameChanged()
         {
-            Model.UpdateNameHeadroom();Model.Place(Model.Position);Model.CancelRoute();Save();
+            Model.UpdateNameFootroom();Model.Place(Model.Position);Model.CancelRoute();Save();
         }
         public void ResetReactionTimer(){nextRandom=Now+Reactions.Interval(Model.Settings.Frequency,random);}
         public void PreviewReaction(int index){ShowReaction(index);}
@@ -318,12 +320,14 @@ namespace Vpet
             bool showReaction=reaction>=0&&Now<bubbleUntil;
             if(showName)
             {
-                using(var reactionImage=showReaction?Artwork.Bubble(reaction,customReaction,display.Scale,false):null)
-                using(var caption=PetCaption.Draw(Model.Settings.PetName,display.Scale,reactionImage,display.Work.Width))
+                bool below=location.Y-(int)Math.Ceiling(62*display.Scale)<display.Work.Top;
+                using(var reactionImage=showReaction?Artwork.Bubble(reaction,customReaction,display.Scale,below):null)
+                using(var caption=PetCaption.Draw(Model.Settings.PetName,display.Scale,reactionImage,display.Work.Width,size.Height,below))
                 {
                     int x=Math.Max(display.Work.Left,Math.Min(display.Work.Right-caption.Width,(int)anchor.X-caption.Width/2));
-                    // One click-through overlay keeps the name below the bubble with a fixed gap.
-                    if(!bubble.Visible)bubble.Show();bubble.Present(caption,new Point(x,location.Y-caption.Height));
+                    int y=location.Y-(reactionImage!=null&&!below?reactionImage.Height:0);
+                    // Transparent space over the sprite keeps its input and rendering independent.
+                    if(!bubble.Visible)bubble.Show();bubble.Present(caption,new Point(x,y));
                 }
             }
             else if(showReaction)
@@ -388,7 +392,7 @@ namespace Vpet
         }
         void OnClosing(object sender,FormClosingEventArgs e)
         {
-            if(closing)return;closing=true;timer.Stop();Save();
+            if(closing)return;closing=true;timer.Stop();menuDismissal.Dispose();Save();
             if(SettingsOpen)settingsWindow.Close();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
             if(rendered!=null)rendered.Dispose();if(crossingRendered!=null)crossingRendered.Dispose();if(customReaction!=null)customReaction.Dispose();Replacements.Dispose();
             foreach(var item in CustomEmotes)item.Dispose();Sprites.Dispose();timer.Dispose();

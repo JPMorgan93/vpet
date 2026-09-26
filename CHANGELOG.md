@@ -1,4 +1,10 @@
-# Vpet 1.1.0
+# Vpet 1.1.1
+
+- Pet names appear below the pet, with a white outline around the letters and no background box.
+- Clicking outside the pet's right-click menu closes it while allowing the click to reach the underlying application.
+- Submenus remain interactive, and names stay clear of speech bubbles and taskbars.
+
+## Vpet 1.1.0
 
 - Optional pet name at the top of Personality settings.
 - Hide the name, show it on hover, or always display it.

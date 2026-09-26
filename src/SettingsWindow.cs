@@ -145,7 +145,7 @@ namespace Vpet
             var petName=new TextBox{Text=pet.Model.Settings.PetName,MaxLength=40,Location=new Point(24,54),Width=350};page.Controls.Add(petName);
             var nameDisplay=ComboAt(page,new[]{"Hide name","Show on hover","Always display"},390,54,180,(int)pet.Model.Settings.NameDisplay);
             nameDisplay.Enabled=!string.IsNullOrWhiteSpace(petName.Text);
-            LabelAt(page,"Leave blank for no name. A displayed name sits above your pet and below its speech bubble.",24,96,550,48,false);
+            LabelAt(page,"Leave blank for no name. Names appear below your pet with white-outlined letters and no background box.",24,96,550,48,false);
             petName.TextChanged+=delegate{pet.Model.Settings.PetName=Preferences.CleanName(petName.Text);nameDisplay.Enabled=pet.Model.Settings.PetName.Length>0;pet.NameChanged();};
             nameDisplay.SelectedIndexChanged+=delegate{pet.Model.Settings.NameDisplay=(NameVisibility)nameDisplay.SelectedIndex;pet.NameChanged();};
             petName.TabIndex=0;nameDisplay.TabIndex=1;personality.TabIndex=2;

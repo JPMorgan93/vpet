@@ -83,16 +83,16 @@ namespace Vpet
         public string Id;
         public Rectangle Work;
         public float Scale;
-        public int NameHeadroom;
+        public int NameFootroom;
         public DisplayArea(string id, Rectangle work, float scale) { Id = id; Work = work; Scale = scale; }
         public Size PetSize(Size source) { return new Size((int)Math.Ceiling(source.Width * 2 * Scale), (int)Math.Ceiling(source.Height * 2 * Scale)); }
         public RectangleF Allowed(Size source,bool includeName=true)
         {
             Size size = PetSize(source);
-            int headroom=includeName?NameHeadroom:0;
+            int footroom=includeName?NameFootroom:0;
             // Position is the bottom-center ground anchor, with room for the full cell.
-            return RectangleF.FromLTRB(Work.Left + size.Width / 2f, Work.Top + size.Height + headroom,
-                Math.Max(Work.Left + size.Width / 2f, Work.Right - size.Width / 2f), Math.Max(Work.Top + size.Height + headroom, Work.Bottom));
+            return RectangleF.FromLTRB(Work.Left + size.Width / 2f, Work.Top + size.Height,
+                Math.Max(Work.Left + size.Width / 2f, Work.Right - size.Width / 2f), Math.Max(Work.Top + size.Height, Work.Bottom-footroom));
         }
     }
 
@@ -143,7 +143,7 @@ namespace Vpet
         {
             if (displays.Count == 0) return;
             Displays = displays;
-            UpdateNameHeadroom();
+            UpdateNameFootroom();
             if (float.IsNaN(Position.X) || float.IsNaN(Position.Y) || float.IsInfinity(Position.X) || float.IsInfinity(Position.Y))
                 Position = new PointF(displays[0].Work.Left + displays[0].Work.Width * .6f, displays[0].Work.Top + displays[0].Work.Height * .7f);
             Place(Position);
@@ -160,9 +160,9 @@ namespace Vpet
             }
             if (best != null) { Position = candidate; CurrentDisplay = best.Id; }
         }
-        public void UpdateNameHeadroom()
+        public void UpdateNameFootroom()
         {
-            foreach(var d in Displays)d.NameHeadroom=Settings.HasName?Math.Min((int)Math.Ceiling(62*d.Scale)+(int)Math.Ceiling(26*d.Scale)+2*Math.Max(1,(int)Math.Ceiling(3*d.Scale)),Math.Max(0,d.Work.Height-d.PetSize(FrameSize).Height)):0;
+            foreach(var d in Displays)d.NameFootroom=Settings.HasName?Math.Min(PetCaption.Footroom(d.Scale),Math.Max(0,d.Work.Height-d.PetSize(FrameSize).Height)):0;
         }
         public void CancelRoute() { if(Crossing!=null)Place(Position);Destination = null; TargetDisplay = null; plannedCrossing=null;Crossing=null; Walking = false; }
         public void Release(double now)

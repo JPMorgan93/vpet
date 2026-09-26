@@ -1,5 +1,9 @@
 # Prototype validation
 
+## Version 1.1.1
+
+688 automated assertions passed, including bottom-edge name placement, transparent caption backgrounds, white letter outlines, and uninterrupted vertical display crossings. All 42 native window/input assertions passed, including an actual outside mouse click dismissing the menu and reaching the underlying test button, preserving submenu interaction, and dismissal after reopening. The caption artwork was visually inspected at 200% scaling.
+
 ## Version 1.1.0
 
 The release build passes **666 assertions**, including persisted optional names, hide/hover/always modes, caption headroom at 100%, 125%, 150%, and 200% display scaling, and update policy checks. Update checks reject drafts, prereleases, downgrades, missing/duplicate assets, foreign download URLs, oversized installers, and missing/duplicate checksums. Name-and-bubble images are generated under `bin/release/test-artifacts/`.

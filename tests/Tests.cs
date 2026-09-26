@@ -27,7 +27,7 @@ namespace Vpet
             {
                 if(Array.IndexOf(args,"--window-tests")>=0)
                 {
-                    Native.EnableDpi();Application.EnableVisualStyles();WindowLayers();
+                    Native.EnableDpi();Application.EnableVisualStyles();WindowLayers();MenuClicks();
                     Console.WriteLine("PASS: "+count+" native window-layer assertions.");return 0;
                 }
                 artifacts=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-artifacts");Directory.CreateDirectory(artifacts);
@@ -61,19 +61,28 @@ namespace Vpet
             {
                 var pet=Pet(MovementMode.Restricted);pet.Settings.PetName="Mochi";pet.Settings.NameDisplay=NameVisibility.Always;
                 pet.SetDisplays(new List<DisplayArea>{new DisplayArea("left",new Rectangle(-1500,-100,1500,1080),scale)});
-                var anchor=pet.Anchor;pet.UpdateNameHeadroom();pet.Place(new PointF(-1500,-100));
-                using(var reaction=Artwork.Bubble(1,null,scale,false))using(var caption=PetCaption.Draw("Mochi",scale,reaction,1500))
+                var anchor=pet.Anchor;pet.UpdateNameFootroom();pet.Place(new PointF(-1500,980));
+                int petHeight=pet.Current.PetSize(pet.FrameSize).Height;
+                using(var reaction=Artwork.Bubble(1,null,scale,false))using(var caption=PetCaption.Draw("Mochi",scale,reaction,1500,petHeight,false))
                 {
-                    float petTop=pet.Position.Y-pet.Current.PetSize(pet.FrameSize).Height;
-                    Check(petTop-caption.Height>=pet.Current.Work.Top,"Caption fits above pet at top edge, scale "+scale);
-                    Check(caption.Height>reaction.Height,"Name and bubble occupy separate vertical space");
+                    float petTop=pet.Position.Y-petHeight;
+                    Check(petTop-reaction.Height+caption.Height<=pet.Current.Work.Bottom,"Caption fits below pet at bottom edge, scale "+scale);
+                    Check(caption.Height>reaction.Height+petHeight,"Name and bubble are separated by the sprite");
+                    Check(caption.GetPixel(caption.Width/2,reaction.Height+petHeight/2).A==0,"Caption leaves sprite space transparent");
                     caption.Save(Path.Combine(artifacts,"name-bubble-"+scale.ToString(System.Globalization.CultureInfo.InvariantCulture)+".png"));
                 }
-                Check(pet.Anchor==anchor,"Name headroom does not move restricted fence");
-                pet.Settings.NameDisplay=NameVisibility.Hidden;pet.UpdateNameHeadroom();Check(pet.Current.NameHeadroom==0,"Hidden names reserve no headroom");
+                using(var caption=PetCaption.Draw("Mochi",scale,null,1500,0,false))
+                {
+                    Check(caption.GetPixel(0,caption.Height/2).A==0,"Name background has no box");
+                    int white=0,dark=0;for(int y=0;y<caption.Height;y++)for(int x=0;x<caption.Width;x++)
+                    {Color pixel=caption.GetPixel(x,y);if(pixel.A>200){if(pixel.R>240&&pixel.G>240&&pixel.B>240)white++;if(pixel.R<100)dark++;}}
+                    Check(white>0&&dark>0,"Name has white outline and dark letter fill");
+                }
+                Check(pet.Anchor==anchor,"Name footroom does not move restricted fence");
+                pet.Settings.NameDisplay=NameVisibility.Hidden;pet.UpdateNameFootroom();Check(pet.Current.NameFootroom==0,"Hidden names reserve no footroom");
             }
-            var upper=new DisplayArea("upper",new Rectangle(0,0,800,600),1){NameHeadroom=94};
-            var lower=new DisplayArea("lower",new Rectangle(0,600,800,600),1){NameHeadroom=94};
+            var upper=new DisplayArea("upper",new Rectangle(0,0,800,600),1){NameFootroom=29};
+            var lower=new DisplayArea("lower",new Rectangle(0,600,800,600),1){NameFootroom=29};
             foreach(var crossing in new[]{DisplayCrossing.Plan(upper,lower,new Size(32,36),new PointF(400,900)),DisplayCrossing.Plan(lower,upper,new Size(32,36),new PointF(400,300))})
                 foreach(float progress in new[]{0f,.25f,.5f,.75f,1f})
                 {crossing.Progress=progress;Check(crossing.SourceAnchor==crossing.DestinationAnchor,"Named sprites remain continuous across vertical display edges");}
@@ -105,6 +114,31 @@ namespace Vpet
             Reject(delegate{Updates.ExpectedHash(line,"different.exe");},"Checksum must match exact asset name");
             Reject(delegate{Updates.ExpectedHash(line+"\n"+line,installer.Name);},"Duplicate checksum rejected");
             string path=Path.Combine(artifacts,"checksum-fixture.txt");File.WriteAllText(path,"before");string first=Updates.Hash(path);File.WriteAllText(path,"after");Check(first!=Updates.Hash(path),"Changed installer content changes checksum");
+        }
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        static extern void mouse_event(uint flags,uint x,uint y,uint data,UIntPtr extra);
+        static void MenuClicks()
+        {
+            Point original=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();
+            try
+            {
+                using(var form=new Form{StartPosition=FormStartPosition.Manual,Location=new Point(Screen.PrimaryScreen.WorkingArea.Left+150,Screen.PrimaryScreen.WorkingArea.Top+150),Size=new Size(480,260),TopMost=true})
+                using(var menu=new ContextMenuStrip())using(var dismiss=new MenuDismissal(menu))
+                {
+                    var parent=new ToolStripMenuItem("Movement Controls");parent.DropDownItems.Add("Nested option");menu.Items.Add(parent);
+                    var target=new Button{Text="Outside click target",Location=new Point(280,150),Size=new Size(160,50)};form.Controls.Add(target);
+                    bool clicked=false;target.Click+=delegate{clicked=true;};form.Show();Application.DoEvents();
+                    menu.Show(form,new Point(10,10));parent.ShowDropDown();Application.DoEvents();
+                    Check(MenuDismissal.Contains(menu,new Point(parent.DropDown.Left+5,parent.DropDown.Top+5)),"Submenu clicks count as inside");
+                    dismiss.MouseDownAt(new Point(parent.DropDown.Left+5,parent.DropDown.Top+5));Application.DoEvents();Check(menu.Visible,"Submenu interaction preserves root menu");
+                    Cursor.Position=target.PointToScreen(new Point(50,25));mouse_event(2,0,0,0,UIntPtr.Zero);mouse_event(4,0,0,0,UIntPtr.Zero);
+                    for(int i=0;i<20;i++){Application.DoEvents();System.Threading.Thread.Sleep(10);}
+                    Check(!menu.Visible,"Actual outside click dismisses the menu");Check(clicked,"Outside click reaches the underlying button");
+                    menu.Show(form,new Point(10,10));Application.DoEvents();dismiss.MouseDownAt(new Point(menu.Right+100,menu.Bottom+100));Application.DoEvents();
+                    Check(!menu.Visible,"Menu dismisses after reopening");
+                }
+            }
+            finally{Cursor.Position=original;if(foreground!=IntPtr.Zero)Native.SetForegroundWindow(foreground);}
         }
         static bool IsAbove(IntPtr above,IntPtr below)
         {
