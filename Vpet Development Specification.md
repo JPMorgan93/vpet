@@ -116,13 +116,13 @@ Sample a new interval each time. Prototype default: measure the interval from th
 
 - In Personality settings, provide a selector for the eight default emotes, an image preview, **Choose image…**, and **Restore original**. Replacing an image preserves that emote's personality interaction triggers and random weight. Save each validated replacement independently, use it for both interaction and random reactions, and preserve the current image if an import fails. The additional random-emote folder remains a separate feature.
 
-- PNG only; reject an image if either dimension exceeds 50 pixels. Smaller images are allowed.
+- PNG only; reject an image if either dimension exceeds 512 pixels. Smaller images are allowed.
 - Display custom images centered on a white background inside the speech bubble. Preserve aspect ratio, fit within the available content area, and do not crop.
 - Composite any transparent areas against white.
 - Custom opens a persistent user-data folder for adding emote images.
 - Validate newly added images and report unsupported or corrupt files without disrupting the running pet. Prototype default: refresh while running when files are added, changed, or removed.
 
-The 50 × 50 limit applies to each custom emote image, not the complete pet sprite sheet.
+The 512 × 512 limit applies to each custom emote image, not the complete pet sprite sheet.
 
 ## Pet sprite sheets
 
@@ -228,7 +228,7 @@ These values can be adjusted after observing the prototype:
 - Under All keeps both pet and reaction windows below application windows and blocks elevation until another location mode is selected.
 - Sometimes generates intervals within 60–120 seconds.
 - Interaction emotes replace random emotes; only one bubble is visible.
-- Custom emotes accept only valid PNG files no larger than 50 × 50 and appear against white inside the bubble.
+- Custom emotes accept only valid PNG files no larger than 512 × 512 and appear against white inside the bubble.
 - Each default emote can be replaced and restored in the UI; replacements retain their triggers and weights, survive restart, and reject invalid images without losing the current image.
 - Imported pet sheets use transparent PNG frames no larger than 100 × 150.
 - Runtime sprite sheets use the specified five-column, ten-row grid; idle rows play four frames and walking rows play five.

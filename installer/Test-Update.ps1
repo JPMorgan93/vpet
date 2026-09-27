@@ -1,0 +1,72 @@
+$ErrorActionPreference='Stop'
+$root=Split-Path -Parent $PSScriptRoot
+$toolsDirectory=Join-Path $root '.tools'
+ $label='Vpet Update Validation'
+$guid='F56E9E32-018D-48D3-BA90-8B6073854760'
+$key='HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{'+$guid+'}_is1'
+$folder=Join-Path $root 'bin\isolated-update-check'
+$app=Join-Path $folder 'app'
+$desktop=Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) ($label+'.lnk')
+$shortcut=Join-Path ([Environment]::GetFolderPath('Programs')) ($label+'\Vpet.lnk')
+if((Test-Path $key) -or (Test-Path $desktop) -or (Test-Path $shortcut)){throw 'Isolated test already exists; inspect before resuming.'}
+New-Item -ItemType Directory -Path $folder -Force | Out-Null
+$source=[IO.File]::ReadAllText((Join-Path $root 'installer\Vpet.iss'))
+$source=$source.Replace('25F79B0F-454A-4E2F-BE0C-C13D6F067F65',$guid).Replace('AppName=Vpet','AppName='+$label).Replace('DefaultGroupName=Vpet','DefaultGroupName='+$label).Replace('AppMutex=Local\VpetPrototype','AppMutex=Local\VpetUpdateValidation').Replace('{autodesktop}\Vpet','{autodesktop}\'+$label).Replace('"--startup"','"--smoke-test"')
+$source=$source.Replace('Getting Started.txt','..\installer\Getting Started.txt')
+$iss=Join-Path $toolsDirectory 'IsolatedUpdate.iss'
+[IO.File]::WriteAllText($iss,$source)
+& (Join-Path $toolsDirectory 'InnoSetup\ISCC.exe') ('/O'+$folder) $iss | Select-Object -Last 3
+if($LASTEXITCODE -ne 0){throw 'Isolated installer compilation failed'}
+$version=(Get-Content (Join-Path $root 'release.json') -Raw|ConvertFrom-Json).version
+$installer=Join-Path $folder ('Vpet-Setup-'+$version+'-Windows-x64.exe')
+function Run([string]$file,[string]$arguments){
+ $p=Start-Process -FilePath $file -ArgumentList $arguments -WindowStyle Hidden -PassThru -Wait
+ if($null -ne $p.ExitCode -and $p.ExitCode -ne 0){throw ('Process failed: '+$p.ExitCode)}
+}
+$base='/VERYSILENT /SP- /SUPPRESSMSGBOXES /NORESTART /DIR="'+$app+'" /GROUP="'+$label+'"'
+try {
+ Run $installer ($base+' /TASKS=""')
+ if(-not (Test-Path (Join-Path $app 'Vpet.exe'))){throw 'Missing installed executable'}
+ $sentinel=Join-Path $app 'user-data.txt';[IO.File]::WriteAllText($sentinel,'Preserve me')
+ $update='/SILENT /SP- /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010 /VPETHELPER'
+ Run $installer $update
+ if(Test-Path $desktop){throw 'Update created unwanted shortcut'}
+ if((Get-ItemProperty $key).InstallLocation.TrimEnd('\') -ne $app){throw 'Update changed destination'}
+ Write-Output 'PASS: progress-only update preserves no-shortcut choice and existing destination'
+ Run $installer ($base+' /TASKS="desktopicon"')
+ Run $installer $update
+ if(-not (Test-Path $desktop)){throw 'Update lost shortcut'}
+ if(-not (Test-Path $sentinel)){throw 'Update lost unrelated file'}
+ Write-Output 'PASS: progress-only update preserves existing shortcut and unrelated files'
+ # The legacy updater passes no silent flags. Observe and acknowledge only its
+ # completion message; fail if a wizard page replaces it.
+ Add-Type 'using System; using System.Runtime.InteropServices; public static class UpdateTestClick { [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint m, IntPtr w, IntPtr l); }'
+ Add-Type -AssemblyName UIAutomationClient
+ Add-Type -AssemblyName UIAutomationTypes
+ $p=Start-Process -FilePath $installer -ArgumentList '/SP-' -WindowStyle Hidden -PassThru
+ $deadline=(Get-Date).AddSeconds(40);$confirmed=$false
+ while((Get-Date) -lt $deadline -and -not $confirmed){
+  $windows=[System.Windows.Automation.AutomationElement]::RootElement.FindAll([System.Windows.Automation.TreeScope]::Children,[System.Windows.Automation.Condition]::TrueCondition)
+  foreach($window in $windows){
+   if($window.Current.Name -notlike '*Vpet*'){continue}
+   $texts=$window.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::TrueCondition)
+   $names=@($texts|ForEach-Object {$_.Current.Name}) -join ' '
+   if($names -like '*is up to date. Your settings*'){
+    $buttons=$window.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::TrueCondition)
+    foreach($button in $buttons){if($button.Current.Name -in @('Finish','&Finish')){[UpdateTestClick]::PostMessage([IntPtr]$button.Current.NativeWindowHandle,245,[IntPtr]::Zero,[IntPtr]::Zero) | Out-Null;$confirmed=$true;break}}
+   }
+  }
+  Start-Sleep -Milliseconds 300
+ }
+ if(-not $confirmed){throw 'Legacy update did not reach completion confirmation'}
+ Write-Output 'PASS: legacy updater reaches completion without the setup wizard'
+ if(-not $p.WaitForExit(15000)){throw 'Legacy installer did not exit'}
+ Start-Sleep -Seconds 10
+ if(-not (Test-Path (Join-Path $app 'smoke-output\smoke-result.txt'))){throw 'Updated pet did not relaunch successfully'}
+ Write-Output 'PASS: completion relaunches updated app (isolated smoke mode)'
+}
+finally {
+ if(Test-Path (Join-Path $app 'unins000.exe')){Run (Join-Path $app 'unins000.exe') '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART'}
+}
+if((Test-Path $key) -or (Test-Path $desktop) -or (Test-Path $shortcut)){throw 'Isolated test cleanup incomplete'}
+Write-Output 'PASS: isolated installation removed; regular Vpet installation unchanged'
