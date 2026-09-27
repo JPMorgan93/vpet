@@ -53,7 +53,7 @@ try {
     if (-not (Test-Path -LiteralPath $installedApp)) { throw 'Installed executable missing.' }
     if ((Get-ItemProperty $uninstallKey).DisplayVersion -ne $version) { throw 'Wrong installed version.' }
     if ((Get-FileHash $installedApp).Hash -ne (Get-FileHash (Join-Path $projectRoot 'bin\release\Vpet.exe')).Hash) { throw 'Installed executable differs from release.' }
-    $iconPath = Join-Path $appDirectory 'assets\reference\Vpet.ico'
+    $iconPath = Join-Path $appDirectory 'assets\reference\Vpet-Pixel.ico'
     if ((Get-FileHash $iconPath).Hash -ne (Get-FileHash (Join-Path $projectRoot 'assets\reference\Vpet.ico')).Hash) { throw 'Installed icon differs from supplied icon.' }
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($shortcutPath)

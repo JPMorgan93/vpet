@@ -197,7 +197,7 @@ namespace Vpet
                 typeof(SpriteSheetView).GetMethod("OnMouseMove",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,0,44,250,0)});
                 typeof(SpriteSheetView).GetMethod("OnMouseUp",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,1,44,250,0)});
                 Check(maker.Project.Data.Width==22&&maker.Project.Data.Height==25,"Corner dragging converts zoomed coordinates to shared pixel dimensions");
-                maker.SetDimensions(21,24);sheet.Zoom=2;maker.ChooseSlot(0);
+                maker.SetDimensions(21,24);MakerField<PreviewZoomBar>(maker,"zoom").SetPercent(200,null);maker.ChooseSlot(0);
                 using(var bitmap=new Bitmap(maker.Width,maker.Height)){maker.DrawToBitmap(bitmap,new Rectangle(Point.Empty,maker.Size));bitmap.Save(Path.Combine(artifacts,"sprite-maker.png"));}
                 using(var tweak=new SpriteTweakWindow(maker))
                 {

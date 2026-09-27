@@ -36,12 +36,14 @@ namespace Vpet
                 var model=project.Data.Frames[0][0];Check(model.X==390&&model.Y==940,"Setting a zoomed frame saves original source coordinates");
                 FindButton(zoom,"Fit").PerformClick();Application.DoEvents();Check(sheet.Width<=viewport.ClientSize.Width&&sheet.Height<=viewport.ClientSize.Height,"Fit shows the whole sprite sheet");
                 FindButton(zoom,"100%").PerformClick();Check(sheet.Zoom==1&&sheet.Size==project.Source.Size,"100% restores one preview pixel per source pixel");
-                zoom.SetPercent(0,null);Check(zoom.Percent==10,"Zoom is bounded above zero");
+                zoom.SetPercent(0,null);Check(zoom.Percent==1,"Zoom is bounded above zero");
+                FindButton(zoom,"+").PerformClick();Check(zoom.Percent==2,"Zoom in moves away from the minimum despite percentage rounding");
                 zoom.SetPercent(2000,null);Check(zoom.Percent==1600,"Zoom is bounded at 1600 percent");
                 using(var large=new Bitmap(4096,4096,PixelFormat.Format32bppArgb))
                 {
                     maker.SetProject(new SpriteProject((Bitmap)large.Clone()),null);zoom.SetPercent(1600,null);
                     Check(sheet.Width<=30000&&sheet.Height<=30000,"Largest supported PNG stays within native control dimensions at maximum zoom");
+                    FindButton(zoom,"Fit").PerformClick();Application.DoEvents();Check(sheet.Width<=viewport.ClientSize.Width&&sheet.Height<=viewport.ClientSize.Height,"Fit includes even a 4096-pixel sheet in the preview");
                 }
                 maker.Dirty=false;maker.Close();
             }

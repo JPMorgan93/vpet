@@ -32,6 +32,8 @@ SPRITE MAKER
 Settings > Sprite > Open Sprite Maker lets you select animation frames from a
 transparent PNG sheet. Set 1-5 frames per animation, then Tweak and Complete.
 Drag the red border to move a selection or a corner to resize it.
+Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
+Hold Ctrl and turn the mouse wheel to zoom around the pointer.
 Magic Tweak aligns each pose's lowest visible pixels to a shared ground point.
 Save .vpetproject files for editing; export .vpetsprite files for use in Vpet.
 Close Sprite Maker to preview your export, then choose Use this pet.
