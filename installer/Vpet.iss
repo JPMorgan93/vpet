@@ -17,7 +17,7 @@ MinVersion=10.0.18362
 OutputDir=..\dist
 OutputBaseFilename=Vpet-Setup-{#AppVersion}-Windows-x64
 SetupIconFile=..\assets\reference\Vpet.ico
-UninstallDisplayIcon={app}\Vpet.exe
+UninstallDisplayIcon={app}\assets\reference\Vpet-Pixel.ico
 UninstallDisplayName=Vpet
 WizardStyle=modern
 Compression=lzma2
@@ -37,11 +37,12 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 Source: "..\bin\release\Vpet.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Base Vpet Sprite Sheet.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Vpet.ico"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Vpet.ico"; DestDir: "{app}\assets\reference"; DestName: "Vpet-Pixel.ico"; Flags: ignoreversion
 Source: "Getting Started.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Vpet"; Filename: "{app}\Vpet.exe"; WorkingDir: "{app}"; IconFilename: "{app}\assets\reference\Vpet.ico"
-Name: "{autodesktop}\Vpet"; Filename: "{app}\Vpet.exe"; WorkingDir: "{app}"; IconFilename: "{app}\assets\reference\Vpet.ico"; Tasks: desktopicon
+Name: "{group}\Vpet"; Filename: "{app}\Vpet.exe"; WorkingDir: "{app}"; IconFilename: "{app}\assets\reference\Vpet-Pixel.ico"
+Name: "{autodesktop}\Vpet"; Filename: "{app}\Vpet.exe"; WorkingDir: "{app}"; IconFilename: "{app}\assets\reference\Vpet-Pixel.ico"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\Vpet.exe"; Description: "Launch Vpet"; Flags: nowait postinstall skipifsilent; Check: not ExistingInstallation

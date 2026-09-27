@@ -178,6 +178,7 @@ namespace Vpet
         }
         static void MakerWindows()
         {
+            MakerZoomWindows();
             MakerScrollAndDrag();
             using(var maker=new SpriteMakerWindow())
             {

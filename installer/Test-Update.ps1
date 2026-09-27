@@ -27,6 +27,10 @@ $base='/VERYSILENT /SP- /SUPPRESSMSGBOXES /NORESTART /DIR="'+$app+'" /GROUP="'+$
 try {
  Run $installer ($base+' /TASKS=""')
  if(-not (Test-Path (Join-Path $app 'Vpet.exe'))){throw 'Missing installed executable'}
+ $iconPath=Join-Path $app 'assets\reference\Vpet-Pixel.ico'
+ if((Get-FileHash -LiteralPath $iconPath).Hash -ne (Get-FileHash -LiteralPath (Join-Path $root 'assets\reference\Vpet.ico')).Hash){throw 'Installed shortcut icon differs from supplied icon'}
+ $links=New-Object -ComObject WScript.Shell
+ if($links.CreateShortcut($shortcut).IconLocation -notlike '*Vpet-Pixel.ico*'){throw 'Start menu shortcut did not switch to the new icon path'}
  if(Test-Path (Join-Path $app 'pending-update.txt')){throw 'Fresh install incorrectly requested update notes'}
  $sentinel=Join-Path $app 'user-data.txt';[IO.File]::WriteAllText($sentinel,'Preserve me')
  $update='/SILENT /SP- /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010 /VPETHELPER'
@@ -39,6 +43,8 @@ try {
  Run $installer ($base+' /TASKS="desktopicon"')
  Run $installer $update
  if(-not (Test-Path $desktop)){throw 'Update lost shortcut'}
+ if($links.CreateShortcut($desktop).IconLocation -notlike '*Vpet-Pixel.ico*'){throw 'Desktop shortcut did not switch to the new icon path'}
+ Write-Output 'PASS: installed icon matches supplied artwork and both shortcut types use the new icon path'
  if(-not (Test-Path $sentinel)){throw 'Update lost unrelated file'}
  Write-Output 'PASS: progress-only update preserves existing shortcut and unrelated files'
  # The legacy updater passes no silent flags. Observe and acknowledge only its
