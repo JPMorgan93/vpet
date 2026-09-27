@@ -180,7 +180,13 @@ namespace Vpet
             // resize the image while selection coordinates still use the old zoom.
             base.ScaleControl(factor,specified&~BoundsSpecified.Size);RefreshSize();
         }
-        public void RefreshSize(){Size=Project==null?new Size(640,350):new Size((int)Math.Ceiling(Project.Source.Width*zoom),(int)Math.Ceiling(Project.Source.Height*zoom));Invalidate();}
+        public void RefreshSize()
+        {
+            var size=Project==null?new Size(640,350):new Size((int)Math.Ceiling(Project.Source.Width*zoom),(int)Math.Ceiling(Project.Source.Height*zoom));
+            // A zoomed canvas can be much larger than the visible viewport.
+            // Avoid allocating a multi-gigabyte WinForms backing bitmap.
+            DoubleBuffered=(long)size.Width*size.Height<=16000000;Size=size;Invalidate();
+        }
         Point ImagePoint(Point point){return new Point(Math.Max(0,(int)Math.Floor(point.X/zoom)),Math.Max(0,(int)Math.Floor(point.Y/zoom)));}
         int HitCorner(Point point)
         {
@@ -234,12 +240,16 @@ namespace Vpet
         }
         protected override void OnPaint(PaintEventArgs e)
         {
-            MakerUi.Checker(e.Graphics,e.ClipRectangle,16);if(Project==null)return;
+            Rectangle clip=e.ClipRectangle;
+            if(Parent!=null)clip=Rectangle.Intersect(clip,new Rectangle(-Left,-Top,Parent.ClientSize.Width,Parent.ClientSize.Height));
+            if(clip.Width<=0||clip.Height<=0)return;
+            e.Graphics.SetClip(clip,CombineMode.Intersect);MakerUi.Checker(e.Graphics,clip,16);if(Project==null)return;
             e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;
             e.Graphics.DrawImage(Project.Source,new RectangleF(0,0,Project.Source.Width*zoom,Project.Source.Height*zoom),new RectangleF(0,0,Project.Source.Width,Project.Source.Height),GraphicsUnit.Pixel);
             using(var thin=new Pen(Color.FromArgb(140,Color.Red),1))for(int i=0;i<5;i++)if(i!=Slot&&Project.Data.Frames[Cycle][i]!=null)DrawBox(e.Graphics,Project.Selection(Project.Data.Frames[Cycle][i]),thin,false);
             if(Draft!=null)using(var pen=new Pen(Color.Red,2))DrawBox(e.Graphics,Project.Selection(Draft),pen,true);
         }
+        protected override void OnPaintBackground(PaintEventArgs e){} // OnPaint fills the visible checkerboard.
         void DrawBox(Graphics g,Rectangle rect,Pen pen,bool handles)
         {
             var r=new RectangleF(rect.X*zoom,rect.Y*zoom,rect.Width*zoom,rect.Height*zoom);g.DrawRectangle(pen,r.X,r.Y,r.Width,r.Height);

@@ -16,9 +16,9 @@ namespace Vpet
         {
             Dock=DockStyle.Fill;AutoSize=true;WrapContents=true;Padding=new Padding(4);
             Controls.Add(MakerUi.Label("Preview zoom"));
-            var minus=MakerUi.Button("−",delegate{Step(-1,null);});minus.AutoSize=false;minus.MinimumSize=minus.Size=new Size(34,34);minus.AccessibleName="Zoom out";Controls.Add(minus);
+            var minus=MakerUi.Button("−",delegate{Step(-1,null);});minus.AutoSize=false;minus.MinimumSize=new Size(34,34);minus.Size=minus.MinimumSize;minus.AccessibleName="Zoom out";Controls.Add(minus);
             Controls.Add(percent);Controls.Add(MakerUi.Label("%"));
-            var plus=MakerUi.Button("+",delegate{Step(1,null);});plus.AutoSize=false;plus.MinimumSize=plus.Size=new Size(34,34);plus.AccessibleName="Zoom in";Controls.Add(plus);
+            var plus=MakerUi.Button("+",delegate{Step(1,null);});plus.AutoSize=false;plus.MinimumSize=new Size(34,34);plus.Size=plus.MinimumSize;plus.AccessibleName="Zoom in";Controls.Add(plus);
             Controls.Add(MakerUi.Button("100%",delegate{SetPercent(100,null);}));
             Controls.Add(MakerUi.Button("Fit",delegate{if(FitRequested!=null)FitRequested();}));
             Controls.Add(MakerUi.Label("Ctrl + mouse wheel to zoom"));
