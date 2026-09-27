@@ -1,7 +1,7 @@
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 $toolsDirectory=Join-Path $root '.tools'
- $label='Vpet Update Validation'
+$label='Vpet Update Validation'
 $guid='F56E9E32-018D-48D3-BA90-8B6073854760'
 $key='HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{'+$guid+'}_is1'
 $folder=Join-Path $root 'bin\isolated-update-check'
@@ -39,16 +39,17 @@ try {
  if(-not (Test-Path $sentinel)){throw 'Update lost unrelated file'}
  Write-Output 'PASS: progress-only update preserves existing shortcut and unrelated files'
  # The legacy updater passes no silent flags. Observe and acknowledge only its
- # completion message; fail if a wizard page replaces it.
+ # completion screen without clicking any installation or shortcut prompt.
  Add-Type 'using System; using System.Runtime.InteropServices; public static class UpdateTestClick { [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint m, IntPtr w, IntPtr l); }'
  Add-Type -AssemblyName UIAutomationClient
  Add-Type -AssemblyName UIAutomationTypes
  $p=Start-Process -FilePath $installer -ArgumentList '/SP-' -WindowStyle Hidden -PassThru
  $deadline=(Get-Date).AddSeconds(40);$confirmed=$false
  while((Get-Date) -lt $deadline -and -not $confirmed){
+  $ownedIds=@($p.Id)+@(Get-CimInstance Win32_Process -Filter ('ParentProcessId='+$p.Id) | ForEach-Object ProcessId)
   $windows=[System.Windows.Automation.AutomationElement]::RootElement.FindAll([System.Windows.Automation.TreeScope]::Children,[System.Windows.Automation.Condition]::TrueCondition)
   foreach($window in $windows){
-   if($window.Current.Name -notlike '*Vpet*'){continue}
+   if($window.Current.ProcessId -notin $ownedIds){continue}
    $texts=$window.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::TrueCondition)
    $names=@($texts|ForEach-Object {$_.Current.Name}) -join ' '
    if($names -like '*is up to date. Your settings*'){
