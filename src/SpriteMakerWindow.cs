@@ -35,7 +35,8 @@ namespace Vpet
         readonly CheckBox diagonal=new CheckBox{Text="Diagonal animations",AutoSize=true,Checked=true,Margin=new Padding(10)};
         readonly NumericUpDown frameWidth=new NumericUpDown{Minimum=1,Maximum=100,Value=32,Width=64,Margin=new Padding(4,8,4,4)};
         readonly NumericUpDown frameHeight=new NumericUpDown{Minimum=1,Maximum=150,Value=36,Width=64,Margin=new Padding(4,8,4,4)};
-        readonly ComboBox zoom=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList,Width=82,Margin=new Padding(4,8,4,4)};
+        readonly PreviewZoomBar zoom=new PreviewZoomBar();
+        readonly SpriteSheetViewport viewport=new SpriteSheetViewport{Dock=DockStyle.Fill,AutoScroll=true,BackColor=Color.FromArgb(220,216,229),BorderStyle=BorderStyle.FixedSingle};
         readonly TextBox status=new TextBox{ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,Dock=DockStyle.Fill,BorderStyle=BorderStyle.None,BackColor=Color.FromArgb(248,247,252)};
         readonly Label selectionHelp=MakerUi.Label("Upload a transparent PNG to begin.");
         readonly SpriteSheetView sheet=new SpriteSheetView();
@@ -46,8 +47,8 @@ namespace Vpet
         {
             Text="Vpet Sprite Maker";Font=new Font("Segoe UI",10);ClientSize=new Size(1000,800);MinimumSize=new Size(800,650);
             StartPosition=FormStartPosition.CenterParent;BackColor=Color.FromArgb(248,247,252);AutoScaleMode=AutoScaleMode.Dpi;
-            var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=6,Padding=new Padding(12)};
-            for(int i=0;i<4;i++)root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,100));Controls.Add(root);
+            var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=7,Padding=new Padding(12)};
+            for(int i=0;i<5;i++)root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,100));Controls.Add(root);
             var commands=MakerUi.Flow();root.Controls.Add(commands,0,0);
             commands.Controls.Add(MakerUi.Button("Upload Sprite Sheet",Upload));
             commands.Controls.Add(MakerUi.Button("Save Project",delegate{SaveProject(false);}));
@@ -56,17 +57,18 @@ namespace Vpet
             complete=MakerUi.Button("Tweak and Complete",OpenTweak);commands.Controls.Add(complete);
             var options=MakerUi.Flow();root.Controls.Add(options,0,1);
             options.Controls.Add(diagonal);options.Controls.Add(MakerUi.Label("Frame width"));options.Controls.Add(frameWidth);options.Controls.Add(MakerUi.Label("Height"));options.Controls.Add(frameHeight);
-            options.Controls.Add(MakerUi.Label("Zoom"));options.Controls.Add(zoom);zoom.Items.AddRange(new object[]{"25%","50%","100%","200%","400%"});zoom.SelectedIndex=2;
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,2);
             for(int i=0;i<10;i++){int index=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{ChooseCycle(index);});choices.Controls.Add(cycles[i]);}
             var frameChoices=MakerUi.Flow();root.Controls.Add(frameChoices,0,3);
             for(int i=0;i<5;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);frameChoices.Controls.Add(slots[i]);}
             frameChoices.Controls.Add(MakerUi.Button("Set",delegate{SetFrame();}));frameChoices.Controls.Add(MakerUi.Button("Clear",delegate{ClearFrame();}));frameChoices.Controls.Add(selectionHelp);
-            var viewport=new SpriteSheetViewport{Dock=DockStyle.Fill,AutoScroll=true,BackColor=Color.FromArgb(220,216,229),BorderStyle=BorderStyle.FixedSingle};viewport.Controls.Add(sheet);root.Controls.Add(viewport,0,4);root.Controls.Add(status,0,5);
+            root.Controls.Add(zoom,0,4);viewport.Controls.Add(sheet);root.Controls.Add(viewport,0,5);root.Controls.Add(status,0,6);
             sheet.DimensionsChanged+=delegate(int w,int h){SetDimensions(w,h);};
             frameWidth.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};frameHeight.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};
             diagonal.CheckedChanged+=delegate{if(Project!=null&&!syncing){Project.Data.Diagonals=diagonal.Checked;Dirty=true;if(!Project.Enabled(Cycle))Cycle=0;ChooseCycle(Cycle);}};
-            zoom.SelectedIndexChanged+=delegate{sheet.Zoom=new[]{.25f,.5f,1f,2f,4f}[zoom.SelectedIndex];};
+            zoom.ZoomChanged+=delegate(int value,Point? anchor){viewport.ChangeZoom(sheet,sheet.Zoom,value/100f,PointF.Empty,delegate{sheet.Zoom=value/100f;},delegate{return PointF.Empty;},anchor);};
+            zoom.FitRequested+=delegate{if(Project!=null)zoom.SetPercent((int)Math.Floor(Math.Min((viewport.ClientSize.Width-20f)/Project.Source.Width,(viewport.ClientSize.Height-20f)/Project.Source.Height)*100),null);};
+            sheet.ZoomWheel+=delegate(int delta,Point point){zoom.Step(delta,viewport.PointToClient(sheet.PointToScreen(point)));};
             FormClosing+=delegate(object sender,FormClosingEventArgs e){if(!ConfirmDiscard())e.Cancel=true;};
             FormClosed+=delegate{if(Project!=null)Project.Dispose();};RefreshState();
         }
@@ -74,7 +76,8 @@ namespace Vpet
         {
             if(Project!=null)Project.Dispose();Project=project;projectPath=path;Dirty=false;Cycle=Slot=0;sheet.Project=project;
             syncing=true;diagonal.Checked=project.Data.Diagonals;frameWidth.Value=project.Data.Width;frameHeight.Value=project.Data.Height;syncing=false;
-            ChooseCycle(0);sheet.RefreshSize();
+            zoom.MaximumPercent=Math.Min(1600,3000000/Math.Max(project.Source.Width,project.Source.Height));
+            ChooseCycle(0);sheet.RefreshSize();zoom.SetPercent(zoom.Percent,null);
         }
         void Upload(object sender,EventArgs e)
         {
@@ -150,6 +153,13 @@ namespace Vpet
         // Focusing the large canvas must not scroll its top-left into view.
         // Scrollbars and the mouse wheel still control the viewport normally.
         protected override Point ScrollToControl(Control activeControl){return DisplayRectangle.Location;}
+        internal void ChangeZoom(Control content,float oldZoom,float newZoom,PointF oldOrigin,Action resize,Func<PointF> newOrigin,Point? pointer)
+        {
+            var anchor=pointer??new Point(ClientSize.Width/2,ClientSize.Height/2);
+            var pixel=new PointF((anchor.X-content.Left-oldOrigin.X)/oldZoom,(anchor.Y-content.Top-oldOrigin.Y)/oldZoom);
+            resize();PerformLayout();var origin=newOrigin();
+            AutoScrollPosition=new Point(Math.Max(0,(int)Math.Round(pixel.X*newZoom+origin.X-anchor.X)),Math.Max(0,(int)Math.Round(pixel.Y*newZoom+origin.Y-anchor.Y)));
+        }
     }
     internal sealed class SpriteSheetView : Control
     {
@@ -157,6 +167,7 @@ namespace Vpet
         public SpriteFrame Draft;
         public int Cycle,Slot;
         public event Action<int,int> DimensionsChanged;
+        public event Action<int,Point> ZoomWheel;
         float zoom=1;
         int corner=-1;
         bool moving;
@@ -215,11 +226,17 @@ namespace Vpet
         }
         protected override void OnMouseUp(MouseEventArgs e){base.OnMouseUp(e);if(e.Button!=MouseButtons.Left)return;corner=-1;moving=false;Capture=false;}
         protected override void OnMouseCaptureChanged(EventArgs e){base.OnMouseCaptureChanged(e);if(!Capture){corner=-1;moving=false;}}
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            if((ModifierKeys&Keys.Control)!=0)
+            {if(!Capture&&e.Delta!=0&&ZoomWheel!=null)ZoomWheel(e.Delta,e.Location);var handled=e as HandledMouseEventArgs;if(handled!=null)handled.Handled=true;return;}
+            base.OnMouseWheel(e);
+        }
         protected override void OnPaint(PaintEventArgs e)
         {
             MakerUi.Checker(e.Graphics,e.ClipRectangle,16);if(Project==null)return;
             e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;
-            e.Graphics.DrawImage(Project.Source,new Rectangle(0,0,Width,Height));
+            e.Graphics.DrawImage(Project.Source,new RectangleF(0,0,Project.Source.Width*zoom,Project.Source.Height*zoom),new RectangleF(0,0,Project.Source.Width,Project.Source.Height),GraphicsUnit.Pixel);
             using(var thin=new Pen(Color.FromArgb(140,Color.Red),1))for(int i=0;i<5;i++)if(i!=Slot&&Project.Data.Frames[Cycle][i]!=null)DrawBox(e.Graphics,Project.Selection(Project.Data.Frames[Cycle][i]),thin,false);
             if(Draft!=null)using(var pen=new Pen(Color.Red,2))DrawBox(e.Graphics,Project.Selection(Draft),pen,true);
         }
