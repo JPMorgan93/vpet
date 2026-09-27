@@ -134,7 +134,7 @@ namespace Vpet
                 var problems=Project.Problems(false);complete.Enabled=problems.Count==0;
                 status.ForeColor=problems.Count==0?Color.DarkGreen:Color.Firebrick;
                 status.Text=problems.Count==0?"✓ All required animations are saved. Open Tweak and Complete to preview, align, and export.":string.Join(Environment.NewLine,problems);
-                if(Project.Slots(Cycle).Length>0&&!problems.Any(p=>p.StartsWith(SpriteProject.Cycles[Cycle]+":")))status.Text="✓ "+SpriteProject.Cycles[Cycle]+" saved ("+Project.Slots(Cycle).Length+" frame(s))."+Environment.NewLine+status.Text;
+                if(Project.Slots(Cycle).Length>0&&!problems.Any(p=>p.StartsWith(SpriteProject.Cycles[Cycle]+":")||p.StartsWith(SpriteProject.Cycles[Cycle]+",")))status.Text="✓ "+SpriteProject.Cycles[Cycle]+" saved ("+Project.Slots(Cycle).Length+" frame(s))."+Environment.NewLine+status.Text;
             }
             Text="Vpet Sprite Maker"+(Dirty?" *":"");sheet.Invalidate();
         }

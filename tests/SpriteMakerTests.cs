@@ -105,6 +105,12 @@ namespace Vpet
                 sheet.Draft=new SpriteFrame{X=96,Y=100};maker.SetFrame();Check(maker.Slot==4&&maker.Project.Data.Frames[4][4]!=null,"Set frame five keeps last slot selected");
                 maker.ChooseSlot(0);sheet.Draft=new SpriteFrame{X=0,Y=100};maker.SetFrame();Check(maker.Slot==1,"Set advances to the next slot");
                 maker.SetDimensions(21,24);Check(maker.Project.Selection(maker.Project.Data.Frames[0][0]).Width==21,"Shared frame size applies across animations");
+                sheet.Zoom=2;sheet.Draft=new SpriteFrame{X=0,Y=100};
+                typeof(SpriteSheetView).GetMethod("OnMouseDown",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,1,42,248,0)});
+                typeof(SpriteSheetView).GetMethod("OnMouseMove",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,0,44,250,0)});
+                typeof(SpriteSheetView).GetMethod("OnMouseUp",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,1,44,250,0)});
+                Check(maker.Project.Data.Width==22&&maker.Project.Data.Height==25,"Corner dragging converts zoomed coordinates to shared pixel dimensions");
+                maker.SetDimensions(21,24);sheet.Zoom=2;maker.ChooseSlot(0);
                 using(var bitmap=new Bitmap(maker.Width,maker.Height)){maker.DrawToBitmap(bitmap,new Rectangle(Point.Empty,maker.Size));bitmap.Save(Path.Combine(artifacts,"sprite-maker.png"));}
                 using(var tweak=new SpriteTweakWindow(maker))
                 {
@@ -116,11 +122,23 @@ namespace Vpet
                     var magic=FindButton(tweak,"Magic Tweak");magic.PerformClick();Application.DoEvents();
                     foreach(int slot in maker.Project.Slots(4))using(var image=maker.Project.RenderFrame(4,slot))Check(SpriteProject.VisibleBounds(image).Bottom==24,"Magic Tweak UI aligns bottoms");
                     FindButton(tweak,"Undo").PerformClick();Check(maker.Project.Data.Frames[4][0].OffsetY==0,"Undo restores alignment offsets");
+                    typeof(SpriteTweakWindow).GetMethod("SelectCycle",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,new object[]{0});
+                    Check(slider.Maximum==0&&!slider.Enabled,"One-frame animation has a fixed zero slider");
+                    typeof(SpriteTweakWindow).GetMethod("SelectCycle",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,new object[]{4});
                     using(var bitmap=new Bitmap(tweak.Width,tweak.Height)){tweak.DrawToBitmap(bitmap,new Rectangle(Point.Empty,tweak.Size));bitmap.Save(Path.Combine(artifacts,"sprite-tweak.png"));}
                     tweak.Close();
                 }
                 maker.Dirty=false;maker.Close();
             }
+            string dataDirectory=Path.Combine(artifacts,"maker-pet-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(dataDirectory);
+            string reference=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Base Vpet Sprite Sheet.png");
+            using(var project=MakerFixture())using(var pet=new PetWindow(dataDirectory,reference,true,dataDirectory))
+            {
+                project.Data.Diagonals=false;pet.UseCustom(project.Build());
+                Check(pet.Sprites.Counts[4]==0&&pet.Sprites.Counts[2]==3,"Applying custom sprite keeps metadata");pet.Close();
+            }
+            using(var restarted=new PetWindow(dataDirectory,reference,true,dataDirectory))
+            {Check(restarted.Model.Settings.CustomPet&&!restarted.Sprites.HasDiagonals&&restarted.Sprites.Counts[2]==3,"Active custom package survives app restart");restarted.Close();}
         }
         static Button FindButton(Control parent,string text)
         {

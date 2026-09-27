@@ -319,7 +319,7 @@ namespace Vpet
             if (distance <= scale)
             {
                 Position=target;
-                if(plannedCrossing!=null){Crossing=plannedCrossing;Walking=true;ActualSpeed=Settings.Speed*2*scale;Facing=Crossing.Direction;return;}
+                if(plannedCrossing!=null){Crossing=plannedCrossing;Walking=true;ActualSpeed=Settings.Speed*2*scale;Facing=Crossing.Direction;LastMotion=new PointF((float)Math.Cos(Facing*Math.PI/4),(float)Math.Sin(Facing*Math.PI/4));return;}
                 CancelRoute(); IdleUntil=now+10+random.NextDouble()*20; return;
             }
             LastMotion=new PointF(target.X-Position.X,target.Y-Position.Y);
