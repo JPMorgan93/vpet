@@ -15,6 +15,7 @@ namespace Vpet
         {toys.BeforePetTick(now,dt);pet.Tick(now,dt);toys.AfterPetTick(now,dt);}
         static void ToyBehavior()
         {
+            ToyRefinements();
             string file=Path.Combine(artifacts,"toy-settings.json");File.WriteAllText(file,"{}");
             var prefs=Preferences.Load(file);Check(!prefs.Toys.DisplayChest&&prefs.Toys.DisplayZone,"Existing users start with chest off and fence on");
             var pet=Pet(MovementMode.FreeRoam);var toys=Toys(pet);
@@ -132,6 +133,7 @@ namespace Vpet
                     Check(toggle!=null&&!toys.Settings.DisplayChest,"Pet menu provides Display Toy Chest, default off");toggle.PerformClick();Application.DoEvents();
                     Check(windows.Chest.Visible&&windows.Fence.Visible,"Toggling chest shows chest and fence");
                     Check(windows.Menu.Items[0].Text=="Display Play Zone"&&windows.Menu.Items[1].Text=="Ball","Chest menu begins with fence toggle followed by Ball");
+                    Check(windows.Menu.Items.Count==3&&windows.Menu.Items[2].Text=="Help Messages","Chest menu contains toggles only, without old help messages");
                     windows.Menu.Items[1].PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");
                     foreach(LayerMode mode in Enum.GetValues(typeof(LayerMode)))
                     {
@@ -161,6 +163,18 @@ namespace Vpet
                     Check(!toys.Aiming&&!windows.Arrow.Visible,"Lost capture cancels aim and removes arrow");
                     windows.Menu.Show(windows.Chest,new Point(10,10));Application.DoEvents();
                     MakerField<MenuDismissal>(windows,"dismissal").MouseDownAt(new Point(windows.Menu.Right+50,windows.Menu.Bottom+50));Application.DoEvents();Check(!windows.Menu.Visible,"Clicking away dismisses toy chest menu");
+                    windows.Menu.Items[1].PerformClick();Check(!toys.HasBall&&!windows.Ball.Visible&&!pet.Model.Playing,"Unchecked Ball removes it and cancels the pending fetch");
+                    windows.Menu.Items[1].PerformClick();Check(toys.HasBall&&windows.Ball.Visible&&toys.Launcher==BallLauncher.None,"Checking Ball again adds a fresh unlaunched ball");
+                    toys.Settings.DisplayZone=true;windows.Update();var hover=Point.Round(toys.Ball);
+                    Check(windows.HelpAt(hover,windows.Ball.Handle).Contains("three bounces"),"Ball hover supplies ball instructions");
+                    Check(windows.HelpAt(Point.Round(toys.Center),windows.Fence.Handle).Contains("resize"),"Center hover supplies fence instructions");
+                    Check(windows.HelpAt(new Point((int)toys.Zone.Left+3,(int)toys.Zone.Top+40),windows.Fence.Handle)!=null,"Border hover supplies fence instructions");
+                    Check(windows.HelpAt(new Point((int)toys.Zone.Left+45,(int)toys.Zone.Top+45),windows.Fence.Handle)==null,"Empty play-space interior never shows fence help");
+                    Check(windows.HelpAt(hover,application.Handle)==null,"A covering application prevents toy hover help");
+                    Cursor.Position=hover;windows.Update();Application.DoEvents();Check(windows.Help.Visible,"Hovering the actual ball displays a help window above the chest");
+                    var helpBounds=windows.Help.Bounds;Check(helpBounds.Bottom<=windows.Chest.Top,"Help message is positioned above the chest");
+                    Cursor.Position=new Point((int)toys.Zone.Left+50,(int)toys.Zone.Top+50);windows.Update();Check(!windows.Help.Visible,"Moving away hides the message");
+                    windows.Menu.Items[2].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
                     toggle.PerformClick();Check(!windows.Chest.Visible&&!windows.Ball.Visible&&!windows.Fence.Visible&&!windows.Arrow.Visible,"Turning chest off hides every toy window");
                     Check(!pet.Model.Playing,"Turning chest off cancels pending fetch");
                     pet.Close();application.Close();

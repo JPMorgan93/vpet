@@ -194,14 +194,7 @@ namespace Vpet
             // Clip aim artwork to a connected work area as well.
             var display=pet.Displays.Find(d=>d.Id==Model.DisplayId);bounds=Rectangle.Intersect(bounds,display.Work);
             if(bounds.Width<=0||bounds.Height<=0)return;
-            using(var image=new Bitmap(bounds.Width,bounds.Height,PixelFormat.Format32bppArgb))using(var g=Graphics.FromImage(image))
-            {
-                g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(-bounds.Left,-bounds.Top);
-                using(var cap=new AdjustableArrowCap(4,5,true))
-                using(var ink=new Pen(Color.Red,4*Model.Scale))
-                {ink.CustomEndCap=cap;g.DrawLine(ink,start,end);}
-                Present(Arrow,image,bounds.Location);
-            }
+            using(var image=ToyArtwork.LaunchArrow(bounds,start,end,Model.Scale))Present(Arrow,image,bounds.Location);
         }
         static void Present(LayeredWindow window,Bitmap image,Point position)
         {window.Present(image,position);if(!window.Visible)window.Show();}
@@ -231,6 +224,13 @@ namespace Vpet
     // Draw at the desktop scale without introducing extra bitmap assets or opaque window backgrounds.
     internal static class ToyArtwork
     {
+        public static Bitmap LaunchArrow(Rectangle bounds,PointF start,PointF end,float scale)
+        {
+            var image=new Bitmap(bounds.Width,bounds.Height,PixelFormat.Format32bppArgb);
+            using(var g=Graphics.FromImage(image))using(var cap=new AdjustableArrowCap(4,5,true))using(var ink=new Pen(Color.Red,4*scale))
+            {g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(-bounds.Left,-bounds.Top);ink.CustomEndCap=cap;g.DrawLine(ink,start,end);}
+            return image;
+        }
         public static Bitmap HelpMessage(string text,float scale,int maximumWidth)
         {
             int width=Math.Min(maximumWidth,(int)Math.Ceiling(310*scale)),padding=(int)Math.Ceiling(10*scale);
