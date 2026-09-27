@@ -1,5 +1,11 @@
 # Prototype validation
 
+## Version 1.2.2
+
+2,663 automated assertions and 73 native Sprite Maker checks passed. Zoom checks cover typed percentages, zoom buttons, 100%, Fit (including a 4096-pixel sheet), source-coordinate preservation around a chosen zoom anchor, scroll retention after Set, zoom limits, unchanged project dimensions/offsets, correct source-pixel nudging at 400%, and stable playback geometry. Both preview windows were captured and visually inspected.
+
+The supplied `Vpet Pixel.ico` was copied unchanged to `assets/reference/Vpet.ico`; hashes match the uploaded file and packaged icon. The isolated installer test verified the installed icon's hash, the new icon path in both Start menu and desktop shortcuts, preserved shortcut choices, update completion, and app relaunch. The actual personal Vpet installation was left unchanged. The new icon is used as supplied, including its opaque square background; no generated artwork is used.
+
 ## Version 1.2.1
 
 2,663 automated assertions passed. New checks cover asymmetric poses with different lowest pixels, faint alpha, nonstandard PNG DPI, exact pixel preservation through upload/save/export/runtime playback, repeatable ground alignment, and all-or-nothing rejection of poses that cannot fit a shared ground point. Update checks cover GitHub descriptions, old full-changelog bodies, missing descriptions, bundled offline notes, and completion markers that only match the installed version and are acknowledged once.
