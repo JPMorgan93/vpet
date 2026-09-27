@@ -38,3 +38,18 @@ Magic Tweak aligns each pose's lowest visible pixels to a shared ground point.
 Save .vpetproject files for editing; export .vpetsprite files for use in Vpet.
 Close Sprite Maker to preview your export, then choose Use this pet.
 Existing five-column, ten-row PNG sheets are still supported.
+
+TOY CHEST
+Right-click the pet > Display Toy Chest to show a chest and rectangular fence.
+Drag the middle control to move the play space; drag its edges or corners to
+resize it. Drag the chest to place it inside. The zone fits one monitor's usable
+area; move its center onto another monitor to move the play space there.
+Right-click the chest > Display Play Zone to show or hide the fence. The fence
+still keeps toys inside when hidden. Choose Ball to bring out a red ball.
+Click the ball to bounce. Pull back to aim, then release to launch along the
+arrow. The ball ricochets off the fence and slows to a stop.
+Your pet walks to its resting point, pauses for a quarter second, shakes for
+half a second, then returns it in a random direction without chasing again.
+Fetching temporarily overrides Static mode, zero speed and restricted roaming.
+Your saved settings remain intact; a restricted pet walks back into its circle.
+Dragging the pet cancels fetching. Turning off the chest also puts the ball away.

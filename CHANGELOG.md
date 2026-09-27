@@ -1,4 +1,14 @@
-# Vpet 1.2.2
+# Vpet 1.3.0
+
+- Add Display Toy Chest to the pet's right-click menu. The chest and toys follow the pet's window location setting.
+- Move the rectangular play zone by its center control, or resize it by dragging its edges and corners. Drag the chest anywhere inside; moving the fence away recenters it.
+- Right-click the chest to hide or show the play-zone fence, or bring out a red ball. The invisible fence still keeps toys inside.
+- Click the ball to bounce it. Pull back to aim, then release to launch in the arrow's direction. The ball ricochets off the fence and gradually stops.
+- Your pet walks to the ball's resting spot, waits a quarter second, shakes for half a second, and sends it in a random direction. It does not chase its own return.
+- Fetching temporarily overrides Static mode, zero walking speed, and restricted roaming. Afterwards the pet resumes its saved settings, walking back into its circle when needed. Dragging the pet cancels fetching.
+- Save chest visibility, play-zone visibility, rectangle size and position, and chest position. Recover toys onto a connected display if their monitor disconnects.
+
+## Vpet 1.2.2
 
 - Add visible zoom controls to both Sprite Maker previews: editable percentage, zoom in/out, 100%, Fit, and Ctrl + mouse wheel.
 - Keep the image under the pointer while zooming, with scrollbars for larger previews. Zoom preserves frame selections, artwork, and alignment offsets.

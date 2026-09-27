@@ -1,10 +1,10 @@
-# Vpet 1.2.2
+# Vpet 1.3.0
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.2.2-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.3.0-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -113,6 +113,20 @@ The fence is first created around the pet, then stays fixed until you move its c
 The right-click menu also has **Movement controls → Display restricted area**, directly below **Speed and radius**. This checked toggle is enabled in Restricted mode and shares the same saved value as the settings checkbox.
 
 Speech bubbles use one continuous body-and-tail outline, drawn after the emoji or custom image. This keeps the full border visible for both upward- and downward-pointing bubbles.
+
+## Toy chest and fetch
+
+Right-click your pet and select **Display Toy Chest**. A chest and a blue dashed rectangular play zone appear. Drag the center control to move the zone; drag any edge to change one dimension, or a corner to change both. Drag the chest anywhere inside the fence. If moving or shrinking the fence leaves the chest outside, it moves to the new center. The center control stays accessible above the chest when they overlap.
+
+The zone fits inside one monitor's usable area, avoiding taskbars and gaps between screens. Move its center onto another monitor to move the play space there. It defaults to 480 × 320 pixels at 100% scaling, with a minimum of 160 × 140; its maximum is the monitor's working area. Chest and ball size follow the app's launch display scale. The chest, fence and ball follow **Window Location**, stay below the pet, and never take keyboard focus. Empty transparent space passes clicks through.
+
+Right-click the chest for **Display Play Zone** and **Ball**. Hiding the fence keeps its boundaries active. Ball brings out one red ball; selecting it again resets that ball beside the chest. Click the ball to bounce, or drag away from it to aim in the opposite direction. Release to launch along the arrow; a longer pull increases power up to a limit. The ball reflects off the fence and slows to a stop.
+
+User launches interrupt wandering or resting. The pet approaches the predicted resting point, waits for the ball to stop, pauses for ¼ second, shakes for ½ second, and launches it in a random direction. A pet launch never triggers another fetch. Fetching temporarily overrides Static mode and the restricted circle; speed 0 uses speed 50 during fetching. Saved settings are unchanged. Restricted pets walk back into their circle afterwards. At screen edges the pet approaches as closely as its full sprite can fit. Hovering pauses the pet; dragging it cancels fetching. Moving or resizing the play zone updates the fetch destination.
+
+Chest visibility, fence visibility, play-zone geometry and chest position are saved. Hiding the chest also removes the ball and stops fetching; restarting does not restore an in-progress ball game. A disconnected monitor relocates the play zone and toys to a connected work area.
+
+`bin/Vpet.Tests.exe --toy-window-tests` exercises real desktop controls with isolated preferences, including dragging, resizing, aiming, outside-menu dismissal and all three stacking modes.
 
 ## Local storage
 
