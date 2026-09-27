@@ -36,11 +36,12 @@ namespace Vpet
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,0);
             for(int i=0;i<10;i++)if(project.Enabled(i)){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});choices.Controls.Add(cycles[i]);}
             preview=new TweakPreview(project);preview.Dock=DockStyle.Fill;preview.BeforeNudge+=Remember;preview.Changed+=delegate{maker.Dirty=true;RefreshPreview();};root.Controls.Add(preview,0,1);
-            root.Controls.Add(slider,0,2);slider.Visible=false;slider.ValueChanged+=delegate{RefreshPreview();};
+            root.Controls.Add(slider,0,2);slider.Enabled=false;slider.ValueChanged+=delegate{RefreshPreview();};
             var controls=MakerUi.Flow();root.Controls.Add(controls,0,3);tweak=MakerUi.Button("Tweak",delegate{ToggleTweak();});controls.Controls.Add(tweak);controls.Controls.Add(frameLabel);
-            controls.Controls.Add(MakerUi.Label("Drag the preview or use arrow keys to nudge (Shift = 5 px)."));
-            root.Controls.Add(tweaks,0,4);tweaks.Visible=false;
-            tweaks.Controls.Add(MakerUi.Button("Magic Tweak",delegate{Remember();project.MagicTweak(cycle);maker.Dirty=true;RefreshPreview();}));
+            // Keep the preview's ground line still when controls/offset text change.
+            tweak.MinimumSize=new Size(150,34);frameLabel.AutoSize=false;frameLabel.Size=new Size(380,28);
+            root.Controls.Add(tweaks,0,4);tweaks.Enabled=false;
+            tweaks.Controls.Add(MakerUi.Button("Magic Tweak",delegate{try{Remember();project.MagicTweak(cycle);maker.Dirty=true;RefreshPreview();}catch(Exception ex){history.Pop();MakerUi.Error(this,ex);}}));
             tweaks.Controls.Add(MakerUi.Button("Save Tweaks",delegate{if(maker.SaveProject(false))status.Text="Tweaks saved to your project.";}));
             undo=MakerUi.Button("Undo",delegate{if(history.Count>0){project.Data.Frames=history.Pop();maker.Dirty=true;RefreshPreview();}});tweaks.Controls.Add(undo);
             tweaks.Controls.Add(MakerUi.Button("Reset Cycle",delegate{Remember();foreach(int slot in slots){project.Data.Frames[cycle][slot].OffsetX=0;project.Data.Frames[cycle][slot].OffsetY=0;}maker.Dirty=true;RefreshPreview();}));
@@ -52,12 +53,12 @@ namespace Vpet
         }
         void SelectCycle(int row)
         {
-            cycle=row;slots=project.Slots(row);slider.Value=0;slider.Maximum=Math.Max(0,slots.Length-1);slider.Enabled=slots.Length>1;clock.Restart();
+            cycle=row;slots=project.Slots(row);slider.Value=0;slider.Maximum=Math.Max(0,slots.Length-1);slider.Enabled=tweaking&&slots.Length>1;clock.Restart();
             for(int i=0;i<10;i++)if(cycles[i]!=null)cycles[i].BackColor=i==row?Color.FromArgb(221,211,241):Color.White;RefreshPreview();
         }
         void ToggleTweak()
         {
-            tweaking=!tweaking;slider.Value=0;slider.Visible=tweaking;tweaks.Visible=tweaking;tweak.Text=tweaking?"Resume Preview":"Tweak";preview.Editing=tweaking;clock.Restart();RefreshPreview();if(tweaking)preview.Focus();
+            tweaking=!tweaking;slider.Value=0;slider.Enabled=tweaking&&slots.Length>1;tweaks.Enabled=tweaking;tweak.Text=tweaking?"Resume Preview":"Tweak";preview.Editing=tweaking;clock.Restart();RefreshPreview();if(tweaking)preview.Focus();
         }
         void Remember()
         {
@@ -70,7 +71,7 @@ namespace Vpet
             preview.Cycle=cycle;preview.Slot=slots[index];preview.Invalidate();
             var frame=project.Data.Frames[cycle][slots[index]];frameLabel.Text="Frame "+(index+1)+" / "+slots.Length+" · slot "+(slots[index]+1)+(tweaking?" · offset "+frame.OffsetX+", "+frame.OffsetY:"");
             string problem=project.FrameProblem(frame,true);status.ForeColor=problem==null?Color.DarkGreen:Color.Firebrick;
-            status.Text=problem==null?(tweaking?"Magic Tweak aligns all frames in this animation to bottom-center without stretching. Save Tweaks saves the project.":"Previewing "+SpriteProject.Cycles[cycle]+". Choose Tweak to adjust individual frames."):"Frame "+(slots[index]+1)+": "+problem+". Nudge it inside the frame, Undo, or use Magic Tweak.";
+            status.Text=problem==null?(tweaking?"Magic Tweak anchors each pose by its lowest visible pixels to the same ground point. Drag or use arrow keys to nudge (Shift = 5 px). Save Tweaks saves the project.":"Previewing "+SpriteProject.Cycles[cycle]+". Choose Tweak to adjust individual frames."):"Frame "+(slots[index]+1)+": "+problem+". Nudge it inside the frame, Undo, or use Magic Tweak.";
             undo.Enabled=history.Count>0;
         }
         void Complete(object sender,EventArgs e)
@@ -131,9 +132,10 @@ namespace Vpet
             float scale=PreviewScale,w=project.Data.Width*scale,h=project.Data.Height*scale,x=(Width-w)/2,y=(Height-h)/2;
             using(var brush=new SolidBrush(Color.FromArgb(90,255,255,255)))e.Graphics.FillRectangle(brush,x,y,w,h);
             using(var image=project.Source.Clone(project.Selection(frame),PixelFormat.Format32bppArgb))
-            {e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;e.Graphics.DrawImage(image,new RectangleF(x+frame.OffsetX*scale,y+frame.OffsetY*scale,w,h));}
+            {e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;e.Graphics.DrawImage(image,new RectangleF(x+frame.OffsetX*scale,y+frame.OffsetY*scale,w,h),new RectangleF(0,0,image.Width,image.Height),GraphicsUnit.Pixel);}
             using(var pen=new Pen(project.FrameProblem(frame,true)==null?MakerUi.Purple:Color.Red,2))e.Graphics.DrawRectangle(pen,x,y,w,h);
-            if(Editing){e.Graphics.DrawLine(Pens.Green,x,y+h,x+w,y+h);e.Graphics.DrawLine(Pens.Green,x+w/2,y+h-9,x+w/2,y+h+9);}
+            e.Graphics.DrawLine(Pens.Green,x,y+h,x+w,y+h);
+            if(Editing)e.Graphics.DrawLine(Pens.Green,x+w/2,y+h-9,x+w/2,y+h+9);
         }
     }
 }

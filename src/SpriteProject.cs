@@ -105,18 +105,37 @@ namespace Vpet
                 g.DrawImageUnscaled(crop,frame.OffsetX,frame.OffsetY);
             return result;
         }
+        public static Point GroundPoint(Bitmap image)
+        {
+            // Anchor the lowest occupied row, not the width of a swinging tail/arm.
+            // Midpoints between pixels use the left pixel consistently.
+            for(int y=image.Height-1;y>=0;y--)
+            {
+                int left=image.Width,right=-1;
+                for(int x=0;x<image.Width;x++)if(image.GetPixel(x,y).A>0){left=Math.Min(left,x);right=x;}
+                if(right>=left)return new Point((left+right)/2,y);
+            }
+            throw new InvalidDataException("Frame is transparent.");
+        }
         public void MagicTweak(int row)
         {
-            foreach(int slot in Slots(row))
+            int[] slots=Slots(row);var anchors=new Point[slots.Length];
+            int minimum=0,maximum=Data.Width-1;
+            for(int i=0;i<slots.Length;i++)
             {
-                var frame=Data.Frames[row][slot];string problem=FrameProblem(frame,false);if(problem!=null)throw new InvalidDataException(problem);
+                var frame=Data.Frames[row][slots[i]];string problem=FrameProblem(frame,false);if(problem!=null)throw new InvalidDataException(problem);
                 using(var crop=Source.Clone(Selection(frame),PixelFormat.Format32bppArgb))
                 {
-                    var bounds=VisibleBounds(crop);
-                    frame.OffsetX=(Data.Width-bounds.Width)/2-bounds.Left;
-                    frame.OffsetY=Data.Height-bounds.Bottom;
+                    var bounds=VisibleBounds(crop);anchors[i]=GroundPoint(crop);
+                    minimum=Math.Max(minimum,anchors[i].X-bounds.Left);
+                    maximum=Math.Min(maximum,Data.Width-bounds.Right+anchors[i].X);
                 }
             }
+            if(minimum>maximum)throw new InvalidDataException("These poses need a wider frame to share a ground point without clipping. Go back to Sprite Maker, increase the frame width, and check the selections.");
+            int groundX=Math.Max(minimum,Math.Min(maximum,(Data.Width-1)/2));
+            // Validate the entire cycle before changing any offsets.
+            for(int i=0;i<slots.Length;i++)
+            {var frame=Data.Frames[row][slots[i]];frame.OffsetX=groundX-anchors[i].X;frame.OffsetY=Data.Height-1-anchors[i].Y;}
         }
         public SpriteSet Build()
         {
