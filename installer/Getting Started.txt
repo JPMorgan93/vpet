@@ -18,20 +18,24 @@ Settings and custom artwork are kept in:
 This existing folder name is retained for compatibility with earlier builds.
 Updates and uninstalling preserve these personal files.
 
-The pet works offline. When connected, it checks the public releases at
-https://github.com/JPMorgan93/vpet on startup and every six hours.
-Updates are announced without interrupting your work. Use Check for updates
-or Install update in the pet menu to download a verified installer.
-Installation only starts after you agree, and your saved pet is preserved.
-The update screen explains what changed. After an upgrade, the pet reopens
-with the installed version's changes. Check for updates also shows the current
-version's changes when you are already up to date.
+The pet works offline. When connected, it checks public releases at
+https://github.com/JPMorgan93/vpet.
+Settings > Sprite > Auto-update on app startup appears below the PC startup
+option. Choose Yes to install the newest release automatically at app startup.
+No is the default. Periodic checks while running announce available updates.
+Check for updates remains in the pet menu and installs available releases
+directly, without a continue prompt. Progress is shown during the update.
+Settings, artwork and shortcut choices are preserved. Release notes appear
+only after the update succeeds and Vpet reopens. Up-to-date checks show status.
 Users on version 1.0.0 must install 1.1.0 once to enable update checks.
 
 SPRITE MAKER
 Settings > Sprite > Open Sprite Maker lets you select animation frames from a
 transparent PNG sheet. Set 1-5 frames per animation, then Tweak and Complete.
-Drag the red border to move a selection or a corner to resize it.
+Each animation type has its own frame size, shared by all frames of that type.
+Drag the red border to move a selection or a corner to resize that animation.
+In Tweak and Complete, artwork outside the frame is cut off in the preview
+and final sprite. Projects retain the source art and your crop offsets.
 Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
 Hold Ctrl and turn the mouse wheel to zoom around the pointer.
 Magic Tweak aligns each pose's lowest visible pixels to a shared ground point.
@@ -45,11 +49,14 @@ Drag the middle control to move the play space; drag its edges or corners to
 resize it. Drag the chest to place it inside. The zone fits one monitor's usable
 area; move its center onto another monitor to move the play space there.
 Right-click the chest > Display Play Zone to show or hide the fence. The fence
-still keeps toys inside when hidden. Choose Ball to bring out a red ball.
-Click the ball to bounce. Pull back to aim, then release to launch along the
-arrow. The ball ricochets off the fence and slows to a stop.
+still keeps toys inside when hidden. Toggle Ball to add or remove the ball.
+Click the ball for three bounces, each half as high. Pull back and release along the
+red arrow. The ball ricochets off the fence and slows to a stop.
 Your pet walks to its resting point, pauses for a quarter second, shakes for
-half a second, then returns it in a random direction without chasing again.
+half a second, then returns it with random direction and strength without chasing again.
 Fetching temporarily overrides Static mode, zero speed and restricted roaming.
 Your saved settings remain intact; a restricted pet walks back into its circle.
 Dragging the pet cancels fetching. Turning off the chest also puts the ball away.
+
+Toggle Help Messages in the chest menu for hints above the chest when hovering
+over the fence border, its plus control, or the ball. Moving away hides the hint.

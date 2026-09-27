@@ -1,4 +1,14 @@
-# Vpet 1.3.0
+# Vpet 1.4.0
+
+- Add Auto-update on app startup beneath the startup setting in Sprite. Choose Yes to install the newest public release when Vpet opens; No remains the default.
+- Check for updates installs available releases directly, without a continue/install prompt. Release notes appear only after a successful update; up-to-date checks show a simple status message.
+- Give each Sprite Maker animation type its own frame width and height. All frames within that type share its dimensions; other animations keep their own sizes.
+- Allow clipping in Tweak and Complete. Artwork outside the frame is cut off in the preview and exported sprite, including fully clipped blank frames. Existing projects and sprites still load.
+- Use a plus symbol for the play-zone center control and a solid red ball launch arrow.
+- Make Ball a toggle that adds or removes the ball. Replace the old menu help text with a Help Messages toggle; hints appear above the chest only while hovering over the fence controls or ball.
+- Clicking the ball produces three bounces, each half the height of the last. Pet return shots use a wider range of random launch strengths.
+
+## Vpet 1.3.0
 
 - Add Display Toy Chest to the pet's right-click menu. The chest and toys follow the pet's window location setting.
 - Move the rectangular play zone by its center control, or resize it by dragging its edges and corners. Drag the chest anywhere inside; moving the fence away recenters it.
