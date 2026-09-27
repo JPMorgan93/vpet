@@ -28,7 +28,8 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\reference\Vpet.ico') -Des
 Write-Output "Built $appPath"
 if ($Test) {
     $testPath = Join-Path $outputDirectory 'Vpet.Tests.exe'
-    & $compiler /nologo /target:exe /optimize+ /platform:x64 /main:Vpet.Tests "/out:$testPath" $references $sourceFiles (Join-Path $projectRoot 'tests\Tests.cs')
+    $testSources = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'tests') -Filter '*.cs' | ForEach-Object { $_.FullName })
+    & $compiler /nologo /target:exe /optimize+ /platform:x64 /main:Vpet.Tests "/out:$testPath" $references $sourceFiles $testSources
     if ($LASTEXITCODE -ne 0) { throw 'Test compilation failed.' }
     & $testPath
     if ($LASTEXITCODE -ne 0) { throw 'Vpet tests failed.' }
