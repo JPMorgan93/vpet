@@ -25,6 +25,7 @@ namespace Vpet
         }
         static void MakerProjects()
         {
+            GroundAlignment();
             using(var project=MakerFixture())
             {
                 Check(project.Problems(true).Count==0,"Variable-count project is complete");
@@ -95,8 +96,89 @@ namespace Vpet
                 {blank.Data.Width=20;blank.Data.Height=20;Check(blank.FrameProblem(new SpriteFrame(),false)=="frame is transparent","Empty selection rejected");}
             }
         }
+        static void GroundAlignment()
+        {
+            using(var project=new SpriteProject(new Bitmap(200,36,PixelFormat.Format32bppArgb)))
+            {
+                project.Source.SetResolution(144,144);project.Data.Width=40;project.Data.Height=36;
+                int[] feet={12,22,16,21,17},left={3,5,11,4,0},right={28,28,34,24,29};
+                for(int slot=0;slot<5;slot++)
+                {
+                    int origin=slot*40;
+                    using(var g=Graphics.FromImage(project.Source))
+                    {g.FillRectangle(Brushes.Purple,origin+feet[slot]-3,9+slot,7,7);g.FillRectangle(Brushes.Purple,origin+left[slot],6,right[slot]-left[slot],2);}
+                    project.Source.SetPixel(origin+feet[slot],22+slot*2,Color.FromArgb(slot==4?1:255,100,30,130));
+                    for(int row=0;row<10;row++)project.Data.Frames[row][slot]=new SpriteFrame{X=origin,Y=0};
+                }
+                for(int row=0;row<10;row++)project.MagicTweak(row);
+                for(int slot=0;slot<5;slot++)using(var result=project.RenderFrame(0,slot))
+                {
+                    Check(SpriteProject.GroundPoint(result)==new Point(19,35),"Asymmetric poses share the same lowest-pixel ground point, including faint alpha and nonstandard DPI (slot "+slot+", actual "+SpriteProject.GroundPoint(result)+")");
+                    Check(result.GetPixel(19,35).A==(slot==4?1:255),"Lowest pixel alpha survives alignment");
+                    Check(SpriteProject.VisibleBounds(result).Width==Math.Max(right[slot],feet[slot]+4)-left[slot],"Ground alignment preserves the complete pose without stretching or clipping");
+                }
+                string png=Path.Combine(artifacts,"high-dpi-source.png");project.Source.Save(png,ImageFormat.Png);
+                using(var imported=SpriteProject.FromPng(png))for(int slot=0;slot<5;slot++)
+                {
+                    using(var crop=imported.Source.Clone(new Rectangle(slot*40,0,40,36),PixelFormat.Format32bppArgb))Check(SpriteProject.GroundPoint(crop)==new Point(feet[slot],22+slot*2),"PNG DPI cannot move source pixels during upload");
+                }
+                string path=Path.Combine(artifacts,"ground-project.vpetproject");project.Save(path);
+                using(var loaded=SpriteProject.Load(path))using(var built=loaded.Build())
+                {
+                    string exported=Path.Combine(artifacts,"ground-pet.vpetsprite");built.SavePackage(exported);
+                    using(var runtime=SpriteSet.Import(exported))for(int slot=0;slot<5;slot++)Check(SpriteProject.GroundPoint(runtime.Frame(false,2,slot))==new Point(19,35),"Ground point survives project save, export and runtime playback");
+                }
+                int offset=project.Data.Frames[0][0].OffsetX;project.MagicTweak(0);Check(project.Data.Frames[0][0].OffsetX==offset,"Repeated Magic Tweak does not accumulate offsets");
+            }
+            using(var project=new SpriteProject(new Bitmap(40,20,PixelFormat.Format32bppArgb)))
+            {
+                project.Data.Width=20;project.Data.Height=20;
+                for(int x=0;x<40;x++)project.Source.SetPixel(x,2,Color.Purple);
+                project.Source.SetPixel(0,10,Color.Purple);project.Source.SetPixel(39,10,Color.Purple);
+                project.Data.Frames[0][0]=new SpriteFrame{OffsetY=3};project.Data.Frames[0][1]=new SpriteFrame{X=20};
+                Reject(delegate{project.MagicTweak(0);},"Incompatible full-width poses ask for a larger frame instead of clipping");
+                Check(project.Data.Frames[0][0].OffsetY==3&&project.Data.Frames[0][1].OffsetY==0,"An unsuccessful alignment leaves every frame untouched");
+            }
+        }
+        static void SheetMouse(SpriteSheetView sheet,string method,int x,int y)
+        {typeof(SpriteSheetView).GetMethod(method,BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,1,x,y,0)});}
+        static void MakerScrollAndDrag()
+        {
+            using(var maker=new SpriteMakerWindow())
+            {
+                var project=new SpriteProject(new Bitmap(1400,1800,PixelFormat.Format32bppArgb));project.Data.Width=60;project.Data.Height=70;
+                using(var g=Graphics.FromImage(project.Source))g.FillRectangle(Brushes.Purple,400,950,40,50);
+                maker.SetProject(project,null);maker.Show();Application.DoEvents();
+                var sheet=(SpriteSheetView)typeof(SpriteMakerWindow).GetField("sheet",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(maker);
+                var viewport=(Panel)sheet.Parent;var set=FindButton(maker,"Set");set.Focus();
+                viewport.AutoScrollPosition=new Point(300,900);Application.DoEvents();var scrolled=viewport.AutoScrollPosition;
+                Check(scrolled.X<0&&scrolled.Y<0,"Large sprite sheet is scrolled in both directions");
+                SheetMouse(sheet,"OnMouseDown",390,940);SheetMouse(sheet,"OnMouseUp",390,940);Application.DoEvents();
+                Check(viewport.AutoScrollPosition==scrolled,"Focusing and placing the red frame preserves scroll");
+                set.Focus();set.PerformClick();Application.DoEvents();Check(viewport.AutoScrollPosition==scrolled,"Setting and advancing a frame preserves scroll");
+                maker.ChooseSlot(0);Application.DoEvents();Check(viewport.AutoScrollPosition==scrolled,"Restoring a saved frame preserves scroll");
+                foreach(float zoom in new[]{.25f,.5f,1f,2f,4f})
+                {
+                    sheet.Zoom=zoom;sheet.Draft=new SpriteFrame{X=390,Y=940,OffsetX=2,OffsetY=-3};
+                    int x=(int)(420*zoom),y=(int)(940*zoom);
+                    SheetMouse(sheet,"OnMouseDown",x,y);SheetMouse(sheet,"OnMouseMove",x+(int)(20*zoom),y+(int)(12*zoom));SheetMouse(sheet,"OnMouseUp",x+(int)(20*zoom),y+(int)(12*zoom));
+                    Check(sheet.Draft.X==410&&sheet.Draft.Y==952,"Dragging the border follows the pointer at zoom "+zoom);
+                    Check(project.Data.Width==60&&project.Data.Height==70&&sheet.Draft.OffsetX==2&&sheet.Draft.OffsetY==-3,"Moving the border preserves dimensions and tweak offsets");
+                    Check(project.Data.Frames[0][0].X==390,"Border drag edits the draft until Set is chosen");
+                }
+                sheet.Zoom=1;sheet.Draft=new SpriteFrame{X=400,Y=950};
+                SheetMouse(sheet,"OnMouseDown",430,950);SheetMouse(sheet,"OnMouseMove",-200,-100);SheetMouse(sheet,"OnMouseUp",-200,-100);
+                Check(sheet.Draft.X==0&&sheet.Draft.Y==0,"Border drag clamps to the top-left sheet edge");
+                SheetMouse(sheet,"OnMouseDown",30,0);SheetMouse(sheet,"OnMouseMove",3000,3000);SheetMouse(sheet,"OnMouseUp",3000,3000);
+                Check(sheet.Draft.X==1340&&sheet.Draft.Y==1730,"Border drag clamps the whole frame to the bottom-right edge");
+                sheet.Draft=new SpriteFrame{X=400,Y=950};SheetMouse(sheet,"OnMouseDown",430,950);sheet.Capture=false;SheetMouse(sheet,"OnMouseMove",800,1200);
+                Check(sheet.Draft.X==400&&sheet.Draft.Y==950,"Lost capture ends a border drag");
+                maker.Dirty=false;maker.Close();
+            }
+        }
         static void MakerWindows()
         {
+            MakerScrollAndDrag();
             using(var maker=new SpriteMakerWindow())
             {
                 maker.SetProject(MakerFixture(),null);maker.Show();Application.DoEvents();
@@ -119,17 +201,22 @@ namespace Vpet
                 using(var tweak=new SpriteTweakWindow(maker))
                 {
                     tweak.Show();Application.DoEvents();
+                    var preview=(TweakPreview)typeof(SpriteTweakWindow).GetField("preview",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(tweak);
+                    var previewBounds=preview.Bounds;
                     typeof(SpriteTweakWindow).GetMethod("SelectCycle",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,new object[]{4});
                     typeof(SpriteTweakWindow).GetMethod("ToggleTweak",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,null);Application.DoEvents();
+                    Check(preview.Bounds==previewBounds,"Entering Tweak keeps the preview and ground line in the same position");
                     var slider=(TrackBar)typeof(SpriteTweakWindow).GetField("slider",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(tweak);
                     Check(slider.Visible&&slider.Maximum==4&&slider.Value==0,"Tweak reveals a zero-based frame slider");
                     var magic=FindButton(tweak,"Magic Tweak");magic.PerformClick();Application.DoEvents();
                     foreach(int slot in maker.Project.Slots(4))using(var image=maker.Project.RenderFrame(4,slot))Check(SpriteProject.VisibleBounds(image).Bottom==24,"Magic Tweak UI aligns bottoms");
+                    foreach(int slot in maker.Project.Slots(4)){slider.Value=slot;Application.DoEvents();Check(preview.Bounds==previewBounds,"Scrubbing frames does not shift the preview baseline");}
                     FindButton(tweak,"Undo").PerformClick();Check(maker.Project.Data.Frames[4][0].OffsetY==0,"Undo restores alignment offsets");
                     typeof(SpriteTweakWindow).GetMethod("SelectCycle",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,new object[]{0});
                     Check(slider.Maximum==0&&!slider.Enabled,"One-frame animation has a fixed zero slider");
                     typeof(SpriteTweakWindow).GetMethod("SelectCycle",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,new object[]{4});
                     using(var bitmap=new Bitmap(tweak.Width,tweak.Height)){tweak.DrawToBitmap(bitmap,new Rectangle(Point.Empty,tweak.Size));bitmap.Save(Path.Combine(artifacts,"sprite-tweak.png"));}
+                    typeof(SpriteTweakWindow).GetMethod("ToggleTweak",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,null);Application.DoEvents();Check(preview.Bounds==previewBounds,"Resuming animation keeps the preview ground line fixed");
                     tweak.Close();
                 }
                 maker.Dirty=false;maker.Close();

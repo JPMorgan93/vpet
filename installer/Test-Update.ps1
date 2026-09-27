@@ -27,9 +27,12 @@ $base='/VERYSILENT /SP- /SUPPRESSMSGBOXES /NORESTART /DIR="'+$app+'" /GROUP="'+$
 try {
  Run $installer ($base+' /TASKS=""')
  if(-not (Test-Path (Join-Path $app 'Vpet.exe'))){throw 'Missing installed executable'}
+ if(Test-Path (Join-Path $app 'pending-update.txt')){throw 'Fresh install incorrectly requested update notes'}
  $sentinel=Join-Path $app 'user-data.txt';[IO.File]::WriteAllText($sentinel,'Preserve me')
  $update='/SILENT /SP- /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010 /VPETHELPER'
  Run $installer $update
+ if([IO.File]::ReadAllText((Join-Path $app 'pending-update.txt')).Trim() -ne $version){throw 'Successful update did not request release notes on relaunch'}
+ Write-Output 'PASS: only an upgrade records completion notes for the installed version'
  if(Test-Path $desktop){throw 'Update created unwanted shortcut'}
  if((Get-ItemProperty $key).InstallLocation.TrimEnd('\') -ne $app){throw 'Update changed destination'}
  Write-Output 'PASS: progress-only update preserves no-shortcut choice and existing destination'

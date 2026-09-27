@@ -35,6 +35,8 @@ namespace Vpet
                 artifacts=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-artifacts");Directory.CreateDirectory(artifacts);
                 if(Array.IndexOf(args,"--maker-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();MakerWindows();Console.WriteLine("PASS: "+count+" Sprite Maker UI checks.");return 0;}
+                if(Array.IndexOf(args,"--update-window-tests")>=0)
+                {Native.EnableDpi();Application.EnableVisualStyles();UpdateNotesWindows();Console.WriteLine("PASS: "+count+" update description UI checks.");return 0;}
                 if(Array.IndexOf(args,"--public-release-test")>=0)
                 {
                     var update=Updates.CheckForVersion("0.0.0");Check(update!=null,"Public stable release is discoverable without authentication");
@@ -42,7 +44,7 @@ namespace Vpet
                     Check(Updates.Hash(download)==hash,"Published installer download matches the public checksum");
                     Console.WriteLine("PASS: public GitHub release "+update.Version+" discovered and installer downloaded/verified. No installer was executed.");return 0;
                 }
-                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();StartupSettings();MakerProjects();
+                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();UpdateDescriptions();StartupSettings();MakerProjects();
                 Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
             }
             catch(Exception ex){Console.Error.WriteLine(ex);return 1;}

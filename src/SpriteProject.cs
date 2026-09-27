@@ -102,7 +102,7 @@ namespace Vpet
             if(problem!=null)throw new InvalidDataException(problem);
             var result=new Bitmap(Data.Width,Data.Height,PixelFormat.Format32bppArgb);
             using(var crop=Source.Clone(Selection(frame),PixelFormat.Format32bppArgb))using(var g=Graphics.FromImage(result))
-                g.DrawImageUnscaled(crop,frame.OffsetX,frame.OffsetY);
+                SpritePackage.CopyPixels(g,crop,frame.OffsetX,frame.OffsetY);
             return result;
         }
         public static Point GroundPoint(Bitmap image)
@@ -145,7 +145,7 @@ namespace Vpet
             {
                 using(var g=Graphics.FromImage(atlas))for(int row=0;row<10;row++)if(Enabled(row))
                 {
-                    int column=0;foreach(int slot in Slots(row))using(var frame=RenderFrame(row,slot))g.DrawImageUnscaled(frame,column++*Data.Width,row*Data.Height);
+                    int column=0;foreach(int slot in Slots(row))using(var frame=RenderFrame(row,slot))SpritePackage.CopyPixels(g,frame,column++*Data.Width,row*Data.Height);
                     counts[row]=column;
                 }
                 return new SpriteSet(atlas,Data.Diagonals,counts);
@@ -163,6 +163,15 @@ namespace Vpet
     internal static class SpritePackage
     {
         internal const int Limit=64*1024*1024;
+        internal static void CopyPixels(Graphics graphics,Image image,int x,int y)
+        {
+            // DrawImageUnscaled still honors physical image resolution on GDI+.
+            // Explicit source/destination pixel rectangles preserve PNG pixels.
+            graphics.CompositingMode=System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            graphics.InterpolationMode=System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+            graphics.PixelOffsetMode=System.Drawing.Drawing2D.PixelOffsetMode.Half;
+            graphics.DrawImage(image,new Rectangle(x,y,image.Width,image.Height),0,0,image.Width,image.Height,GraphicsUnit.Pixel);
+        }
         static byte[] ReadEntry(ZipArchiveEntry entry,int limit)
         {
             if(entry.Length>limit)throw new InvalidDataException("Sprite package is too large.");
@@ -185,7 +194,7 @@ namespace Vpet
                 {
                     if(image.Width!=w||image.Height!=h)throw new InvalidDataException("Invalid PNG dimensions.");
                     var bitmap=new Bitmap(image.Width,image.Height,PixelFormat.Format32bppArgb);
-                    using(var g=Graphics.FromImage(bitmap)){g.CompositingMode=System.Drawing.Drawing2D.CompositingMode.SourceCopy;g.DrawImageUnscaled(image,0,0);}return bitmap;
+                    using(var g=Graphics.FromImage(bitmap))CopyPixels(g,image,0,0);return bitmap;
                 }
             }
             catch(ArgumentException ex){throw new InvalidDataException("PNG could not be decoded.",ex);}
