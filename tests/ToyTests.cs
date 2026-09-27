@@ -175,7 +175,8 @@ namespace Vpet
                     Cursor.Position=hover;windows.Update();Application.DoEvents();
                     IntPtr hoverWindow=Native.WindowFromPoint(new Native.POINT(hover.X,hover.Y));
                     Check(windows.Help.Visible,"Hovering the actual ball displays help (hit "+hoverWindow+", ball "+windows.Ball.Handle+", pet "+pet.Handle+", fence "+windows.Fence.Handle+", help "+windows.Help.Handle+")");
-                    var helpBounds=windows.Help.Bounds;Check(helpBounds.Bottom<=windows.Chest.Top,"Help message is positioned above the chest");
+                    Native.RECT helpBounds,chestBounds;Native.GetWindowRect(windows.Help.Handle,out helpBounds);Native.GetWindowRect(windows.Chest.Handle,out chestBounds);
+                    Check(helpBounds.Bottom<=chestBounds.Top,"Help message is positioned above the chest (help bottom "+helpBounds.Bottom+", chest top "+chestBounds.Top+")");
                     Cursor.Position=new Point((int)toys.Zone.Left+50,(int)toys.Zone.Top+50);windows.Update();Check(!windows.Help.Visible,"Moving away hides the message");
                     windows.Menu.Items[2].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
                     toggle.PerformClick();Check(!windows.Chest.Visible&&!windows.Ball.Visible&&!windows.Fence.Visible&&!windows.Arrow.Visible,"Turning chest off hides every toy window");
