@@ -205,7 +205,7 @@ namespace Vpet
                     if(maker.ExportedPath!=null)try{LoadSprite(maker.ExportedPath);}catch(Exception ex){ShowError(ex.Message);}
                 }
             });
-            foreach(Control control in page.Controls)control.Top+=136;
+            foreach(Control control in page.Controls)control.Top+=272;
             LabelAt(page,"Load Vpet on PC startup",24,20,550,28,true);
             var startup=ComboAt(page,new[]{"No (Default)","Yes"},24,56,250,pet.Model.Settings.LaunchOnStartup?1:0);
             LabelAt(page,"Yes opens your pet automatically when you sign in to Windows. Choose No to turn this off.",24,94,550,42,false);
@@ -221,6 +221,11 @@ namespace Vpet
                     MessageBox.Show(this,ex.Message,"Could not change startup setting",MessageBoxButtons.OK,MessageBoxIcon.Information);
                 }
             };
+            LabelAt(page,"Auto-update on app startup",24,156,550,28,true);
+            var autoUpdate=ComboAt(page,new[]{"No (Default)","Yes"},24,192,250,pet.Model.Settings.AutoUpdate?1:0);
+            autoUpdate.Name="AutoUpdate";autoUpdate.TabIndex=1;
+            LabelAt(page,"Yes installs new releases automatically when Vpet starts. Check for updates always installs directly. Changes appear after the update completes.",24,230,550,55,false);
+            autoUpdate.SelectedIndexChanged+=delegate{pet.Model.Settings.AutoUpdate=autoUpdate.SelectedIndex==1;pet.Save();};
         }
         void ChooseSheet(object sender,EventArgs e)
         {

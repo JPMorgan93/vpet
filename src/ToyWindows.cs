@@ -18,10 +18,14 @@ namespace Vpet
         internal readonly LayeredWindow Ball=new LayeredWindow(false){Text="Vpet ball",Cursor=Cursors.Hand};
         internal readonly LayeredWindow Fence=new LayeredWindow(false){Text="Vpet play zone"};
         internal readonly LayeredWindow Arrow=new LayeredWindow(true){Text="Ball launch direction"};
+        internal readonly LayeredWindow Help=new LayeredWindow(true){Text="Toy help"};
         internal readonly ContextMenuStrip Menu=new ContextMenuStrip();
         readonly MenuDismissal dismissal;
         readonly Bitmap chestImage,ballImage;
         Point? chestLocation,ballLocation;
+        Bitmap helpImage;
+        string helpText;
+        Point? helpLocation;
         string fenceKey="";
         LayeredWindow captured;
         Point pointerStart;
@@ -31,7 +35,7 @@ namespace Vpet
         bool moveZone,dragged,disposed;
         LayerMode? layer;
         internal bool Busy {get{return captured!=null||Menu.Visible;}}
-        internal IEnumerable<LayeredWindow> Windows {get{yield return Ball;yield return Arrow;yield return Fence;yield return Chest;}}
+        internal IEnumerable<LayeredWindow> Windows {get{yield return Help;yield return Ball;yield return Arrow;yield return Fence;yield return Chest;}}
 
         public ToyWindows(PetModel pet,LayeredWindow petWindow,LayeredWindow crossingWindow,Action save,Func<double> now,Random random)
         {
@@ -47,11 +51,11 @@ namespace Vpet
             var display=new ToolStripMenuItem("Display Play Zone"){CheckOnClick=true};
             display.Click+=delegate{Model.Settings.DisplayZone=display.Checked;fenceKey="";Update();save();};
             Menu.Items.Add(display);
-            Menu.Items.Add("Ball",null,delegate{Model.SpawnBall(now());Update();});
-            Menu.Items.Add(new ToolStripSeparator());
-            Menu.Items.Add(new ToolStripMenuItem("Move the center; drag edges or corners to resize"){Enabled=false});
-            Menu.Items.Add(new ToolStripMenuItem("Click the ball to bounce; pull back and release to launch"){Enabled=false});
-            Menu.Opening+=delegate{display.Checked=Model.Settings.DisplayZone;};
+            var ball=new ToolStripMenuItem("Ball"){CheckOnClick=true};
+            ball.Click+=delegate{if(ball.Checked)Model.SpawnBall(now());else{EndGesture(false);Model.RemoveBall(now());}Update();};Menu.Items.Add(ball);
+            var help=new ToolStripMenuItem("Help Messages"){CheckOnClick=true,Checked=Model.Settings.HelpMessages};
+            help.Click+=delegate{Model.Settings.HelpMessages=help.Checked;Update();save();};Menu.Items.Add(help);
+            Menu.Opening+=delegate{display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
             Chest.ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
         }
         public void SetVisible(bool visible)
@@ -75,7 +79,7 @@ namespace Vpet
         void Down(object sender,MouseEventArgs e)
         {
             if(e.Button!=MouseButtons.Left||!Model.Settings.DisplayChest)return;
-            var window=(LayeredWindow)sender;if(window==Arrow)return;
+            var window=(LayeredWindow)sender;if(window==Arrow||window==Help)return;
             pointerStart=Cursor.Position;chestStart=Model.Chest;centerStart=Model.Center;zoneStart=Model.Zone;
             if(window==Fence)
             {
@@ -149,7 +153,34 @@ namespace Vpet
             }
             else Fence.Hide();
             if(captured==Ball&&dragged&&Geometry.Distance(pull,PointF.Empty)>=4)DrawArrow();else Arrow.Hide();
+            UpdateHelp();
             KeepBelowPet();
+        }
+        internal string HelpAt(Point point,IntPtr hitWindow)
+        {
+            if(!Model.Settings.HelpMessages||!Model.Settings.DisplayChest||Menu.Visible)return null;
+            if(Model.HasBall&&Ball.Visible&&(hitWindow==Ball.Handle||hitWindow==Help.Handle))
+            {
+                Point local=Ball.PointToClient(point);
+                if(local.X>=0&&local.Y>=0&&local.X<ballImage.Width&&local.Y<ballImage.Height&&ballImage.GetPixel(local.X,local.Y).A>0)
+                    return "Click for three bounces. Pull back, then release along the red arrow to launch the ball.";
+            }
+            if(Model.Settings.DisplayZone&&Fence.Visible&&(hitWindow==Fence.Handle||hitWindow==Help.Handle)&&
+                (Geometry.Distance(point,Model.Center)<=22*Model.Scale||
+                (RectangleF.Inflate(Model.Zone,2,2).Contains(point)&&HitEdge(point)!=ZoneEdge.None)))
+                return "Drag the + to move the play zone. Drag an edge or corner to resize it. The fence stays active when hidden.";
+            return null;
+        }
+        void UpdateHelp()
+        {
+            Point pointer=Cursor.Position;string message=HelpAt(pointer,Native.WindowFromPoint(new Native.POINT(pointer.X,pointer.Y)));
+            if(message==null){Help.Hide();return;}
+            var display=pet.Displays.Find(d=>d.Id==Model.DisplayId);
+            if(message!=helpText||helpImage==null||helpImage.Width>display.Work.Width)
+            {if(helpImage!=null)helpImage.Dispose();helpImage=ToyArtwork.HelpMessage(message,Model.Scale,display.Work.Width);helpText=message;helpLocation=null;}
+            var position=new Point(Math.Max(display.Work.Left,Math.Min(display.Work.Right-helpImage.Width,(int)Model.Chest.X-helpImage.Width/2)),
+                Math.Max(display.Work.Top,(int)(Model.Chest.Y-Model.ChestSize.Height/2)-helpImage.Height-(int)(6*Model.Scale)));
+            if(helpLocation!=position||!Help.Visible){Present(Help,helpImage,position);helpLocation=position;}
         }
         void DrawArrow()
         {
@@ -167,8 +198,8 @@ namespace Vpet
             {
                 g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(-bounds.Left,-bounds.Top);
                 using(var cap=new AdjustableArrowCap(4,5,true))
-                using(var outline=new Pen(Color.White,6*Model.Scale))using(var ink=new Pen(Color.FromArgb(32,115,201),3*Model.Scale))
-                {outline.CustomEndCap=cap;ink.CustomEndCap=cap;g.DrawLine(outline,start,end);g.DrawLine(ink,start,end);}
+                using(var ink=new Pen(Color.Red,4*Model.Scale))
+                {ink.CustomEndCap=cap;g.DrawLine(ink,start,end);}
                 Present(Arrow,image,bounds.Location);
             }
         }
@@ -193,13 +224,28 @@ namespace Vpet
         public void Dispose()
         {
             if(disposed)return;EndGesture(false);disposed=true;dismissal.Dispose();Menu.Dispose();
-            foreach(var window in Windows)window.Close();chestImage.Dispose();ballImage.Dispose();
+            foreach(var window in Windows)window.Close();chestImage.Dispose();ballImage.Dispose();if(helpImage!=null)helpImage.Dispose();
         }
     }
 
     // Draw at the desktop scale without introducing extra bitmap assets or opaque window backgrounds.
     internal static class ToyArtwork
     {
+        public static Bitmap HelpMessage(string text,float scale,int maximumWidth)
+        {
+            int width=Math.Min(maximumWidth,(int)Math.Ceiling(310*scale)),padding=(int)Math.Ceiling(10*scale);
+            using(var font=new Font("Segoe UI",12*scale,FontStyle.Regular,GraphicsUnit.Pixel))
+            {
+                Size size=TextRenderer.MeasureText(text,font,new Size(Math.Max(1,width-padding*2),0),TextFormatFlags.WordBreak|TextFormatFlags.NoPrefix);
+                var image=new Bitmap(width,size.Height+padding*2,PixelFormat.Format32bppArgb);
+                using(var g=Graphics.FromImage(image))using(var pen=new Pen(Color.FromArgb(32,115,201),2*scale))
+                {
+                    g.Clear(Color.White);g.DrawRectangle(pen,scale,scale,image.Width-2*scale-1,image.Height-2*scale-1);
+                    TextRenderer.DrawText(g,text,font,new Rectangle(padding,padding,Math.Max(1,width-padding*2),size.Height),Color.FromArgb(45,35,60),Color.White,TextFormatFlags.WordBreak|TextFormatFlags.NoPrefix);
+                }
+                return image;
+            }
+        }
         public static Bitmap Chest(float scale)
         {
             var image=new Bitmap((int)Math.Ceiling(64*scale),(int)Math.Ceiling(50*scale),PixelFormat.Format32bppArgb);
@@ -243,8 +289,6 @@ namespace Vpet
                 float x=size.Width/2f,y=size.Height/2f,r=20*scale;
                 g.FillEllipse(Brushes.White,x-r,y-r,r*2,r*2);g.DrawEllipse(line,x-r,y-r,r*2,r*2);
                 g.DrawLine(line,x-8*scale,y,x+8*scale,y);g.DrawLine(line,x,y-8*scale,x,y+8*scale);
-                g.DrawLine(line,x-8*scale,y,x-4*scale,y-4*scale);g.DrawLine(line,x+8*scale,y,x+4*scale,y+4*scale);
-                g.DrawLine(line,x,y-8*scale,x+4*scale,y-4*scale);g.DrawLine(line,x,y+8*scale,x-4*scale,y+4*scale);
             }
             return image;
         }

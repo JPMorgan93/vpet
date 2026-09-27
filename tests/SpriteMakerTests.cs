@@ -80,7 +80,7 @@ namespace Vpet
                         Check(built.ResolveFacing(1,PointF.Empty,2)==2,"Idle retains last cardinal direction");
                         Check(built.ResolveFacing(2,PointF.Empty,0)==2,"Hover/pickup faces down");
                     }
-                    loaded.Data.Frames[0][0].OffsetY=30;Reject(delegate{using(var invalid=loaded.Build()){}},"Export blocks clipped tweaks");
+                    loaded.Data.Frames[0][0].OffsetY=30;using(var clipped=loaded.Build())Check(SpriteProject.VisibleBounds(clipped.Frame(false,6,0)).IsEmpty,"Export permits entirely clipped frames");
                     loaded.MagicTweak(0);Check(loaded.Problems(true).Count==0,"Magic Tweak fixes clipped offsets");
                     loaded.Data.Frames[0][0].X=120;Check(loaded.Problems(false).Count>0,"Global resizing/out-of-bounds selections remain flagged");
                 }
@@ -93,7 +93,7 @@ namespace Vpet
                 string invalidPng=Path.Combine(artifacts,"opaque.png");using(var opaque=new Bitmap(32,32)){using(var g=Graphics.FromImage(opaque))g.Clear(Color.White);opaque.Save(invalidPng);}
                 Reject(delegate{using(var invalid=SpriteProject.FromPng(invalidPng)){}},"Opaque sheet rejected");
                 using(var transparent=new Bitmap(32,32))using(var blank=new SpriteProject(transparent))
-                {blank.Data.Width=20;blank.Data.Height=20;Check(blank.FrameProblem(new SpriteFrame(),false)=="frame is transparent","Empty selection rejected");}
+                {blank.Data.Width=20;blank.Data.Height=20;Check(blank.FrameProblem(0,new SpriteFrame(),false)=="frame is transparent","Empty selection rejected");}
             }
         }
         static void GroundAlignment()
@@ -136,8 +136,8 @@ namespace Vpet
                 for(int x=0;x<40;x++)project.Source.SetPixel(x,2,Color.Purple);
                 project.Source.SetPixel(0,10,Color.Purple);project.Source.SetPixel(39,10,Color.Purple);
                 project.Data.Frames[0][0]=new SpriteFrame{OffsetY=3};project.Data.Frames[0][1]=new SpriteFrame{X=20};
-                Reject(delegate{project.MagicTweak(0);},"Incompatible full-width poses ask for a larger frame instead of clipping");
-                Check(project.Data.Frames[0][0].OffsetY==3&&project.Data.Frames[0][1].OffsetY==0,"An unsuccessful alignment leaves every frame untouched");
+                project.MagicTweak(0);using(var frame=project.RenderFrame(0,0))Check(SpriteProject.GroundPoint(frame)==new Point(9,19),"Magic Tweak anchors wide poses while clipping their excess artwork");
+                using(var frame=project.RenderFrame(0,1))Check(SpriteProject.GroundPoint(frame)==new Point(9,19),"Opposite full-width pose shares the same ground point");
             }
         }
         static void SheetMouse(SpriteSheetView sheet,string method,int x,int y)
@@ -190,13 +190,13 @@ namespace Vpet
                 maker.ClearFrame();Check(maker.Project.Data.Frames[4][4]==null,"Clear removes selected frame only");
                 sheet.Draft=new SpriteFrame{X=96,Y=100};maker.SetFrame();Check(maker.Slot==4&&maker.Project.Data.Frames[4][4]!=null,"Set frame five keeps last slot selected");
                 maker.ChooseSlot(0);sheet.Draft=new SpriteFrame{X=0,Y=100};maker.SetFrame();Check(maker.Slot==1,"Set advances to the next slot");
-                maker.SetDimensions(21,24);Check(maker.Project.Selection(maker.Project.Data.Frames[0][0]).Width==21,"Shared frame size applies across animations");
+                maker.SetDimensions(21,24);Check(maker.Project.Width(4)==21&&maker.Project.Width(0)==20,"Resizing an animation leaves other animation types unchanged");
                 sheet.Zoom=2;sheet.Draft=new SpriteFrame{X=0,Y=100};
                 sheet.Scale(new SizeF(1.5f,1.5f));Check(sheet.Size==new Size(maker.Project.Source.Width*2,maker.Project.Source.Height*2),"DPI changes preserve source-pixel zoom and hit coordinates");
                 typeof(SpriteSheetView).GetMethod("OnMouseDown",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,1,42,248,0)});
                 typeof(SpriteSheetView).GetMethod("OnMouseMove",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,0,44,250,0)});
                 typeof(SpriteSheetView).GetMethod("OnMouseUp",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,1,44,250,0)});
-                Check(maker.Project.Data.Width==22&&maker.Project.Data.Height==25,"Corner dragging converts zoomed coordinates to shared pixel dimensions");
+                Check(maker.Project.Width(4)==22&&maker.Project.Height(4)==25,"Corner dragging converts zoomed coordinates to animation dimensions");
                 maker.SetDimensions(21,24);MakerField<PreviewZoomBar>(maker,"zoom").SetPercent(200,null);maker.ChooseSlot(0);
                 using(var bitmap=new Bitmap(maker.Width,maker.Height)){maker.DrawToBitmap(bitmap,new Rectangle(Point.Empty,maker.Size));bitmap.Save(Path.Combine(artifacts,"sprite-maker.png"));}
                 using(var tweak=new SpriteTweakWindow(maker))

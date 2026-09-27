@@ -22,6 +22,7 @@ namespace Vpet
         [DataMember] public int Version=1;
         [DataMember] public string Kind;
         [DataMember] public int Width=32,Height=36;
+        [DataMember(EmitDefaultValue=false)] public int[] CycleWidths,CycleHeights;
         [DataMember] public bool Diagonals=true;
         [DataMember] public SpriteFrame[][] Frames;
         [DataMember] public int[] Counts;
@@ -38,7 +39,17 @@ namespace Vpet
         }
         public bool Enabled(int row){return Data.Diagonals||row%5<3;}
         public int[] Slots(int row){return Enumerable.Range(0,5).Where(i=>Data.Frames[row][i]!=null).ToArray();}
-        public Rectangle Selection(SpriteFrame f){return new Rectangle(f.X,f.Y,Data.Width,Data.Height);}
+        public int Width(int row){return Data.CycleWidths==null?Data.Width:Data.CycleWidths[row];}
+        public int Height(int row){return Data.CycleHeights==null?Data.Height:Data.CycleHeights[row];}
+        void InitializeSizes()
+        {
+            if(Data.CycleWidths==null)Data.CycleWidths=Enumerable.Repeat(Data.Width,10).ToArray();
+            if(Data.CycleHeights==null)Data.CycleHeights=Enumerable.Repeat(Data.Height,10).ToArray();
+            Data.Version=2;
+        }
+        public void SetSize(int row,int width,int height)
+        {InitializeSizes();Data.CycleWidths[row]=Math.Max(1,Math.Min(100,width));Data.CycleHeights[row]=Math.Max(1,Math.Min(150,height));}
+        public Rectangle Selection(int row,SpriteFrame f){return new Rectangle(f.X,f.Y,Width(row),Height(row));}
         public static Rectangle VisibleBounds(Bitmap image)
         {
             var bits=image.LockBits(new Rectangle(0,0,image.Width,image.Height),ImageLockMode.ReadOnly,PixelFormat.Format32bppArgb);
@@ -74,15 +85,13 @@ namespace Vpet
             if(!HasTransparency(image)){image.Dispose();throw new InvalidDataException("The sprite sheet needs a transparent background.");}
             return new SpriteProject(image);
         }
-        public string FrameProblem(SpriteFrame frame,bool offsets)
+        public string FrameProblem(int row,SpriteFrame frame,bool offsets)
         {
             if(frame==null)return "not set";
-            if(!new Rectangle(0,0,Source.Width,Source.Height).Contains(Selection(frame)))return "selection is outside the sheet";
-            using(var crop=Source.Clone(Selection(frame),PixelFormat.Format32bppArgb))
+            if(!new Rectangle(0,0,Source.Width,Source.Height).Contains(Selection(row,frame)))return "selection is outside the sheet";
+            using(var crop=Source.Clone(Selection(row,frame),PixelFormat.Format32bppArgb))
             {
                 var ink=VisibleBounds(crop);if(ink.IsEmpty)return "frame is transparent";
-                ink.Offset(frame.OffsetX,frame.OffsetY);
-                if(offsets&&!new Rectangle(0,0,Data.Width,Data.Height).Contains(ink))return "alignment clips the artwork";
             }
             return null;
         }
@@ -92,16 +101,16 @@ namespace Vpet
             for(int row=0;row<10;row++)if(Enabled(row))
             {
                 var slots=Slots(row);if(slots.Length==0)problems.Add(Cycles[row]+": missing frames");
-                foreach(int slot in slots){string problem=FrameProblem(Data.Frames[row][slot],offsets);if(problem!=null)problems.Add(Cycles[row]+", frame "+(slot+1)+": "+problem);}
+                foreach(int slot in slots){string problem=FrameProblem(row,Data.Frames[row][slot],offsets);if(problem!=null)problems.Add(Cycles[row]+", frame "+(slot+1)+": "+problem);}
             }
             return problems;
         }
         public Bitmap RenderFrame(int row,int slot)
         {
-            var frame=Data.Frames[row][slot];string problem=FrameProblem(frame,false);
+            var frame=Data.Frames[row][slot];string problem=FrameProblem(row,frame,false);
             if(problem!=null)throw new InvalidDataException(problem);
-            var result=new Bitmap(Data.Width,Data.Height,PixelFormat.Format32bppArgb);
-            using(var crop=Source.Clone(Selection(frame),PixelFormat.Format32bppArgb))using(var g=Graphics.FromImage(result))
+            var result=new Bitmap(Width(row),Height(row),PixelFormat.Format32bppArgb);
+            using(var crop=Source.Clone(Selection(row,frame),PixelFormat.Format32bppArgb))using(var g=Graphics.FromImage(result))
                 SpritePackage.CopyPixels(g,crop,frame.OffsetX,frame.OffsetY);
             return result;
         }
@@ -120,39 +129,38 @@ namespace Vpet
         public void MagicTweak(int row)
         {
             int[] slots=Slots(row);var anchors=new Point[slots.Length];
-            int minimum=0,maximum=Data.Width-1;
             for(int i=0;i<slots.Length;i++)
             {
-                var frame=Data.Frames[row][slots[i]];string problem=FrameProblem(frame,false);if(problem!=null)throw new InvalidDataException(problem);
-                using(var crop=Source.Clone(Selection(frame),PixelFormat.Format32bppArgb))
+                var frame=Data.Frames[row][slots[i]];string problem=FrameProblem(row,frame,false);if(problem!=null)throw new InvalidDataException(problem);
+                using(var crop=Source.Clone(Selection(row,frame),PixelFormat.Format32bppArgb))
                 {
-                    var bounds=VisibleBounds(crop);anchors[i]=GroundPoint(crop);
-                    minimum=Math.Max(minimum,anchors[i].X-bounds.Left);
-                    maximum=Math.Min(maximum,Data.Width-bounds.Right+anchors[i].X);
+                    anchors[i]=GroundPoint(crop);
                 }
             }
-            if(minimum>maximum)throw new InvalidDataException("These poses need a wider frame to share a ground point without clipping. Go back to Sprite Maker, increase the frame width, and check the selections.");
-            int groundX=Math.Max(minimum,Math.Min(maximum,(Data.Width-1)/2));
+            int groundX=(Width(row)-1)/2;
             // Validate the entire cycle before changing any offsets.
             for(int i=0;i<slots.Length;i++)
-            {var frame=Data.Frames[row][slots[i]];frame.OffsetX=groundX-anchors[i].X;frame.OffsetY=Data.Height-1-anchors[i].Y;}
+            {var frame=Data.Frames[row][slots[i]];frame.OffsetX=groundX-anchors[i].X;frame.OffsetY=Height(row)-1-anchors[i].Y;}
         }
         public SpriteSet Build()
         {
             var problems=Problems(true);if(problems.Count>0)throw new InvalidDataException(string.Join("\n",problems));
-            var atlas=new Bitmap(Data.Width*5,Data.Height*10,PixelFormat.Format32bppArgb);var counts=new int[10];
+            int width=Enumerable.Range(0,10).Where(Enabled).Max(row=>Width(row)),height=Enumerable.Range(0,10).Where(Enabled).Max(row=>Height(row));
+            var atlas=new Bitmap(width*5,height*10,PixelFormat.Format32bppArgb);var counts=new int[10];
             try
             {
                 using(var g=Graphics.FromImage(atlas))for(int row=0;row<10;row++)if(Enabled(row))
                 {
-                    int column=0;foreach(int slot in Slots(row))using(var frame=RenderFrame(row,slot))SpritePackage.CopyPixels(g,frame,column++*Data.Width,row*Data.Height);
+                    // Crop first, then pad to a common runtime cell without scaling the artwork.
+                    // Align the same bottom-center pixel for both odd and even cycle widths.
+                    int column=0;foreach(int slot in Slots(row))using(var frame=RenderFrame(row,slot))SpritePackage.CopyPixels(g,frame,column++*width+(width-1)/2-(frame.Width-1)/2,row*height+height-frame.Height);
                     counts[row]=column;
                 }
                 return new SpriteSet(atlas,Data.Diagonals,counts);
             }
             catch{atlas.Dispose();throw;}
         }
-        public void Save(string path){SpritePackage.Write(path,Data,Source);}
+        public void Save(string path){InitializeSizes();SpritePackage.Write(path,Data,Source);}
         public static SpriteProject Load(string path)
         {
             SpriteManifest manifest;Bitmap image=SpritePackage.Read(path,"project",out manifest);
@@ -201,10 +209,15 @@ namespace Vpet
         }
         internal static void Validate(SpriteManifest data,string kind)
         {
-            if(data==null||data.Version!=1||data.Kind!=kind)throw new InvalidDataException("Unsupported sprite file format or version.");
+            if(data==null||(data.Version!=1&&data.Version!=2)||data.Kind!=kind)throw new InvalidDataException("Unsupported sprite file format or version.");
             if(data.Width<1||data.Width>100||data.Height<1||data.Height>150)throw new InvalidDataException("Frame size must be 1–100 pixels wide and 1–150 pixels tall.");
             if(kind=="project")
             {
+                if(data.Version==2||data.CycleWidths!=null||data.CycleHeights!=null)
+                {
+                    if(data.CycleWidths==null||data.CycleHeights==null||data.CycleWidths.Length!=10||data.CycleHeights.Length!=10)throw new InvalidDataException("Invalid animation frame sizes.");
+                    for(int row=0;row<10;row++)if(data.CycleWidths[row]<1||data.CycleWidths[row]>100||data.CycleHeights[row]<1||data.CycleHeights[row]>150)throw new InvalidDataException("Each animation needs a frame size from 1–100 by 1–150 pixels.");
+                }
                 if(data.Frames==null||data.Frames.Length!=10)throw new InvalidDataException("Invalid animation list.");
                 foreach(var row in data.Frames)
                 {
@@ -235,7 +248,7 @@ namespace Vpet
                 var image=ReadPng(ReadEntry(zip.GetEntry(imageName),Limit),kind=="project"?4096:500,kind=="project"?4096:1500);
                 if((kind=="project"&&!SpriteProject.HasTransparency(image))||(kind=="sprite"&&(image.Width!=data.Width*5||image.Height!=data.Height*10)))
                 {image.Dispose();throw new InvalidDataException("Sprite image dimensions/transparency do not match the manifest.");}
-                if(kind=="sprite")for(int row=0;row<10;row++)for(int col=0;col<data.Counts[row];col++)
+                if(kind=="sprite"&&data.Version==1)for(int row=0;row<10;row++)for(int col=0;col<data.Counts[row];col++)
                     using(var frame=image.Clone(new Rectangle(col*data.Width,row*data.Height,data.Width,data.Height),PixelFormat.Format32bppArgb))
                         if(SpriteProject.VisibleBounds(frame).IsEmpty){image.Dispose();throw new InvalidDataException("An exported animation frame is empty.");}
                 return image;

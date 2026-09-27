@@ -46,7 +46,7 @@ namespace Vpet
             return (((int)Math.Floor(angle/90+.5))%4+4)%4*2;
         }
         public void SavePackage(string path)
-        {SpritePackage.Write(path,new SpriteManifest{Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts},Sheet);}
+        {SpritePackage.Write(path,new SpriteManifest{Version=2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts},Sheet);}
         public static SpriteSet FromReference(string path)
         {
             int[,] bands={{38,62},{108,134},{177,203},{239,265},{305,335},{372,396},{445,471},{520,546},{596,621},{669,699}};

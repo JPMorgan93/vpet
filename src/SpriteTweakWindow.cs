@@ -59,7 +59,7 @@ namespace Vpet
             FormClosed+=delegate{timer.Dispose();};SelectCycle(0);
         }
         void FitPreview()
-        {zoom.SetPercent((int)Math.Floor(Math.Min((viewport.ClientSize.Width-54f)/project.Data.Width,(viewport.ClientSize.Height-54f)/project.Data.Height)*100),null);}
+        {zoom.SetPercent((int)Math.Floor(Math.Min((viewport.ClientSize.Width-54f)/project.Width(cycle),(viewport.ClientSize.Height-54f)/project.Height(cycle))*100),null);}
         void SelectCycle(int row)
         {
             cycle=row;slots=project.Slots(row);slider.Value=0;slider.Maximum=Math.Max(0,slots.Length-1);slider.Enabled=tweaking&&slots.Length>1;clock.Restart();
@@ -77,10 +77,10 @@ namespace Vpet
         {
             if(slots==null||slots.Length==0)return;
             int index=tweaking?Math.Min(slider.Value,slots.Length-1):(int)(clock.Elapsed.TotalSeconds*(cycle<5?4:8))%slots.Length;
-            preview.Cycle=cycle;preview.Slot=slots[index];preview.Invalidate();
+            bool differentCycle=preview.Cycle!=cycle;preview.Cycle=cycle;preview.Slot=slots[index];if(differentCycle)preview.RefreshSize(viewport.ClientSize);preview.Invalidate();
             var frame=project.Data.Frames[cycle][slots[index]];frameLabel.Text="Frame "+(index+1)+" / "+slots.Length+" · slot "+(slots[index]+1)+(tweaking?" · offset "+frame.OffsetX+", "+frame.OffsetY:"");
-            string problem=project.FrameProblem(frame,true);status.ForeColor=problem==null?Color.DarkGreen:Color.Firebrick;
-            status.Text=problem==null?(tweaking?"Magic Tweak anchors each pose by its lowest visible pixels to the same ground point. Drag or use arrow keys to nudge (Shift = 5 px). Save Tweaks saves the project.":"Previewing "+SpriteProject.Cycles[cycle]+". Choose Tweak to adjust individual frames."):"Frame "+(slots[index]+1)+": "+problem+". Nudge it inside the frame, Undo, or use Magic Tweak.";
+            string problem=project.FrameProblem(cycle,frame,true);status.ForeColor=problem==null?Color.DarkGreen:Color.Firebrick;
+            status.Text=problem==null?(tweaking?"Drag or use arrow keys to nudge (Shift = 5 px). Anything outside the frame is cut off in the preview and export. Magic Tweak aligns the lowest pixels at bottom-center.":"Previewing "+SpriteProject.Cycles[cycle]+". Anything outside this animation's frame is cut off. Choose Tweak to adjust frames."):"Frame "+(slots[index]+1)+": "+problem+".";
             undo.Enabled=history.Count>0;
         }
         void Complete(object sender,EventArgs e)
@@ -111,9 +111,9 @@ namespace Vpet
         public float Zoom=1;
         bool dragging;
         Point origin,offset;
-        internal PointF ImageOrigin {get{return new PointF((Width-project.Data.Width*Zoom)/2,(Height-project.Data.Height*Zoom)/2);}}
+        internal PointF ImageOrigin {get{return new PointF((Width-project.Width(Cycle)*Zoom)/2,(Height-project.Height(Cycle)*Zoom)/2);}}
         internal void RefreshSize(Size viewport)
-        {Size=new Size(Math.Max(viewport.Width,(int)Math.Ceiling(project.Data.Width*Zoom)+50),Math.Max(viewport.Height,(int)Math.Ceiling(project.Data.Height*Zoom)+50));Invalidate();}
+        {Size=new Size(Math.Max(viewport.Width,(int)Math.Ceiling(project.Width(Cycle)*Zoom)+50),Math.Max(viewport.Height,(int)Math.Ceiling(project.Height(Cycle)*Zoom)+50));Invalidate();}
         protected override void ScaleControl(SizeF factor,BoundsSpecified specified)
         {base.ScaleControl(factor,specified&~BoundsSpecified.Size);if(Parent!=null)RefreshSize(Parent.ClientSize);}
         public TweakPreview(SpriteProject project){this.project=project;DoubleBuffered=true;TabStop=true;SetStyle(ControlStyles.Selectable,true);}
@@ -150,11 +150,11 @@ namespace Vpet
         protected override void OnPaint(PaintEventArgs e)
         {
             MakerUi.Checker(e.Graphics,e.ClipRectangle,16);var frame=project.Data.Frames[Cycle][Slot];if(frame==null)return;
-            float scale=Zoom,w=project.Data.Width*scale,h=project.Data.Height*scale,x=ImageOrigin.X,y=ImageOrigin.Y;
+            float scale=Zoom,w=project.Width(Cycle)*scale,h=project.Height(Cycle)*scale,x=ImageOrigin.X,y=ImageOrigin.Y;
             using(var brush=new SolidBrush(Color.FromArgb(90,255,255,255)))e.Graphics.FillRectangle(brush,x,y,w,h);
-            using(var image=project.Source.Clone(project.Selection(frame),PixelFormat.Format32bppArgb))
-            {e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;e.Graphics.DrawImage(image,new RectangleF(x+frame.OffsetX*scale,y+frame.OffsetY*scale,w,h),new RectangleF(0,0,image.Width,image.Height),GraphicsUnit.Pixel);}
-            using(var pen=new Pen(project.FrameProblem(frame,true)==null?MakerUi.Purple:Color.Red,2))e.Graphics.DrawRectangle(pen,x,y,w,h);
+            using(var image=project.RenderFrame(Cycle,Slot))
+            {e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;e.Graphics.DrawImage(image,new RectangleF(x,y,w,h),new RectangleF(0,0,image.Width,image.Height),GraphicsUnit.Pixel);}
+            using(var pen=new Pen(MakerUi.Purple,2))e.Graphics.DrawRectangle(pen,x,y,w,h);
             e.Graphics.DrawLine(Pens.Green,x,y+h,x+w,y+h);
             if(Editing)e.Graphics.DrawLine(Pens.Green,x+w/2,y+h-9,x+w/2,y+h+9);
         }

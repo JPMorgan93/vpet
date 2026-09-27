@@ -34,6 +34,7 @@ namespace Vpet
         [DataMember] public string PetName = "";
         [DataMember] public NameVisibility NameDisplay = NameVisibility.Always;
         [DataMember] public bool LaunchOnStartup;
+        [DataMember] public bool AutoUpdate;
         [DataMember] public ToyPreferences Toys = new ToyPreferences();
 
         [OnDeserializing]
@@ -41,7 +42,7 @@ namespace Vpet
         {
             Speed=50;Radius=250;DisplayRestrictedArea=true;Facing=2;
             X=Y=AnchorX=AnchorY=float.NaN;Frequency=Frequency.Sometimes;
-            PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;
+            PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;AutoUpdate=false;
             Toys=new ToyPreferences();
         }
 

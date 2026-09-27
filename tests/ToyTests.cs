@@ -34,7 +34,7 @@ namespace Vpet
             File.WriteAllText(file,"{\"Toys\":null}");Check(Preferences.Load(file).Toys!=null,"Null toy preferences migrate safely");
             toys.BeginAim();var ball=toys.Ball;toys.AdvanceBall(.1f);Check(toys.Ball==ball,"Aiming holds ball in place");
             toys.Bounce();toys.AdvanceBall(.1f);Check(toys.BounceHeight>0&&toys.Launcher==BallLauncher.None,"Click bounces without starting a fetch");
-            for(int i=0;i<5;i++)toys.AdvanceBall(.1f);Check(toys.BounceHeight==0,"Bounce lands after 0.45 seconds");
+            for(int i=0;i<9;i++)toys.AdvanceBall(.1f);Check(toys.BounceHeight==0,"Three bounces finish and stay landed");
             var velocity=toys.PullVelocity(new PointF(80,-40));Check(velocity.X<0&&velocity.Y>0,"Launch arrow points opposite mouse pull");
             Near(Geometry.Distance(toys.PullVelocity(new PointF(10000,0)),PointF.Empty),720,.001f,"Pull power is capped");
 

@@ -31,6 +31,7 @@ namespace Vpet
         [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr window);
         [DllImport("user32.dll")] public static extern IntPtr GetWindow(IntPtr window,uint command);
         [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll")] public static extern IntPtr WindowFromPoint(POINT point);
         [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr window,uint message,IntPtr wParam,IntPtr lParam);
         public delegate bool EnumWindowsProc(IntPtr hwnd,IntPtr param);
         [DllImport("user32.dll")] public static extern bool EnumWindows(EnumWindowsProc callback,IntPtr param);

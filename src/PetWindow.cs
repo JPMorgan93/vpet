@@ -49,6 +49,10 @@ namespace Vpet
         int smokeStep;
         double nextUpdateCheck=10;
         bool checkingUpdate,installingUpdate,updateNotesOpen;
+        bool startupUpdatePending=true;
+        internal Func<AvailableUpdate> ReadUpdate=Updates.Check;
+        internal Action<AvailableUpdate> InstallAvailable;
+        internal Action<string,string> UpdateMessage=(message,title)=>MessageBox.Show(message,title,MessageBoxButtons.OK,MessageBoxIcon.Information);
         AvailableUpdate availableUpdate;
         string notifiedVersion;
         ToolStripMenuItem installUpdate;
@@ -56,6 +60,7 @@ namespace Vpet
         public PetWindow(string dataDirectory,string referencePath,bool smoke,string smokeOutput) : base(false)
         {
             this.smoke=smoke;this.smokeOutput=smokeOutput;DataDirectory=dataDirectory;ReferencePath=referencePath;
+            InstallAvailable=InstallUpdate;
             Directory.CreateDirectory(DataDirectory);Directory.CreateDirectory(EmoteDirectory);
             Replacements=new EmoteReplacements(Path.Combine(DataDirectory,"DefaultEmotes"));
             var prefs=Preferences.Load(Path.Combine(DataDirectory,"settings.json"));
@@ -83,7 +88,7 @@ namespace Vpet
             if(!smoke&&prefs.LaunchOnStartup)
             {try{StartupRegistration.SetEnabled(true,Application.ExecutablePath);}catch(Exception ex){Notify("Startup could not be enabled",ex.Message);}}
             tray.DoubleClick+=delegate{OpenSettings(0);};
-            tray.BalloonTipClicked+=delegate{if(availableUpdate!=null)OfferUpdate();};
+            tray.BalloonTipClicked+=delegate{if(availableUpdate!=null)InstallAvailable(availableUpdate);};
             MouseDown+=BeginDrag;MouseMove+=ContinueDrag;MouseUp+=EndDrag;
             MouseCaptureChanged+=delegate {if(buttonDown&&dragWindow==this&&!Capture)FinishDrag(false);};
             crossingWindow.ContextMenuStrip=menu;crossingWindow.MouseDown+=BeginDrag;crossingWindow.MouseMove+=ContinueDrag;crossingWindow.MouseUp+=EndDrag;
@@ -132,7 +137,7 @@ namespace Vpet
             menu.Items.Add("Upload Vpet…",null,delegate{OpenSettings(2);});
             menu.Items.Add("Settings…",null,delegate{OpenSettings(0);});
             menu.Items.Add("Check for updates…",null,delegate{CheckForUpdates(true);});
-            installUpdate=new ToolStripMenuItem("Install update…"){Visible=false};installUpdate.Click+=delegate{OfferUpdate();};menu.Items.Add(installUpdate);
+            installUpdate=new ToolStripMenuItem("Install update…"){Visible=false};installUpdate.Click+=delegate{if(availableUpdate!=null)InstallAvailable(availableUpdate);};menu.Items.Add(installUpdate);
             menu.Items.Add(new ToolStripSeparator());menu.Items.Add("Close Vpet",null,delegate{Close();});
             menu.Opening+=delegate
             {
@@ -265,36 +270,34 @@ namespace Vpet
             if(smoke)SmokeStep(now);
             else if(now>=nextUpdateCheck&&!checkingUpdate&&!installingUpdate)CheckForUpdates(false);
         }
-        async void CheckForUpdates(bool manual)
+        async void CheckForUpdates(bool manual){await CheckForUpdatesAsync(manual);}
+        internal async Task CheckForUpdatesAsync(bool manual)
         {
             if(checkingUpdate||installingUpdate||updateNotesOpen)return;checkingUpdate=true;nextUpdateCheck=Now+6*60*60;
+            bool installImmediately=manual||(startupUpdatePending&&Model.Settings.AutoUpdate);startupUpdatePending=false;
             try
             {
-                availableUpdate=await Task.Factory.StartNew<AvailableUpdate>(Updates.Check);
+                availableUpdate=await Task.Factory.StartNew<AvailableUpdate>(ReadUpdate);
                 if(closing)return;
                 installUpdate.Visible=availableUpdate!=null;
                 if(availableUpdate!=null)
                 {
                     installUpdate.Text="Install Vpet "+availableUpdate.Version+"…";
-                    if(manual)OfferUpdate();
+                    if(installImmediately)InstallAvailable(availableUpdate);
                     else if(notifiedVersion!=availableUpdate.Version){notifiedVersion=availableUpdate.Version;Notify("Vpet update available","Version "+availableUpdate.Version+" is ready. Click here or use the pet menu to install it.");}
                 }
-                else if(manual)using(var notes=new UpdateNotesWindow(ReleaseInfo.Version,Updates.CurrentNotes,false,false)){notes.Icon=Icon;notes.ShowDialog();}
+                else if(manual)UpdateMessage("You have the latest public release ("+ReleaseInfo.Version+").","Vpet updates");
             }
             catch(Exception ex)
             {
                 nextUpdateCheck=Now+30*60;
-                if(manual&&!closing)MessageBox.Show("Could not check for updates. Your pet will keep running.\n\n"+ex.Message,"Vpet updates",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                if(manual&&!closing)UpdateMessage("Could not check for updates. Your pet will keep running.\n\n"+ex.Message,"Vpet updates");
             }
             finally{checkingUpdate=false;}
         }
-        async void OfferUpdate()
+        async void InstallUpdate(AvailableUpdate update)
         {
-            if(availableUpdate==null||installingUpdate||updateNotesOpen||closing)return;
-            var update=availableUpdate;
-            updateNotesOpen=true;
-            try{using(var notes=new UpdateNotesWindow(update.Version,update.Notes,true,false)){notes.Icon=Icon;if(notes.ShowDialog()!=DialogResult.OK)return;}}
-            finally{updateNotesOpen=false;}
+            if(update==null||installingUpdate||updateNotesOpen||closing)return;
             installingUpdate=true;installUpdate.Enabled=false;
             using(var progress=new UpdateProgressWindow(update.Version))
             {
@@ -317,7 +320,7 @@ namespace Vpet
             updateNotesOpen=true;
             try
             {
-                using(var notes=new UpdateNotesWindow(ReleaseInfo.Version,Updates.CurrentNotes,false,true)){notes.Icon=Icon;notes.ShowDialog();}
+                using(var notes=new UpdateNotesWindow(ReleaseInfo.Version,Updates.CurrentNotes)){notes.Icon=Icon;notes.ShowDialog();}
                 Updates.AcknowledgeCompletion(directory,ReleaseInfo.Version);
             }
             finally{updateNotesOpen=false;}

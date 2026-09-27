@@ -56,7 +56,7 @@ namespace Vpet
             commands.Controls.Add(MakerUi.Button("Load Project",LoadProject));
             complete=MakerUi.Button("Tweak and Complete",OpenTweak);commands.Controls.Add(complete);
             var options=MakerUi.Flow();root.Controls.Add(options,0,1);
-            options.Controls.Add(diagonal);options.Controls.Add(MakerUi.Label("Frame width"));options.Controls.Add(frameWidth);options.Controls.Add(MakerUi.Label("Height"));options.Controls.Add(frameHeight);
+            options.Controls.Add(diagonal);options.Controls.Add(MakerUi.Label("Animation frame width"));options.Controls.Add(frameWidth);options.Controls.Add(MakerUi.Label("Height"));options.Controls.Add(frameHeight);
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,2);
             for(int i=0;i<10;i++){int index=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{ChooseCycle(index);});choices.Controls.Add(cycles[i]);}
             var frameChoices=MakerUi.Flow();root.Controls.Add(frameChoices,0,3);
@@ -75,7 +75,7 @@ namespace Vpet
         internal void SetProject(SpriteProject project,string path)
         {
             if(Project!=null)Project.Dispose();Project=project;projectPath=path;Dirty=false;Cycle=Slot=0;sheet.Project=project;
-            syncing=true;diagonal.Checked=project.Data.Diagonals;frameWidth.Value=project.Data.Width;frameHeight.Value=project.Data.Height;syncing=false;
+            syncing=true;diagonal.Checked=project.Data.Diagonals;frameWidth.Value=project.Width(0);frameHeight.Value=project.Height(0);syncing=false;
             zoom.MaximumPercent=Math.Min(1600,3000000/Math.Max(project.Source.Width,project.Source.Height));
             ChooseCycle(0);sheet.RefreshSize();zoom.SetPercent(zoom.Percent,null);
         }
@@ -108,19 +108,19 @@ namespace Vpet
             var choice=MessageBox.Show(this,"Save changes to your Sprite Maker project?","Sprite Maker",MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question);
             return choice==DialogResult.No||(choice==DialogResult.Yes&&SaveProject(false));
         }
-        internal void ChooseCycle(int row){Cycle=row;ChooseSlot(0);}
+        internal void ChooseCycle(int row){Cycle=row;if(Project!=null){syncing=true;frameWidth.Value=Project.Width(row);frameHeight.Value=Project.Height(row);syncing=false;}ChooseSlot(0);}
         internal void ChooseSlot(int slot)
         {Slot=slot;sheet.Cycle=Cycle;sheet.Slot=Slot;sheet.Draft=Project==null?null:Project.Data.Frames[Cycle][Slot]==null?null:Project.Data.Frames[Cycle][Slot].Copy();RefreshState();}
         internal void SetDimensions(int w,int h)
         {
             if(Project==null)return;
-            Project.Data.Width=Math.Max(1,Math.Min(100,w));Project.Data.Height=Math.Max(1,Math.Min(150,h));
-            syncing=true;frameWidth.Value=Project.Data.Width;frameHeight.Value=Project.Data.Height;syncing=false;Dirty=true;RefreshState();
+            Project.SetSize(Cycle,w,h);
+            syncing=true;frameWidth.Value=Project.Width(Cycle);frameHeight.Value=Project.Height(Cycle);syncing=false;Dirty=true;RefreshState();
         }
         internal void SetFrame()
         {
             if(Project==null)return;
-            string problem=Project.FrameProblem(sheet.Draft,false);
+            string problem=Project.FrameProblem(Cycle,sheet.Draft,false);
             if(problem!=null){MakerUi.Error(this,new InvalidDataException("Select a valid frame: "+problem));return;}
             Project.Data.Frames[Cycle][Slot]=sheet.Draft.Copy();Dirty=true;ChooseSlot(Math.Min(4,Slot+1));
         }
@@ -129,7 +129,7 @@ namespace Vpet
         {
             for(int i=0;i<10;i++){cycles[i].Visible=Project==null?i%5<3:Project.Enabled(i);cycles[i].BackColor=i==Cycle?Color.FromArgb(221,211,241):Color.White;}
             for(int i=0;i<5;i++){bool saved=Project!=null&&Project.Data.Frames[Cycle][i]!=null;slots[i].Text=(i+1)+(saved?" ✓":"");slots[i].ForeColor=saved?Color.DarkGreen:Color.Black;slots[i].BackColor=i==Slot?Color.FromArgb(221,211,241):Color.White;}
-            selectionHelp.Text=Project==null?"Upload a transparent PNG to begin.":"Click to place frame "+(Slot+1)+"; drag its border to move, or a corner to resize.";
+            selectionHelp.Text=Project==null?"Upload a transparent PNG to begin.":"Frame "+(Slot+1)+": drag border to move; corners resize all "+SpriteProject.Cycles[Cycle]+" frames.";
             complete.Enabled=false;
             if(Project==null)status.Text="Upload a sheet or load a saved project. Use the scrollbars to move around larger sheets.";
             else
@@ -191,7 +191,7 @@ namespace Vpet
         int HitCorner(Point point)
         {
             if(Draft==null||Project==null)return -1;
-            var r=Project.Selection(Draft);Point[] points={r.Location,new Point(r.Right,r.Top),new Point(r.Left,r.Bottom),new Point(r.Right,r.Bottom)};
+            var r=Project.Selection(Cycle,Draft);Point[] points={r.Location,new Point(r.Right,r.Top),new Point(r.Left,r.Bottom),new Point(r.Right,r.Bottom)};
             // On small zoomed frames, only the visible handle counts as a corner.
             float reach=Math.Min(7,Math.Min(r.Width,r.Height)*zoom/4);
             for(int i=0;i<4;i++)if(Math.Abs(point.X-points[i].X*zoom)<=reach&&Math.Abs(point.Y-points[i].Y*zoom)<=reach)return i;
@@ -200,7 +200,7 @@ namespace Vpet
         bool HitBorder(Point point)
         {
             if(Draft==null||Project==null)return false;
-            var r=Project.Selection(Draft);float left=r.Left*zoom,top=r.Top*zoom,right=r.Right*zoom,bottom=r.Bottom*zoom;
+            var r=Project.Selection(Cycle,Draft);float left=r.Left*zoom,top=r.Top*zoom,right=r.Right*zoom,bottom=r.Bottom*zoom;
             return (point.X>=left-5&&point.X<=right+5&&(Math.Abs(point.Y-top)<=5||Math.Abs(point.Y-bottom)<=5))||
                 (point.Y>=top-5&&point.Y<=bottom+5&&(Math.Abs(point.X-left)<=5||Math.Abs(point.X-right)<=5));
         }
@@ -209,7 +209,7 @@ namespace Vpet
             base.OnMouseDown(e);if(Project==null||e.Button!=MouseButtons.Left)return;Focus();corner=HitCorner(e.Location);moving=false;
             if(Draft!=null)
             {
-                var rect=Project.Selection(Draft);Point[] points={rect.Location,new Point(rect.Right,rect.Top),new Point(rect.Left,rect.Bottom),new Point(rect.Right,rect.Bottom)};
+                var rect=Project.Selection(Cycle,Draft);Point[] points={rect.Location,new Point(rect.Right,rect.Top),new Point(rect.Left,rect.Bottom),new Point(rect.Right,rect.Bottom)};
                 if(corner>=0){fixedCorner=points[3-corner];Capture=true;return;}
                 if(HitBorder(e.Location)){moving=true;dragOrigin=e.Location;frameOrigin=new Point(Draft.X,Draft.Y);Capture=true;Cursor=Cursors.SizeAll;return;}
             }
@@ -220,8 +220,8 @@ namespace Vpet
             base.OnMouseMove(e);if(Project==null)return;
             if(moving&&Capture)
             {
-                Draft.X=Math.Max(0,Math.Min(Math.Max(0,Project.Source.Width-Project.Data.Width),frameOrigin.X+(int)Math.Round((e.X-dragOrigin.X)/zoom)));
-                Draft.Y=Math.Max(0,Math.Min(Math.Max(0,Project.Source.Height-Project.Data.Height),frameOrigin.Y+(int)Math.Round((e.Y-dragOrigin.Y)/zoom)));
+                Draft.X=Math.Max(0,Math.Min(Math.Max(0,Project.Source.Width-Project.Width(Cycle)),frameOrigin.X+(int)Math.Round((e.X-dragOrigin.X)/zoom)));
+                Draft.Y=Math.Max(0,Math.Min(Math.Max(0,Project.Source.Height-Project.Height(Cycle)),frameOrigin.Y+(int)Math.Round((e.Y-dragOrigin.Y)/zoom)));
                 Invalidate();return;
             }
             if(corner<0||!Capture){int hit=HitCorner(e.Location);Cursor=hit>=0?(hit==0||hit==3?Cursors.SizeNWSE:Cursors.SizeNESW):HitBorder(e.Location)?Cursors.SizeAll:Cursors.Cross;return;}
@@ -246,8 +246,8 @@ namespace Vpet
             e.Graphics.SetClip(clip,CombineMode.Intersect);MakerUi.Checker(e.Graphics,clip,16);if(Project==null)return;
             e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;
             e.Graphics.DrawImage(Project.Source,new RectangleF(0,0,Project.Source.Width*zoom,Project.Source.Height*zoom),new RectangleF(0,0,Project.Source.Width,Project.Source.Height),GraphicsUnit.Pixel);
-            using(var thin=new Pen(Color.FromArgb(140,Color.Red),1))for(int i=0;i<5;i++)if(i!=Slot&&Project.Data.Frames[Cycle][i]!=null)DrawBox(e.Graphics,Project.Selection(Project.Data.Frames[Cycle][i]),thin,false);
-            if(Draft!=null)using(var pen=new Pen(Color.Red,2))DrawBox(e.Graphics,Project.Selection(Draft),pen,true);
+            using(var thin=new Pen(Color.FromArgb(140,Color.Red),1))for(int i=0;i<5;i++)if(i!=Slot&&Project.Data.Frames[Cycle][i]!=null)DrawBox(e.Graphics,Project.Selection(Cycle,Project.Data.Frames[Cycle][i]),thin,false);
+            if(Draft!=null)using(var pen=new Pen(Color.Red,2))DrawBox(e.Graphics,Project.Selection(Cycle,Draft),pen,true);
         }
         protected override void OnPaintBackground(PaintEventArgs e){} // OnPaint fills the visible checkerboard.
         void DrawBox(Graphics g,Rectangle rect,Pen pen,bool handles)

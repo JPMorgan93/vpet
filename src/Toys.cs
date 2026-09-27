@@ -9,10 +9,11 @@ namespace Vpet
     {
         [DataMember] public bool DisplayChest;
         [DataMember] public bool DisplayZone=true;
+        [DataMember] public bool HelpMessages=true;
         [DataMember] public float X=float.NaN,Y=float.NaN,Width=480,Height=320;
         [DataMember] public float ChestX=float.NaN,ChestY=float.NaN;
         [OnDeserializing] void Defaults(StreamingContext context)
-        {DisplayZone=true;X=Y=ChestX=ChestY=float.NaN;Width=480;Height=320;}
+        {DisplayZone=true;HelpMessages=true;X=Y=ChestX=ChestY=float.NaN;Width=480;Height=320;}
         internal static bool Finite(float value){return !float.IsNaN(value)&&!float.IsInfinity(value);}
         public void Validate()
         {
@@ -51,7 +52,18 @@ namespace Vpet
         public bool Rolling {get{return Velocity.X!=0||Velocity.Y!=0;}}
         public RectangleF BallBounds {get{return RectangleF.Inflate(Zone,-Radius-3*Scale,-Radius-3*Scale);}}
         RectangleF ChestBounds {get{return RectangleF.Inflate(Zone,-ChestSize.Width/2-3*Scale,-ChestSize.Height/2-3*Scale);}}
-        public float BounceHeight {get{return bounceTime>=.45f?0:(float)Math.Sin(bounceTime/.45f*Math.PI)*18*Scale;}}
+        public float BounceHeight {get{return BounceOffset(bounceTime,Scale);}}
+        internal static float BounceOffset(float time,float scale)
+        {
+            float height=18*scale;
+            for(int bounce=0;bounce<3;bounce++)
+            {
+                float duration=.36f*(float)Math.Pow(.5,bounce/2f);
+                if(time<duration){float progress=Math.Max(0,time)/duration;return 4*progress*(1-progress)*height;}
+                time-=duration;height*=.5f;
+            }
+            return 0;
+        }
 
         public ToyModel(PetModel pet,Random random)
         {
@@ -120,8 +132,10 @@ namespace Vpet
         public void SetVisible(bool visible,double now)
         {
             Settings.DisplayChest=visible;Aiming=false;Editing=false;
-            if(!visible){HasBall=false;Velocity=PointF.Empty;Launcher=BallLauncher.None;FinishFetch(now);}
+            if(!visible)RemoveBall(now);
         }
+        public void RemoveBall(double now)
+        {HasBall=false;Aiming=false;Velocity=PointF.Empty;Launcher=BallLauncher.None;bounceTime=1;FinishFetch(now);}
         public void SpawnBall(double now)
         {
             if(!Settings.DisplayChest)return;
@@ -219,7 +233,7 @@ namespace Vpet
             {Fetch=FetchPhase.Shaking;phaseTime=0;pet.ShakeUntil=now+.5;}
             else if(Fetch==FetchPhase.Shaking&&phaseTime>=.5f)
             {
-                double angle=random.NextDouble()*Math.PI*2;float speed=(240+(float)random.NextDouble()*180)*Scale;
+                double angle=random.NextDouble()*Math.PI*2;float speed=(140+(float)random.NextDouble()*580)*Scale;
                 Launch(new PointF((float)Math.Cos(angle)*speed,(float)Math.Sin(angle)*speed),BallLauncher.Pet,now);FinishFetch(now);
             }
         }
