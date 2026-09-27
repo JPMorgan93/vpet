@@ -1,10 +1,10 @@
-# Vpet 1.1.6
+# Vpet 1.2.0
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.1.6-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.2.0-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -115,7 +115,7 @@ Speech bubbles use one continuous body-and-tail outline, drawn after the emoji o
 Normal settings and imported assets live under `%LOCALAPPDATA%\VpetPrototype`:
 
 - `settings.json`: preferences and position.
-- `pet.png`: accepted custom sprite sheet, copied independently of the original upload.
+- `pet.vpetsprite`: active custom sprite package; legacy `pet.png`: accepted custom sprite sheet, copied independently of the original upload.
 - `Emotes/`: live custom reactions.
 - `DefaultEmotes/`: replacements for the eight built-in reaction images.
 - `error.log` / `asset-error.txt`: diagnostics if a runtime or saved-artwork error occurs.
@@ -132,6 +132,6 @@ Window stacking uses [SetWindowPos](https://learn.microsoft.com/en-us/windows/wi
 
 The detailed behavior and source artwork mapping are in [Vpet Development Specification.md](Vpet%20Development%20Specification.md).
 
-## Planned Sprite Maker
+## Sprite Maker
 
-See [Sprite Maker review](SPRITE-MAKER-REVIEW.md) for the reviewed workflow, proposed formats, alignment behavior, and implementation stages. This editor is not yet implemented.
+Open **Settings → Sprite → Open Sprite Maker** to select frames from any transparent PNG sheet, save editing projects, preview animations, and export a custom pet. Magic Tweak aligns visible artwork by its bottom-center without stretching. Each animation supports 1–5 frames, with optional diagonals. See the [Sprite Maker guide](SPRITE-MAKER.md) for the full workflow.

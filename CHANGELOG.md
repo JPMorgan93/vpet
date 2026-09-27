@@ -1,4 +1,13 @@
-# Vpet 1.1.6
+# Vpet 1.2.0
+
+- Add Sprite Maker with PNG sheet upload, zoom, frame selection, shared dimensions, corner resizing, and project save/load.
+- Support one to five frames in every animation, optional diagonal poses, and automatic cardinal-direction fallback.
+- Add Tweak and Complete with animated previews, frame scrubbing, mouse/keyboard nudging, Undo, and Reset Cycle.
+- Magic Tweak aligns the visible bottom-center of every frame in the selected animation without stretching artwork.
+- Export portable .vpetsprite files and resume editing with .vpetproject files. Existing PNG sprite sheets remain supported.
+- Sprite settings now provide Upload Custom Sprite and Open Sprite Maker. The active pet changes only after Use this pet.
+
+## Vpet 1.1.6
 
 - Dragging uses progressive display fragments instead of snapping the entire pet between monitor bounds.
 - Preserve mouse capture throughout a cross-display drag, including pickup during a walking transition.
