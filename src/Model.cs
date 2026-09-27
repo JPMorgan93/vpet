@@ -131,6 +131,8 @@ namespace Vpet
         readonly Random random;
         DisplayCrossing plannedCrossing;
         public DisplayCrossing Crossing { get; private set; }
+        bool settlingDrag;
+        float settleTarget;
 
         public PetModel(Preferences settings, Random rng)
         {
@@ -161,14 +163,64 @@ namespace Vpet
             }
             if (best != null) { Position = candidate; CurrentDisplay = best.Id; }
         }
+        public void DragTo(PointF requested)
+        {
+            settlingDrag=false;Destination=null;TargetDisplay=null;plannedCrossing=null;
+            DisplayCrossing best=null;float bestDistance=float.MaxValue;
+            for(int i=0;i<Displays.Count;i++)for(int j=i+1;j<Displays.Count;j++)
+            {
+                var from=Displays[i];var to=Displays[j];
+                if(DisplayCrossing.NextDisplay(from,to,Displays,FrameSize).Id!=to.Id)continue;
+                var crossing=DisplayCrossing.Plan(from,to,FrameSize,requested);
+                var a=from.Allowed(FrameSize,false);var b=to.Allowed(FrameSize,false);
+                // Each side follows the pointer independently on offset displays.
+                if(crossing.Horizontal)
+                {
+                    crossing.Exit.Y=Geometry.Clamp(requested,a).Y;
+                    crossing.Entry.Y=Geometry.Clamp(requested,b).Y;
+                }
+                else
+                {
+                    crossing.Exit.X=Geometry.Clamp(requested,a).X;
+                    crossing.Entry.X=Geometry.Clamp(requested,b).X;
+                }
+                float start=crossing.Horizontal?crossing.Exit.X:crossing.Exit.Y;
+                float end=crossing.Horizontal?crossing.Entry.X:crossing.Entry.Y;
+                float axis=crossing.Horizontal?requested.X:requested.Y;
+                if(Math.Abs(end-start)<.001f)continue;
+                float progress=(axis-start)/(end-start);
+                if(progress<=0||progress>=1)continue;
+                crossing.Progress=progress;
+                PointF bridge=new PointF(crossing.Exit.X+(crossing.Entry.X-crossing.Exit.X)*progress,crossing.Exit.Y+(crossing.Entry.Y-crossing.Exit.Y)*progress);
+                float distance=Geometry.Distance(requested,bridge);
+                // Don't attach to a distant seam while moving inside another display.
+                float ordinary=float.MaxValue;
+                foreach(var d in Displays)ordinary=Math.Min(ordinary,Geometry.Distance(requested,Geometry.Clamp(requested,d.Allowed(FrameSize,false))));
+                if(distance>ordinary+.01f||distance>=bestDistance)continue;
+                best=crossing;bestDistance=distance;
+            }
+            Crossing=best;
+            if(best==null)Place(requested);else UpdateCrossingPosition();
+            FaceDownIdle();
+        }
+        void UpdateCrossingPosition()
+        {
+            bool arriving=Crossing.Progress>=.5f;
+            Position=arriving?Crossing.DestinationAnchor:Crossing.SourceAnchor;
+            CurrentDisplay=arriving?Crossing.To.Id:Crossing.From.Id;
+        }
         public void UpdateNameFootroom()
         {
             foreach(var d in Displays)d.NameFootroom=Settings.HasName?Math.Min(PetCaption.Footroom(d.Scale),Math.Max(0,d.Work.Height-d.PetSize(FrameSize).Height)):0;
         }
-        public void CancelRoute() { if(Crossing!=null)Place(Position);Destination = null; TargetDisplay = null; plannedCrossing=null;Crossing=null; Walking = false; }
+        public void CancelRoute() { if(Crossing!=null)Place(Position);Destination = null; TargetDisplay = null; plannedCrossing=null;Crossing=null;settlingDrag=false; Walking = false; }
         public void Release(double now)
         {
-            Dragging=false;Place(Position);CancelRoute();EnsureInsideRestrictedArea();FaceDownIdle();
+            Dragging=false;
+            if(Crossing!=null&&(Settings.Movement!=MovementMode.Restricted||Geometry.Distance(Position,Anchor)<=Settings.Radius))
+            {settlingDrag=true;settleTarget=Crossing.Progress>=.5f?1:0;Destination=null;TargetDisplay=null;plannedCrossing=null;}
+            else {Place(Position);CancelRoute();EnsureInsideRestrictedArea();}
+            FaceDownIdle();
             ShakeUntil=0;IdleUntil=now+5;
         }
         public void FaceDownIdle(){Facing=2;Walking=false;ActualSpeed=0;}
@@ -233,6 +285,15 @@ namespace Vpet
         public void Tick(double now, float dt)
         {
             Walking = false; ActualSpeed = 0;
+            if(settlingDrag&&Crossing!=null)
+            {
+                float step=Math.Max(0,Math.Min(.1f,dt))*5;
+                Crossing.Progress=settleTarget==1?Math.Min(1,Crossing.Progress+step):Math.Max(0,Crossing.Progress-step);
+                UpdateCrossingPosition();FaceDownIdle();
+                if(Crossing.Progress==settleTarget)
+                {Crossing=null;settlingDrag=false;Place(Position);EnsureInsideRestrictedArea();}
+                return;
+            }
             if(Hovered||Dragging||Shaking(now))FaceDownIdle();
             if (Displays.Count==0 || Dragging || Hovered || Paused || now<IdleUntil || Shaking(now) || Settings.Movement==MovementMode.Static||Settings.Speed==0) return;
             if (!Destination.HasValue) PickDestination();

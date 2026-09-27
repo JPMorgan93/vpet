@@ -205,9 +205,9 @@ namespace Vpet
         void BeginDrag(object sender,MouseEventArgs e)
         {
             if(e.Button!=MouseButtons.Left)return;
-            buttonDown=true;moved=false;mouseStart=Cursor.Position;dragStart=Model.Position;dragWindow=(Form)sender;
+            buttonDown=true;moved=false;mouseStart=Cursor.Position;dragStart=Model.Position;var pickedWindow=(Form)sender;dragWindow=this;
             Model.FaceDownIdle();phase=0;lastHover=Now;
-            if(Model.Crossing!=null)dragStart=dragWindow==crossingWindow?Model.Crossing.DestinationAnchor:Model.Crossing.SourceAnchor;
+            if(Model.Crossing!=null)dragStart=pickedWindow==crossingWindow?Model.Crossing.DestinationAnchor:Model.Crossing.SourceAnchor;
             dragWindow.Capture=true;
             if(Model.Settings.Layer==LayerMode.Dynamic)Native.SetWindowPos(Handle,IntPtr.Zero,0,0,0,0,0x13);
         }
@@ -217,7 +217,7 @@ namespace Vpet
             Point cursor=Cursor.Position;int dx=cursor.X-mouseStart.X,dy=cursor.Y-mouseStart.Y;
             if(!moved&&Math.Abs(dx)+Math.Abs(dy)<4)return;
             if(!moved){moved=true;Model.Dragging=true;Model.FaceDownIdle();Model.CancelRoute();Model.ShakeUntil=0;ShowReaction(Reactions.Pickup(Model.Settings.Personality));}
-            Model.Place(new PointF(dragStart.X+dx,dragStart.Y+dy));
+            Model.DragTo(new PointF(dragStart.X+dx,dragStart.Y+dy));
         }
         void EndDrag(object sender,MouseEventArgs e){if(e.Button==MouseButtons.Left)FinishDrag();}
         void FinishDrag(bool clickAllowed=true)
