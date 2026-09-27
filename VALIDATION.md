@@ -1,5 +1,13 @@
 # Prototype validation
 
+## Version 1.3.0
+
+2,858 automated assertions passed. Toy checks cover saved preferences and older-settings migration; containment when dragging, moving or resizing; monitor/taskbar bounds and disconnection recovery; hidden fences; click bounce and reverse pull direction; and 72 varied ricochet trajectories at 100%, 125% and 200% scale. Predicted resting points match simulated endpoints within 0.04 pixels. Fetch checks cover all movement modes, zero speed, resting interruption, exact quarter-second pause and half-second shake within frame precision, returning to the unchanged restricted circle, launch ownership, relaunching, hover, cancellation, and crossing separated displays with different scaling.
+
+37 isolated native toy UI checks passed for the pet/chest menus, center and corner dragging, ball bounce/aim/release, capture loss, outside-menu dismissal, hiding the complete toy group, and Over Everything / Dynamic / Under All ordering. The existing 42 native window-layer and input checks also passed. The toy artwork was visually inspected. The full app smoke test rendered chest, fence and ball and launched the ball using the live timer, exercised all three settings tabs and window modes, and completed on this PC's two displays. Tests used isolated preferences; the personal installed app was not changed. The 1.3.0 EXE installer built successfully.
+
+The rectangular play zone occupies one monitor's working area at a time; its center can move it to another connected monitor. Screen-edge fetch destinations account for the full pet sprite and name, so the pet approaches as closely as it can remain visible. Additional physical monitor layouts were covered by model tests rather than hardware testing.
+
 ## Version 1.2.2
 
 2,663 automated assertions and 73 native Sprite Maker checks passed. Zoom checks cover typed percentages, zoom buttons, 100%, Fit (including a 4096-pixel sheet), source-coordinate preservation around a chosen zoom anchor, scroll retention after Set, zoom limits, unchanged project dimensions/offsets, correct source-pixel nudging at 400%, and stable playback geometry. Both preview windows were captured and visually inspected.
