@@ -64,6 +64,7 @@ namespace Vpet
             Directory.CreateDirectory(DataDirectory);Directory.CreateDirectory(EmoteDirectory);
             Replacements=new EmoteReplacements(Path.Combine(DataDirectory,"DefaultEmotes"));
             var prefs=Preferences.Load(Path.Combine(DataDirectory,"settings.json"));
+            if(prefs.AutoUpdate)nextUpdateCheck=0;
             if(float.IsNaN(prefs.X)||float.IsNaN(prefs.Y))
             {
                 var launchArea=Screen.FromPoint(Cursor.Position).WorkingArea;
