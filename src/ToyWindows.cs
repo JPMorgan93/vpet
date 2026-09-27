@@ -79,7 +79,7 @@ namespace Vpet
             pointerStart=Cursor.Position;chestStart=Model.Chest;centerStart=Model.Center;zoneStart=Model.Zone;
             if(window==Fence)
             {
-                resizeEdges=HitEdge(pointerStart);moveZone=resizeEdges==ZoneEdge.None&&Geometry.Distance(pointerStart,centerStart)<=17*Model.Scale;
+                resizeEdges=HitEdge(pointerStart);moveZone=resizeEdges==ZoneEdge.None&&Geometry.Distance(pointerStart,centerStart)<=22*Model.Scale;
                 if(!moveZone&&resizeEdges==ZoneEdge.None)return;
             }
             captured=window;dragged=false;pull=PointF.Empty;
@@ -239,7 +239,8 @@ namespace Vpet
                 g.DrawRectangle(line,rect.X,rect.Y,rect.Width,rect.Height);line.DashStyle=DashStyle.Solid;
                 foreach(var p in new[]{new PointF(rect.Left,rect.Top),new PointF(rect.Right,rect.Top),new PointF(rect.Left,rect.Bottom),new PointF(rect.Right,rect.Bottom)})
                 {g.FillRectangle(Brushes.White,p.X-3*scale,p.Y-3*scale,6*scale,6*scale);g.DrawRectangle(line,p.X-3*scale,p.Y-3*scale,6*scale,6*scale);}
-                float x=size.Width/2f,y=size.Height/2f,r=14*scale;
+                // A visible ring remains draggable even when the smaller ball rests over the center.
+                float x=size.Width/2f,y=size.Height/2f,r=20*scale;
                 g.FillEllipse(Brushes.White,x-r,y-r,r*2,r*2);g.DrawEllipse(line,x-r,y-r,r*2,r*2);
                 g.DrawLine(line,x-8*scale,y,x+8*scale,y);g.DrawLine(line,x,y-8*scale,x,y+8*scale);
                 g.DrawLine(line,x-8*scale,y,x-4*scale,y-4*scale);g.DrawLine(line,x+8*scale,y,x+4*scale,y+4*scale);

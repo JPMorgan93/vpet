@@ -91,7 +91,7 @@ namespace Vpet
         void ContainObjects()
         {
             if(!ToyPreferences.Finite(Chest.X)||!ToyPreferences.Finite(Chest.Y)||!ContainsInclusive(ChestBounds,Chest))Chest=Center;
-            if(HasBall&&!ContainsInclusive(BallBounds,Ball)){Ball=Center;Velocity=PointF.Empty;}
+            if(HasBall&&!ContainsInclusive(BallBounds,Ball)){Ball=BesideChest();Velocity=PointF.Empty;}
         }
         internal static bool ContainsInclusive(RectangleF r,PointF p)
         {return p.X>=r.Left&&p.X<=r.Right&&p.Y>=r.Top&&p.Y<=r.Bottom;}
@@ -126,9 +126,13 @@ namespace Vpet
         {
             if(!Settings.DisplayChest)return;
             FinishFetch(now);HasBall=true;Aiming=false;Launcher=BallLauncher.None;Velocity=PointF.Empty;
+            Ball=BesideChest();bounceTime=1;
+        }
+        PointF BesideChest()
+        {
             float x=Chest.X+ChestSize.Width/2+Radius+12*Scale;
             if(x>BallBounds.Right)x=Chest.X-ChestSize.Width/2-Radius-12*Scale;
-            Ball=Geometry.Clamp(new PointF(x,Chest.Y),BallBounds);bounceTime=1;
+            return Geometry.Clamp(new PointF(x,Chest.Y),BallBounds);
         }
         public void BeginAim(){if(HasBall&&Settings.DisplayChest)Aiming=true;}
         public void CancelAim(){Aiming=false;}
