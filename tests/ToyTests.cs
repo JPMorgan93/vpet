@@ -171,7 +171,10 @@ namespace Vpet
                     Check(windows.HelpAt(new Point((int)toys.Zone.Left+3,(int)toys.Zone.Top+40),windows.Fence.Handle)!=null,"Border hover supplies fence instructions");
                     Check(windows.HelpAt(new Point((int)toys.Zone.Left+45,(int)toys.Zone.Top+45),windows.Fence.Handle)==null,"Empty play-space interior never shows fence help");
                     Check(windows.HelpAt(hover,application.Handle)==null,"A covering application prevents toy hover help");
-                    Cursor.Position=hover;windows.Update();Application.DoEvents();Check(windows.Help.Visible,"Hovering the actual ball displays a help window above the chest");
+                    pet.Present(image,new Point(pet.Model.Current.Work.Left+10,pet.Model.Current.Work.Top+10));
+                    Cursor.Position=hover;windows.Update();Application.DoEvents();
+                    IntPtr hoverWindow=Native.WindowFromPoint(new Native.POINT(hover.X,hover.Y));
+                    Check(windows.Help.Visible,"Hovering the actual ball displays help (hit "+hoverWindow+", ball "+windows.Ball.Handle+", pet "+pet.Handle+", fence "+windows.Fence.Handle+", help "+windows.Help.Handle+")");
                     var helpBounds=windows.Help.Bounds;Check(helpBounds.Bottom<=windows.Chest.Top,"Help message is positioned above the chest");
                     Cursor.Position=new Point((int)toys.Zone.Left+50,(int)toys.Zone.Top+50);windows.Update();Check(!windows.Help.Visible,"Moving away hides the message");
                     windows.Menu.Items[2].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
