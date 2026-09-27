@@ -57,12 +57,14 @@ namespace Vpet
         {
             this.pet=pet;this.random=random;Settings=pet.Settings.Toys;Settings.Validate();
             Scale=Math.Max(.5f,Math.Min(3,pet.Current.Scale));
-            var work=pet.Current.Work;
             Zone=new RectangleF(Settings.X,Settings.Y,Settings.Width,Settings.Height);
             if(!ToyPreferences.Finite(Zone.X)||!ToyPreferences.Finite(Zone.Y))
                 Zone=new RectangleF(pet.Position.X-240*Scale,pet.Position.Y-160*Scale,480*Scale,320*Scale);
             Chest=new PointF(Settings.ChestX,Settings.ChestY);
+            bool firstChest=!ToyPreferences.Finite(Chest.X)||!ToyPreferences.Finite(Chest.Y);
             RecoverDisplays();
+            // Leave the central movement control exposed when creating the table for the first time.
+            if(firstChest){Chest=Geometry.Clamp(new PointF(Center.X-Zone.Width/4,Center.Y+Zone.Height/10),ChestBounds);Store();}
         }
         DisplayArea Nearest(PointF point)
         {
@@ -124,7 +126,9 @@ namespace Vpet
         {
             if(!Settings.DisplayChest)return;
             FinishFetch(now);HasBall=true;Aiming=false;Launcher=BallLauncher.None;Velocity=PointF.Empty;
-            Ball=Geometry.Clamp(new PointF(Chest.X+ChestSize.Width/2+Radius+12*Scale,Chest.Y),BallBounds);bounceTime=1;
+            float x=Chest.X+ChestSize.Width/2+Radius+12*Scale;
+            if(x>BallBounds.Right)x=Chest.X-ChestSize.Width/2-Radius-12*Scale;
+            Ball=Geometry.Clamp(new PointF(x,Chest.Y),BallBounds);bounceTime=1;
         }
         public void BeginAim(){if(HasBall&&Settings.DisplayChest)Aiming=true;}
         public void CancelAim(){Aiming=false;}

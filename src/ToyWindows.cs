@@ -20,7 +20,8 @@ namespace Vpet
         internal readonly LayeredWindow Arrow=new LayeredWindow(true){Text="Ball launch direction"};
         internal readonly ContextMenuStrip Menu=new ContextMenuStrip();
         readonly MenuDismissal dismissal;
-        readonly Bitmap chestImage;
+        readonly Bitmap chestImage,ballImage;
+        Point? chestLocation,ballLocation;
         string fenceKey="";
         LayeredWindow captured;
         Point pointerStart;
@@ -35,7 +36,7 @@ namespace Vpet
         public ToyWindows(PetModel pet,LayeredWindow petWindow,LayeredWindow crossingWindow,Action save,Func<double> now,Random random)
         {
             this.pet=pet;this.petWindow=petWindow;this.crossingWindow=crossingWindow;this.save=save;this.now=now;
-            Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);
+            Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);ballImage=ToyArtwork.Ball(Model.Scale);
             foreach(var window in Windows)
             {
                 IntPtr handle=window.Handle;Native.BackgroundAdornments.Add(handle);
@@ -125,13 +126,15 @@ namespace Vpet
             if(disposed)return;
             if(!Model.Settings.DisplayChest){foreach(var window in Windows)window.Hide();return;}
             KeepBelowPet();
-            Present(Chest,chestImage,new Point((int)Math.Round(Model.Chest.X-chestImage.Width/2f),(int)Math.Round(Model.Chest.Y-chestImage.Height/2f)));
+            var chestPoint=new Point((int)Math.Round(Model.Chest.X-chestImage.Width/2f),(int)Math.Round(Model.Chest.Y-chestImage.Height/2f));
+            if(chestLocation!=chestPoint||!Chest.Visible){Present(Chest,chestImage,chestPoint);chestLocation=chestPoint;}
             if(Model.HasBall)
             {
-                // The bounce stays inside the table, including at its upper edge.
-                float y=Math.Max(Model.Zone.Top+Model.Radius+3*Model.Scale,Model.Ball.Y-Model.BounceHeight);
-                using(var image=ToyArtwork.Ball(Model.Scale))
-                    Present(Ball,image,new Point((int)Math.Round(Model.Ball.X-image.Width/2f),(int)Math.Round(y-image.Height/2f)));
+                // Bounce toward the table's interior near the top, so even a ball against that wall visibly bounces.
+                float direction=Model.Ball.Y-Model.BallBounds.Top>=18*Model.Scale?-1:1;
+                float y=Math.Max(Model.BallBounds.Top,Math.Min(Model.BallBounds.Bottom,Model.Ball.Y+direction*Model.BounceHeight));
+                var ballPoint=new Point((int)Math.Round(Model.Ball.X-ballImage.Width/2f),(int)Math.Round(y-ballImage.Height/2f));
+                if(ballLocation!=ballPoint||!Ball.Visible){Present(Ball,ballImage,ballPoint);ballLocation=ballPoint;}
             }
             else Ball.Hide();
             if(Model.Settings.DisplayZone)
@@ -190,7 +193,7 @@ namespace Vpet
         public void Dispose()
         {
             if(disposed)return;EndGesture(false);disposed=true;dismissal.Dispose();Menu.Dispose();
-            foreach(var window in Windows)window.Close();chestImage.Dispose();
+            foreach(var window in Windows)window.Close();chestImage.Dispose();ballImage.Dispose();
         }
     }
 
