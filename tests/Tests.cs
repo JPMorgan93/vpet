@@ -40,7 +40,7 @@ namespace Vpet
                     Check(Updates.Hash(download)==hash,"Published installer download matches the public checksum");
                     Console.WriteLine("PASS: public GitHub release "+update.Version+" discovered and installer downloaded/verified. No installer was executed.");return 0;
                 }
-                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();StartupSettings();
+                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();StartupSettings();
                 Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
             }
             catch(Exception ex){Console.Error.WriteLine(ex);return 1;}
@@ -356,6 +356,46 @@ namespace Vpet
             var offset=new DisplayArea("gap",new Rectangle(1400,-200,1000,760),1);
             var bridge=DisplayCrossing.Plan(a,offset,new Size(32,36),new PointF(1800,300));bridge.Progress=.5f;
             Check(bridge.SourceAnchor.X>a.Work.Right-32&&bridge.DestinationAnchor.X<offset.Work.Left+32,"Nonaligned displays share progressive edge fragments instead of teleporting");
+        }
+        static void DragCrossings()
+        {
+            foreach(bool vertical in new[]{false,true})foreach(float scale in new[]{1f,1.5f,2f})foreach(int gap in new[]{0,40,240})
+            {
+                var a=new DisplayArea("a",new Rectangle(-1000,-100,1000,800),1);
+                var b=new DisplayArea("b",vertical?new Rectangle(-1000,700+gap,1000,800):new Rectangle(gap,-100,1000,800),scale);
+                var pet=Pet(MovementMode.Static);pet.SetDisplays(new List<DisplayArea>{a,b});pet.Dragging=true;
+                var plan=DisplayCrossing.Plan(a,b,pet.FrameSize,new PointF(-500,400));
+                for(int i=1;i<20;i++)
+                {
+                    float p=i/20f;
+                    var requested=new PointF(plan.Exit.X+(plan.Entry.X-plan.Exit.X)*p,plan.Exit.Y+(plan.Entry.Y-plan.Exit.Y)*p);
+                    pet.DragTo(requested);
+                    Check(pet.Crossing!=null,"Drag keeps both display fragments throughout the seam");
+                    Near(pet.Crossing.Progress,p,.002f,"Drag crossing follows pointer progress");
+                    var cross=pet.Crossing;
+                    var source=new RectangleF(cross.SourceAnchor.X-cross.SourceSize.Width/2f,cross.SourceAnchor.Y-cross.SourceSize.Height,cross.SourceSize.Width,cross.SourceSize.Height);
+                    var target=new RectangleF(cross.DestinationAnchor.X-cross.DestinationSize.Width/2f,cross.DestinationAnchor.Y-cross.DestinationSize.Height,cross.DestinationSize.Width,cross.DestinationSize.Height);
+                    Check(source.IntersectsWith(a.Work)&&target.IntersectsWith(b.Work),"Both fragments stay visible across monitor gaps");
+                    if(gap==0&&scale==1)
+                    {Near(Geometry.Distance(cross.SourceAnchor,requested),0,.002f,"Outgoing drag position is continuous");Near(Geometry.Distance(cross.DestinationAnchor,requested),0,.002f,"Incoming drag position is continuous");}
+                }
+                pet.DragTo(new PointF((plan.Exit.X+plan.Entry.X)/2,(plan.Exit.Y+plan.Entry.Y)/2));
+                pet.Release(1);Check(pet.Crossing!=null,"Release at seam does not instantly snap");
+                pet.Hovered=true;pet.Paused=true;
+                for(int n=0;n<10;n++)pet.Tick(1+n*.02,.02f);
+                Check(pet.Crossing==null&&!pet.Dragging,"Release smoothly settles even in Static mode while hovered");
+                Check(pet.Current.Allowed(pet.FrameSize).Contains(pet.Position)||pet.Position==Geometry.Clamp(pet.Position,pet.Current.Allowed(pet.FrameSize)),"Released pet is fully visible");
+                for(int i=19;i>0;i--)
+                {float p=i/20f;pet.DragTo(new PointF(plan.Exit.X+(plan.Entry.X-plan.Exit.X)*p,plan.Exit.Y+(plan.Entry.Y-plan.Exit.Y)*p));Near(pet.Crossing.Progress,p,.002f,"Dragging reverses continuously");}
+                pet.SetDisplays(new List<DisplayArea>{a});Check(pet.Crossing==null&&pet.CurrentDisplay=="a","Unplugging a display clears drag crossing");
+            }
+            var left=new DisplayArea("left",new Rectangle(0,0,1000,800),1);
+            var offset=new DisplayArea("offset",new Rectangle(1100,200,1000,800),1);
+            var shifted=Pet(MovementMode.FreeRoam);shifted.SetDisplays(new List<DisplayArea>{left,offset});shifted.DragTo(new PointF(1050,100));
+            Check(shifted.Crossing!=null,"Offset displays support dragging through unmatched edges");
+            Near(shifted.Crossing.Exit.Y,100,0,"Offset crossing keeps outgoing height");
+            Near(shifted.Crossing.Entry.Y,offset.Allowed(shifted.FrameSize,false).Top,0,"Offset crossing keeps incoming sprite inside display");
+            shifted.DragTo(new PointF(-200,-200));Check(shifted.Crossing==null&&shifted.Position==Geometry.Clamp(shifted.Position,left.Allowed(shifted.FrameSize)),"Outside edges stay clamped");
         }
         static void EmoteOverrides()
         {

@@ -205,9 +205,13 @@ namespace Vpet
         void BeginDrag(object sender,MouseEventArgs e)
         {
             if(e.Button!=MouseButtons.Left)return;
-            buttonDown=true;moved=false;mouseStart=Cursor.Position;dragStart=Model.Position;var pickedWindow=(Form)sender;dragWindow=this;
+            buttonDown=true;moved=false;mouseStart=Cursor.Position;dragStart=Model.Position;dragWindow=this;
             Model.FaceDownIdle();phase=0;lastHover=Now;
-            if(Model.Crossing!=null)dragStart=pickedWindow==crossingWindow?Model.Crossing.DestinationAnchor:Model.Crossing.SourceAnchor;
+            if(Model.Crossing!=null)
+            {
+                var crossing=Model.Crossing;
+                dragStart=new PointF(crossing.Exit.X+(crossing.Entry.X-crossing.Exit.X)*crossing.Progress,crossing.Exit.Y+(crossing.Entry.Y-crossing.Exit.Y)*crossing.Progress);
+            }
             dragWindow.Capture=true;
             if(Model.Settings.Layer==LayerMode.Dynamic)Native.SetWindowPos(Handle,IntPtr.Zero,0,0,0,0,0x13);
         }

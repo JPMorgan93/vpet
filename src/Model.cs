@@ -176,11 +176,13 @@ namespace Vpet
                 // Each side follows the pointer independently on offset displays.
                 if(crossing.Horizontal)
                 {
+                    if(requested.Y<Math.Min(a.Top,b.Top)||requested.Y>Math.Max(a.Bottom,b.Bottom))continue;
                     crossing.Exit.Y=Geometry.Clamp(requested,a).Y;
                     crossing.Entry.Y=Geometry.Clamp(requested,b).Y;
                 }
                 else
                 {
+                    if(requested.X<Math.Min(a.Left,b.Left)||requested.X>Math.Max(a.Right,b.Right))continue;
                     crossing.Exit.X=Geometry.Clamp(requested,a).X;
                     crossing.Entry.X=Geometry.Clamp(requested,b).X;
                 }
@@ -196,7 +198,7 @@ namespace Vpet
                 // Don't attach to a distant seam while moving inside another display.
                 float ordinary=float.MaxValue;
                 foreach(var d in Displays)ordinary=Math.Min(ordinary,Geometry.Distance(requested,Geometry.Clamp(requested,d.Allowed(FrameSize,false))));
-                if(distance>ordinary+.01f||distance>=bestDistance)continue;
+                if((ordinary<.01f&&distance>.01f)||distance>=bestDistance)continue;
                 best=crossing;bestDistance=distance;
             }
             Crossing=best;
