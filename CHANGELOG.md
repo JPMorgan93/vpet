@@ -1,4 +1,11 @@
-# Vpet 1.2.0
+# Vpet 1.2.1
+
+- Keep the sprite sheet's scroll position when selecting and setting animation frames.
+- Drag the red selection border to move a frame; drag its corners to resize it.
+- Magic Tweak aligns the lowest visible pixels to a shared ground point, so changing tails or arms do not shift the feet sideways. Preview controls keep the ground line steady.
+- Show update descriptions before installing and show what changed after a successful update. Check for updates also lets you review the current version's changes.
+
+## Vpet 1.2.0
 
 - Add Sprite Maker with PNG sheet upload, zoom, frame selection, shared dimensions, corner resizing, and project save/load.
 - Support one to five frames in every animation, optional diagonal poses, and automatic cardinal-direction fallback.

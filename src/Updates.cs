@@ -22,15 +22,38 @@ namespace Vpet
         [DataMember(Name="draft")] public bool Draft { get; set; }
         [DataMember(Name="prerelease")] public bool Prerelease { get; set; }
         [DataMember(Name="assets")] public GitHubAsset[] Assets { get; set; }
+        [DataMember(Name="body")] public string Body { get; set; }
     }
     internal sealed class AvailableUpdate
     {
-        public string Version,FileName,DownloadUrl,ChecksumUrl;
+        public string Version,FileName,DownloadUrl,ChecksumUrl,Notes;
         public long Size;
     }
     internal static class Updates
     {
         internal const int MaximumInstallerSize=64*1024*1024;
+        internal const string CompletionFile="pending-update.txt";
+        public static string CurrentNotes
+        {
+            get{using(var stream=System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Vpet.ReleaseNotes"))using(var reader=new StreamReader(stream))return reader.ReadToEnd().Trim();}
+        }
+        internal static string ReleaseNotes(string body,string version)
+        {
+            body=(body??"").Trim();
+            // Older releases include the entire changelog; show only the target section.
+            var section=Regex.Match(body,@"(?ms)^#{1,2} Vpet "+Regex.Escape(version)+@"\s*\r?\n(.*?)(?=^#{1,2} Vpet |\z)");
+            if(section.Success)body=section.Groups[1].Value.Trim();
+            return body.Length==0?"No update description was provided for this release.":body;
+        }
+        internal static bool HasCompletion(string directory,string version)
+        {
+            try{return File.ReadAllText(Path.Combine(directory,CompletionFile)).Trim()==version;}
+            catch(IOException){return false;}catch(UnauthorizedAccessException){return false;}
+        }
+        internal static void AcknowledgeCompletion(string directory,string version)
+        {
+            if(HasCompletion(directory,version))try{File.Delete(Path.Combine(directory,CompletionFile));}catch(IOException){}catch(UnauthorizedAccessException){}
+        }
         public static AvailableUpdate Parse(string json,string currentVersion,string repository)
         {
             GitHubRelease release;
@@ -50,7 +73,7 @@ namespace Vpet
             if(installer.Size<=0||installer.Size>MaximumInstallerSize)throw new InvalidDataException("Unexpected update size.");
             string prefix="https://github.com/"+repository+"/releases/download/"+release.Tag+"/";
             if(installer.Url!=prefix+name||checksum.Url!=prefix+"SHA256SUMS.txt")throw new InvalidDataException("The update assets do not belong to this repository and release.");
-            return new AvailableUpdate{Version=version.ToString(),FileName=name,DownloadUrl=installer.Url,ChecksumUrl=checksum.Url,Size=installer.Size};
+            return new AvailableUpdate{Version=version.ToString(),FileName=name,DownloadUrl=installer.Url,ChecksumUrl=checksum.Url,Size=installer.Size,Notes=ReleaseNotes(release.Body,version.ToString())};
         }
         public static AvailableUpdate Check()
         {return CheckForVersion(ReleaseInfo.Version);}
@@ -140,8 +163,9 @@ namespace Vpet
             string app=InstalledApp();
             string version=Regex.Match(Path.GetFileName(path),"^Vpet-Setup-([0-9]+\\.[0-9]+\\.[0-9]+)-").Groups[1].Value;
             if(app==null||FileVersionInfo.GetVersionInfo(app).ProductVersion!=version)throw new IOException("Could not verify the installed version. Please reopen Vpet and check its version.");
-            System.Windows.Forms.MessageBox.Show("Vpet "+version+" is up to date. Your pet will now reopen.","Vpet update complete",System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Information);
-            Process.Start(new ProcessStartInfo(app,"--startup"){UseShellExecute=false});
+            // The installed app displays its bundled notes and acknowledges the
+            // installer's completion marker. This also works with older helpers.
+            using(var process=Process.Start(new ProcessStartInfo(app,"--startup"){UseShellExecute=false}))if(process==null)throw new IOException("Vpet updated successfully but could not reopen. Open it from the Start menu to see what changed.");
         }
         internal const string InstallerArguments="/SILENT /SP- /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010 /VPETHELPER";
         internal static string InstalledApp()

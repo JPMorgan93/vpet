@@ -47,6 +47,9 @@ Name: "{autodesktop}\Vpet"; Filename: "{app}\Vpet.exe"; WorkingDir: "{app}"; Ico
 Filename: "{app}\Vpet.exe"; Description: "Launch Vpet"; Flags: nowait postinstall skipifsilent; Check: not ExistingInstallation
 Filename: "{app}\Vpet.exe"; Parameters: "--startup"; Flags: nowait skipifsilent; Check: ExistingInstallation
 
+[UninstallDelete]
+Type: files; Name: "{app}\pending-update.txt"
+
 [Code]
 var
   IsUpgrade: Boolean;
@@ -54,6 +57,12 @@ var
 function ExistingInstallation(): Boolean;
 begin
   Result := IsUpgrade;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if IsUpgrade and (CurStep = ssPostInstall) then
+    SaveStringToFile(ExpandConstant('{app}\pending-update.txt'), '{#AppVersion}', False);
 end;
 
 procedure InitializeWizard();

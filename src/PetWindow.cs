@@ -47,7 +47,7 @@ namespace Vpet
         readonly string smokeOutput;
         int smokeStep;
         double nextUpdateCheck=10;
-        bool checkingUpdate,installingUpdate;
+        bool checkingUpdate,installingUpdate,updateNotesOpen;
         AvailableUpdate availableUpdate;
         string notifiedVersion;
         ToolStripMenuItem installUpdate;
@@ -87,7 +87,7 @@ namespace Vpet
             crossingWindow.ContextMenuStrip=menu;crossingWindow.MouseDown+=BeginDrag;crossingWindow.MouseMove+=ContinueDrag;crossingWindow.MouseUp+=EndDrag;
             crossingWindow.MouseCaptureChanged+=delegate{if(buttonDown&&dragWindow==crossingWindow&&!crossingWindow.Capture)FinishDrag(false);};
             timer.Tick+=Tick;
-            Shown+=delegate{ApplyLayer();RefreshEmotes();ResetReactionTimer();timer.Start();};
+            Shown+=delegate{ApplyLayer();RefreshEmotes();ResetReactionTimer();timer.Start();if(!smoke)BeginInvoke(new Action(ShowUpdateCompletion));};
             FormClosing+=OnClosing;
         }
         protected override void WndProc(ref Message message)
@@ -259,7 +259,7 @@ namespace Vpet
         }
         async void CheckForUpdates(bool manual)
         {
-            if(checkingUpdate||installingUpdate)return;checkingUpdate=true;nextUpdateCheck=Now+6*60*60;
+            if(checkingUpdate||installingUpdate||updateNotesOpen)return;checkingUpdate=true;nextUpdateCheck=Now+6*60*60;
             try
             {
                 availableUpdate=await Task.Factory.StartNew<AvailableUpdate>(Updates.Check);
@@ -271,7 +271,7 @@ namespace Vpet
                     if(manual)OfferUpdate();
                     else if(notifiedVersion!=availableUpdate.Version){notifiedVersion=availableUpdate.Version;Notify("Vpet update available","Version "+availableUpdate.Version+" is ready. Click here or use the pet menu to install it.");}
                 }
-                else if(manual)MessageBox.Show("You have the latest public release ("+ReleaseInfo.Version+").","Vpet updates",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                else if(manual)using(var notes=new UpdateNotesWindow(ReleaseInfo.Version,Updates.CurrentNotes,false,false)){notes.Icon=Icon;notes.ShowDialog();}
             }
             catch(Exception ex)
             {
@@ -282,9 +282,11 @@ namespace Vpet
         }
         async void OfferUpdate()
         {
-            if(availableUpdate==null||installingUpdate||closing)return;
+            if(availableUpdate==null||installingUpdate||updateNotesOpen||closing)return;
             var update=availableUpdate;
-            if(MessageBox.Show("Update to Vpet "+update.Version+"? Your pet will briefly close during installation. Your name, settings, artwork, and shortcut choices will be kept.","Vpet update",MessageBoxButtons.YesNo,MessageBoxIcon.Information)!=DialogResult.Yes)return;
+            updateNotesOpen=true;
+            try{using(var notes=new UpdateNotesWindow(update.Version,update.Notes,true,false)){notes.Icon=Icon;if(notes.ShowDialog()!=DialogResult.OK)return;}}
+            finally{updateNotesOpen=false;}
             installingUpdate=true;installUpdate.Enabled=false;
             using(var progress=new UpdateProgressWindow(update.Version))
             {
@@ -299,6 +301,18 @@ namespace Vpet
             catch(Exception ex){if(!closing)MessageBox.Show("The update could not be installed. Your current pet is unchanged.\n\n"+ex.Message,"Vpet update",MessageBoxButtons.OK,MessageBoxIcon.Error);}
             finally{installingUpdate=false;if(!closing)installUpdate.Enabled=true;}
             }
+        }
+        void ShowUpdateCompletion()
+        {
+            string directory=AppDomain.CurrentDomain.BaseDirectory;
+            if(closing||!Updates.HasCompletion(directory,ReleaseInfo.Version))return;
+            updateNotesOpen=true;
+            try
+            {
+                using(var notes=new UpdateNotesWindow(ReleaseInfo.Version,Updates.CurrentNotes,false,true)){notes.Icon=Icon;notes.ShowDialog();}
+                Updates.AcknowledgeCompletion(directory,ReleaseInfo.Version);
+            }
+            finally{updateNotesOpen=false;}
         }
         void SmokeStep(double now)
         {

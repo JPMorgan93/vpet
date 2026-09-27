@@ -36,6 +36,7 @@ jobs:
           path: |
             dist/Vpet-Setup-*.exe
             dist/SHA256SUMS.txt
+            dist/ReleaseNotes.txt
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
@@ -72,7 +73,7 @@ jobs:
             exit 0
           }
           $installer = "dist/Vpet-Setup-$version-Windows-x64.exe"
-          gh release create $tag $installer dist/SHA256SUMS.txt --draft --target $env:RELEASE_COMMIT --title "Vpet $version" --notes-file CHANGELOG.md
+          gh release create $tag $installer dist/SHA256SUMS.txt --draft --target $env:RELEASE_COMMIT --title "Vpet $version" --notes-file dist/ReleaseNotes.txt
           if ($LASTEXITCODE -ne 0) { throw 'Could not upload the draft release.' }
           gh release edit $tag --draft=false --latest
           if ($LASTEXITCODE -ne 0) { throw 'Could not publish the release. The draft is retained for review.' }

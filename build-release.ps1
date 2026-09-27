@@ -20,6 +20,7 @@ $installerPath = Join-Path $PSScriptRoot ('dist\Vpet-Setup-' + $release.version 
 $hash = (Get-FileHash -LiteralPath $installerPath -Algorithm SHA256).Hash.ToLowerInvariant()
 $checksumPath = Join-Path $PSScriptRoot 'dist\SHA256SUMS.txt'
 [IO.File]::WriteAllText($checksumPath, "$hash  $([IO.Path]::GetFileName($installerPath))`r`n", [Text.Encoding]::ASCII)
+Copy-Item -LiteralPath (Join-Path $releaseDirectory 'ReleaseNotes.txt') -Destination (Join-Path $PSScriptRoot 'dist\ReleaseNotes.txt') -Force
 Write-Output "Release installer: $installerPath"
 Write-Output "SHA256: $hash"
 Write-Output 'This build is unsigned. Public publisher verification requires signing with your code-signing certificate.'

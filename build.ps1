@@ -11,6 +11,9 @@ if ($release.version -notmatch '^\d+\.\d+\.\d+$' -or $release.repository -notmat
 $metadataPath = Join-Path $outputDirectory 'ReleaseInfo.g.cs'
 $metadata = 'namespace Vpet { internal static class ReleaseInfo { public const string Version = "' + $release.version + '"; public const string Repository = "' + $release.repository + '"; } }'
 [IO.File]::WriteAllText($metadataPath, $metadata)
+$notesPath = Join-Path $outputDirectory 'ReleaseNotes.txt'
+$notes = & (Join-Path $projectRoot 'scripts\Get-ReleaseNotes.ps1') -ProjectRoot $projectRoot
+[IO.File]::WriteAllText($notesPath, $notes, [Text.Encoding]::UTF8)
 $manifestPath = Join-Path $outputDirectory 'app.manifest'
 $manifest = Get-Content -LiteralPath (Join-Path $projectRoot 'app.manifest') -Raw
 $manifest = $manifest -replace 'assemblyIdentity version="[^"]+"', ('assemblyIdentity version="' + $release.version + '.0"')
@@ -18,6 +21,7 @@ $manifest = $manifest -replace 'assemblyIdentity version="[^"]+"', ('assemblyIde
 $sourceFiles = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src') -Filter '*.cs' | ForEach-Object { $_.FullName })
 $sourceFiles += $metadataPath
 $references = @('/r:System.dll', '/r:System.Core.dll', '/r:System.Drawing.dll', '/r:System.Windows.Forms.dll', '/r:System.Runtime.Serialization.dll', '/r:System.IO.Compression.dll')
+$references += "/resource:$notesPath,Vpet.ReleaseNotes"
 $appPath = Join-Path $outputDirectory 'Vpet.exe'
 & $compiler /nologo /target:winexe /optimize+ /platform:x64 "/out:$appPath" "/win32manifest:$manifestPath" "/win32icon:$(Join-Path $projectRoot 'assets\reference\Vpet.ico')" $references $sourceFiles
 if ($LASTEXITCODE -ne 0) { throw 'Vpet compilation failed.' }
