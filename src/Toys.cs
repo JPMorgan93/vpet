@@ -84,7 +84,7 @@ namespace Vpet
         {
             var display=Nearest(Center);DisplayId=display.Id;
             Zone=Fit(Zone,display);ContainObjects();Store();
-            if(Fetch!=FetchPhase.None){pet.CancelRoute();phaseTime=0;Fetch=FetchPhase.Approaching;}
+            if(Fetch!=FetchPhase.None){pet.CancelRoute();phaseTime=0;if(Fetch!=FetchPhase.Returning)Fetch=FetchPhase.Approaching;}
         }
         void ContainObjects()
         {
