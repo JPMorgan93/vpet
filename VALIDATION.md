@@ -1,5 +1,9 @@
 # Prototype validation
 
+## Version 1.2.0
+
+2,624 assertions passed. Sprite Maker checks cover 1–5 frame counts (including five idle frames), nonconsecutive slots, project source/offset persistence, optional diagonals, cardinal fallback with hysteresis, bottom-center alignment without stretching, source-pixel preservation, invalid selections/clipping, unsupported versions, duplicate package entries, and opaque sheets. Seventeen native editor checks passed for Set/Clear, advancing slots, zoomed corner resizing, shared dimensions, frame sliders, Magic Tweak/Undo, and applying/restarting a custom sprite package. Both editor windows were captured and visually inspected. The EXE installer built successfully.
+
 ## Version 1.1.6
 
 2,339 assertions passed, including continuous drag positions at shared edges, progressive fragments in both directions across monitor gaps, mixed scaling, stacked and offset displays, release settling while hovered/in Static mode, outer-edge bounds, and display disconnection. An isolated native mouse-input test dragged the pet both ways across this PC's two monitors and verified retained capture, split fragments, arrival, and release. Other physical display layouts were covered by model tests rather than additional hardware.

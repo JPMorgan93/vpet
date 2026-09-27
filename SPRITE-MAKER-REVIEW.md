@@ -2,7 +2,7 @@
 
 Reviewed: 2026-09-27. Source: `C:\Users\Chase\Documents\Vpet Sprite Maker.docx`.
 
-This is a proposed design, not an implemented feature. The current update fixes cross-display dragging. The user requested review and an outline before implementing the Sprite Maker.
+Historical design review. Sprite Maker is implemented in version 1.2.0 with the user-approved bottom-center alignment for Magic Tweak. See [the user guide](SPRITE-MAKER.md) for current behavior. The outline below records the original implementation plan.
 
 ## Intended workflow
 
@@ -35,7 +35,7 @@ The document's button list mentions idle cycles, but its diagonal toggle and pre
 - Tweak's slider spans **0 to N−1**, where N is the number of populated frames in the selected cycle. For a single frame it stays at 0.
 - Dragging the preview or using arrow keys adjusts a per-frame integer offset. Keep the source pixels untouched. Warn about clipping and block export until the result fits the frame.
 - **Magic Tweak:** detect each frame's visible-pixel bounds, then align their bottom centers within the selected cycle. This is the recommended default for a walking pet because it stabilizes the feet. Do not stretch differently sized poses. Provide Undo/reset for automatic alignment.
-- The document describes matching centers when sizes differ; pure center alignment can make feet bounce. A center-alignment option can support flying/floating sprites, but the proposed default is bottom-center alignment. Confirm this before implementation if exact center matching is preferred.
+- The document describes matching centers when sizes differ; pure center alignment can make feet bounce. The user approved bottom-center alignment, which is implemented in version 1.2.0.
 
 ## File formats and compatibility
 
@@ -65,4 +65,4 @@ Recommended formats:
 - Verify shared resizing, zoom coordinates, transparent/empty crops, clipping detection, and Magic Tweak undo.
 - Reject corrupt/oversized packages safely; a failed import must leave the active pet unchanged.
 
-No Sprite Maker/editor changes are included in the drag-fix release.
+Sprite Maker was not included in the 1.1.6 drag-fix release; it is included in 1.2.0.
