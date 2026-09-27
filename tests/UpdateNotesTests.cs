@@ -50,9 +50,11 @@ namespace Vpet
         {
             string root=AppDomain.CurrentDomain.BaseDirectory;
             foreach(bool auto in new[]{false,true})
-            using(var pet=new PetWindow(Path.Combine(artifacts,"auto-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"auto-smoke")))
             {
-                pet.Model.Settings.AutoUpdate=auto;int installs=0,messages=0;
+            string data=Path.Combine(artifacts,"auto-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(data);new Preferences{AutoUpdate=auto}.Save(Path.Combine(data,"settings.json"));
+            using(var pet=new PetWindow(data,Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"auto-smoke")))
+            {
+                Check(pet.Model.Settings.AutoUpdate==auto&&MakerField<double>(pet,"nextUpdateCheck")== (auto?0:10),"Saved auto-update option schedules an immediate startup check");int installs=0,messages=0;
                 pet.ReadUpdate=()=>new AvailableUpdate{Version="9.8.7",Notes="Must only display after completion"};
                 pet.InstallAvailable=update=>{installs++;Check(update.Version=="9.8.7","Installs discovered newest release");};
                 pet.UpdateMessage=(message,title)=>{messages++;Check(!message.Contains("Must only"),"Status message does not display pre-update notes");};
@@ -69,6 +71,7 @@ namespace Vpet
                     using(var image=new Bitmap(settings.Width,settings.Height)){settings.DrawToBitmap(image,new Rectangle(Point.Empty,settings.Size));image.Save(Path.Combine(artifacts,"auto-update-settings-"+auto+".png"));}settings.Close();
                 }
                 pet.Close();
+            }
             }
         }
     }
