@@ -26,6 +26,7 @@ namespace Vpet
         static void MakerProjects()
         {
             GroundAlignment();
+            AnimationFrames();
             using(var project=MakerFixture())
             {
                 Check(project.Problems(true).Count==0,"Variable-count project is complete");
@@ -203,8 +204,8 @@ namespace Vpet
                 {
                     tweak.Show();Application.DoEvents();
                     var preview=(TweakPreview)typeof(SpriteTweakWindow).GetField("preview",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(tweak);
-                    var previewBounds=preview.Bounds;
                     typeof(SpriteTweakWindow).GetMethod("SelectCycle",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,new object[]{4});
+                    Application.DoEvents();var previewBounds=preview.Bounds;
                     typeof(SpriteTweakWindow).GetMethod("ToggleTweak",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(tweak,null);Application.DoEvents();
                     Check(preview.Bounds==previewBounds,"Entering Tweak keeps the preview and ground line in the same position");
                     var slider=(TrackBar)typeof(SpriteTweakWindow).GetField("slider",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(tweak);
