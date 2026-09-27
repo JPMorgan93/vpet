@@ -179,9 +179,9 @@ namespace Vpet
             bool changed=layer!=pet.Settings.Layer;layer=pet.Settings.Layer;
             foreach(var window in Windows)
             {
+                if(changed){window.BehindWindow=IntPtr.Zero;window.SetLayer(pet.Settings.Layer);}
                 window.BehindWindow=lowest;
-                if(changed)window.SetLayer(pet.Settings.Layer);
-                if(window.Visible)Native.SetWindowPos(window.Handle,lowest,0,0,0,0,0x213);
+                if(changed||window.Visible)Native.SetWindowPos(window.Handle,lowest,0,0,0,0,0x213);
                 lowest=window.Handle;
             }
         }
