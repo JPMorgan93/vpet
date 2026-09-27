@@ -150,7 +150,8 @@ namespace Vpet
                     Check(toys.Zone!=zone,"Native middle handle moves play zone");
                     zone=toys.Zone;var corner=new Point((int)zone.Right-3,(int)zone.Bottom-3);ToyMouse(windows.Fence,0x201,corner);ToyMouse(windows.Fence,0x200,new Point(corner.X-35,corner.Y-25));ToyMouse(windows.Fence,0x202,Cursor.Position);
                     Near(toys.Zone.Width,zone.Width-35,.1f,"Native corner drag resizes width");Near(toys.Zone.Height,zone.Height-25,.1f,"Native corner drag resizes height");
-                    windows.Menu.Items[0].PerformClick();Check(!windows.Fence.Visible&&windows.Chest.Visible&&toys.HasBall,"Fence can be hidden independently of active toys");
+                    windows.Menu.Show(windows.Chest,new Point(10,10));Application.DoEvents();windows.Menu.Items[0].PerformClick();windows.Menu.Close();
+                    Check(!windows.Fence.Visible&&windows.Chest.Visible&&toys.HasBall,"Fence can be hidden independently of active toys");
                     var ball=Point.Round(toys.Ball);ToyMouse(windows.Ball,0x201,ball);ToyMouse(windows.Ball,0x202,ball);toys.AdvanceBall(.1f);
                     Check(toys.BounceHeight>0&&toys.Launcher==BallLauncher.None,"Native click triggers bounce only");
                     ToyMouse(windows.Ball,0x201,ball);ToyMouse(windows.Ball,0x200,new Point(ball.X+50,ball.Y-25));
