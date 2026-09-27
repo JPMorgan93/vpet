@@ -156,6 +156,12 @@ namespace Vpet
         Point fixedCorner;
         public float Zoom {get{return zoom;}set{zoom=value;RefreshSize();}}
         public SpriteSheetView(){DoubleBuffered=true;Size=new Size(640,350);Cursor=Cursors.Cross;}
+        protected override void ScaleControl(SizeF factor,BoundsSpecified specified)
+        {
+            // Zoom is measured in source pixels. DPI scaling must not independently
+            // resize the image while selection coordinates still use the old zoom.
+            base.ScaleControl(factor,specified&~BoundsSpecified.Size);RefreshSize();
+        }
         public void RefreshSize(){Size=Project==null?new Size(640,350):new Size((int)Math.Ceiling(Project.Source.Width*zoom),(int)Math.Ceiling(Project.Source.Height*zoom));Invalidate();}
         Point ImagePoint(Point point){return new Point(Math.Max(0,(int)Math.Floor(point.X/zoom)),Math.Max(0,(int)Math.Floor(point.Y/zoom)));}
         protected override void OnMouseDown(MouseEventArgs e)

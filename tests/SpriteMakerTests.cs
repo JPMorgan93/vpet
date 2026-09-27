@@ -109,6 +109,7 @@ namespace Vpet
                 maker.ChooseSlot(0);sheet.Draft=new SpriteFrame{X=0,Y=100};maker.SetFrame();Check(maker.Slot==1,"Set advances to the next slot");
                 maker.SetDimensions(21,24);Check(maker.Project.Selection(maker.Project.Data.Frames[0][0]).Width==21,"Shared frame size applies across animations");
                 sheet.Zoom=2;sheet.Draft=new SpriteFrame{X=0,Y=100};
+                sheet.Scale(new SizeF(1.5f,1.5f));Check(sheet.Size==new Size(maker.Project.Source.Width*2,maker.Project.Source.Height*2),"DPI changes preserve source-pixel zoom and hit coordinates");
                 typeof(SpriteSheetView).GetMethod("OnMouseDown",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,1,42,248,0)});
                 typeof(SpriteSheetView).GetMethod("OnMouseMove",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,0,44,250,0)});
                 typeof(SpriteSheetView).GetMethod("OnMouseUp",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(sheet,new object[]{new MouseEventArgs(MouseButtons.Left,1,44,250,0)});

@@ -2,7 +2,7 @@
 
 ## Version 1.2.0
 
-2,624 assertions passed. Sprite Maker checks cover 1–5 frame counts (including five idle frames), nonconsecutive slots, project source/offset persistence, optional diagonals, cardinal fallback with hysteresis, bottom-center alignment without stretching, source-pixel preservation, invalid selections/clipping, unsupported versions, duplicate package entries, and opaque sheets. Seventeen native editor checks passed for Set/Clear, advancing slots, zoomed corner resizing, shared dimensions, frame sliders, Magic Tweak/Undo, and applying/restarting a custom sprite package. Both editor windows were captured and visually inspected. The EXE installer built successfully.
+2,624 assertions passed. Sprite Maker checks cover 1–5 frame counts (including five idle frames), nonconsecutive slots, project source/offset persistence, optional diagonals, cardinal fallback with hysteresis, bottom-center alignment without stretching, source-pixel preservation, invalid selections/clipping, unsupported versions, duplicate package entries, and opaque sheets. Eighteen native editor checks passed for Set/Clear, advancing slots, zoomed corner resizing, DPI-stable selection coordinates, shared dimensions, frame sliders, Magic Tweak/Undo, and applying/restarting a custom sprite package. Both editor windows were captured and visually inspected. The EXE installer built successfully.
 
 ## Version 1.1.6
 
