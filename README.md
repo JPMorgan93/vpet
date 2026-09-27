@@ -1,10 +1,10 @@
-# Vpet 1.2.0
+# Vpet 1.2.1
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.2.0-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.2.1-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -15,6 +15,8 @@ The installer installs for the current user and provides an uninstaller in Windo
 **Settings > Personality** starts with an optional pet name. Leave it blank to display nothing, or choose **Hide name**, **Show on hover**, or **Always display**. Names sit below the pet with white outlines around the letters and no background box. Up to 40 characters are saved; long names use an ellipsis on screen. Space is reserved below named pets to keep names clear of the taskbar. Clicking outside the right-click menu closes it, including when clicking another application.
 
 Vpet checks stable public releases at startup and every six hours. Use **Check for updates** in its right-click menu to check immediately. Downloads and installation require your agreement and preserve your settings. Users of **1.0.0 must install 1.1.0 once** to enable future update checks.
+
+The update screen describes what changed before you install. After an upgrade, Vpet displays the installed version's changes once when it reopens. Checking while already up to date shows the current version's description.
 
 See [GITHUB.md](GITHUB.md) for VS Code save syncing, the `test` branch, and promoting releases to `main`.
 
@@ -136,4 +138,4 @@ The detailed behavior and source artwork mapping are in [Vpet Development Specif
 
 ## Sprite Maker
 
-Open **Settings → Sprite → Open Sprite Maker** to select frames from any transparent PNG sheet, save editing projects, preview animations, and export a custom pet. Magic Tweak aligns visible artwork by its bottom-center without stretching. Each animation supports 1–5 frames, with optional diagonals. See the [Sprite Maker guide](SPRITE-MAKER.md) for the full workflow.
+Open **Settings → Sprite → Open Sprite Maker** to select frames from any transparent PNG sheet, save editing projects, preview animations, and export a custom pet. Drag the red border to move a selection or a corner to resize it. Magic Tweak aligns poses by their lowest visible pixels to a shared ground point without stretching. Each animation supports 1–5 frames, with optional diagonals. See the [Sprite Maker guide](SPRITE-MAKER.md) for the full workflow.

@@ -1,8 +1,8 @@
-# Vpet 1.2.0
+# Vpet 1.2.1
 
 ## Files to distribute
 
-- `dist/Vpet-Setup-1.2.0-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
+- `dist/Vpet-Setup-1.2.1-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
 - `dist/SHA256SUMS.txt` — SHA-256 checksum for that exact installer.
 
 The installer contains only the application, the reference sprite sheet, `Vpet.ico`, and the getting-started guide. Source code, tests, development settings, logs, and compiler tools are excluded. GitHub Actions attaches the installer and checksum to a public release after a successful main-branch build. See `GITHUB.md`.
@@ -13,7 +13,7 @@ The installer contains only the application, the reference sprite sheet, `Vpet.i
 - Installs to `%LOCALAPPDATA%\Programs\Vpet` for the current Windows user without requiring administrator rights.
 - Creates a Start menu shortcut and offers an optional desktop shortcut.
 - Uses the supplied icon in the application EXE, tray, settings window, installer, shortcuts, and Windows uninstall entry.
-- First installation offers to launch the app. Updates show progress, preserve shortcut choices, confirm completion, and reopen the pet. Both current and older updater entry points skip the setup wizard for an existing installation.
+- First installation offers to launch the app. Updates show descriptions and progress, preserve shortcut choices, and reopen the pet with a completion screen explaining what changed. Both current and older updater entry points skip the setup wizard for an existing installation. The completion description is embedded in the app and can be read offline.
 - Blocks installation while Vpet is running. Close the pet from its menu first.
 - Registers an uninstaller. Personal settings and artwork in `%LOCALAPPDATA%\VpetPrototype` are preserved. That folder name and the existing single-instance mutex remain unchanged for compatibility.
 - Uses a stable installer AppId for updates. Startup and periodic update checks notify the user of newer public releases; installation is always user-approved. Startup at Windows sign-in is optional under Sprite and defaults to No. Uninstall removes the startup entry for this installation.
@@ -26,7 +26,7 @@ This compiles to `bin/release`, runs the existing automated suite, builds the in
 
 The build tool used for this release is Inno Setup 6.4.3, downloaded from its official GitHub release. Its installer Authenticode signature was verified as valid, with publisher Pyrsys B.V. The tool was installed under `.tools/InnoSetup` for the current user; it is not bundled with Vpet.
 
-For future versions, update `release.json` and `CHANGELOG.md`. The app metadata, generated manifest, settings title, and installer version derive from that single version value. Keep the installer AppId unchanged. Merge a tested candidate from `test` to `main` to publish it.
+For future versions, update `release.json` and the first section of `CHANGELOG.md`. The build checks that their version numbers match, embeds that section as the app's update description, and supplies the same description to GitHub Releases. The app metadata, generated manifest, settings title, and installer version derive from that single version value. Keep the installer AppId unchanged. Merge a tested candidate from `test` to `main` to publish it.
 
 ## Original 1.0.0 installer validation on 2026-09-26
 

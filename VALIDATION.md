@@ -1,5 +1,13 @@
 # Prototype validation
 
+## Version 1.2.1
+
+2,663 automated assertions passed. New checks cover asymmetric poses with different lowest pixels, faint alpha, nonstandard PNG DPI, exact pixel preservation through upload/save/export/runtime playback, repeatable ground alignment, and all-or-nothing rejection of poses that cannot fit a shared ground point. Update checks cover GitHub descriptions, old full-changelog bodies, missing descriptions, bundled offline notes, and completion markers that only match the installed version and are acknowledged once.
+
+47 native Sprite Maker checks passed, including scroll preservation while focusing, placing, setting, and restoring frames on a large sheet; border dragging at every zoom; sheet-edge bounds; lost mouse capture; unchanged frame dimensions; and a stable preview baseline when scrubbing or switching between editing and playback. Six native update-dialog checks passed for scrolling descriptions, Later, and the completion screen. Both windows were captured and visually inspected. The installer built successfully.
+
+The isolated installer update test passed: fresh installs omit the completion marker, upgrades record the installed version, shortcut choices and unrelated files remain intact, the older interactive updater skips optional setup screens, and completion relaunches the app in isolated smoke mode. The completion dialog and its acknowledgement were checked separately; the live personal Vpet installation was not updated by these tests.
+
 ## Version 1.2.0
 
 2,624 assertions passed. Sprite Maker checks cover 1–5 frame counts (including five idle frames), nonconsecutive slots, project source/offset persistence, optional diagonals, cardinal fallback with hysteresis, bottom-center alignment without stretching, source-pixel preservation, invalid selections/clipping, unsupported versions, duplicate package entries, and opaque sheets. Eighteen native editor checks passed for Set/Clear, advancing slots, zoomed corner resizing, DPI-stable selection coordinates, shared dimensions, frame sliders, Magic Tweak/Undo, and applying/restarting a custom sprite package. Both editor windows were captured and visually inspected. The EXE installer built successfully.

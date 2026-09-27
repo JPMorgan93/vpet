@@ -23,12 +23,16 @@ https://github.com/JPMorgan93/vpet on startup and every six hours.
 Updates are announced without interrupting your work. Use Check for updates
 or Install update in the pet menu to download a verified installer.
 Installation only starts after you agree, and your saved pet is preserved.
+The update screen explains what changed. After an upgrade, the pet reopens
+with the installed version's changes. Check for updates also shows the current
+version's changes when you are already up to date.
 Users on version 1.0.0 must install 1.1.0 once to enable update checks.
 
 SPRITE MAKER
 Settings > Sprite > Open Sprite Maker lets you select animation frames from a
 transparent PNG sheet. Set 1-5 frames per animation, then Tweak and Complete.
-Magic Tweak aligns each animation by the bottom-center of its visible artwork.
+Drag the red border to move a selection or a corner to resize it.
+Magic Tweak aligns each pose's lowest visible pixels to a shared ground point.
 Save .vpetproject files for editing; export .vpetsprite files for use in Vpet.
 Close Sprite Maker to preview your export, then choose Use this pet.
 Existing five-column, ten-row PNG sheets are still supported.

@@ -3,6 +3,7 @@
 - Keep the sprite sheet's scroll position when selecting and setting animation frames.
 - Drag the red selection border to move a frame; drag its corners to resize it.
 - Magic Tweak aligns the lowest visible pixels to a shared ground point, so changing tails or arms do not shift the feet sideways. Preview controls keep the ground line steady.
+- Preserve exact PNG pixels during sprite import, project loading, and export, regardless of the image's stored DPI.
 - Show update descriptions before installing and show what changed after a successful update. Check for updates also lets you review the current version's changes.
 
 ## Vpet 1.2.0
