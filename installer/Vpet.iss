@@ -74,7 +74,7 @@ function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   { Inno always shows installation progress and completion. Older updaters
     that launch interactively skip all optional setup pages on an upgrade. }
-  Result := IsUpgrade;
+  Result := IsUpgrade and (PageID <> wpFinished);
 end;
 
 procedure CurPageChanged(PageID: Integer);
