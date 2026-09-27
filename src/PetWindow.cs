@@ -27,6 +27,7 @@ namespace Vpet
         readonly LayeredWindow bubble=new LayeredWindow(true);
         readonly LayeredWindow crossingWindow=new LayeredWindow(false);
         readonly RestrictedAreaOverlay restrictedOverlay;
+        internal readonly ToyWindows Toys;
         readonly NotifyIcon tray=new NotifyIcon();
         readonly ContextMenuStrip menu=new ContextMenuStrip();
         readonly MenuDismissal menuDismissal;
@@ -72,6 +73,7 @@ namespace Vpet
             Model=new PetModel(prefs,random);Model.FrameSize=Sprites.Cell;
             RefreshDisplays();Model.IdleUntil=Now+2;
             restrictedOverlay=new RestrictedAreaOverlay(Model,Save,this,crossingWindow);
+            Toys=new ToyWindows(Model,this,crossingWindow,Save,()=>Now,random);
             Text="Vpet";bubble.Text="Vpet reaction";bubble.Owner=this;
             BuildMenu();ContextMenuStrip=menu;
             menuDismissal=new MenuDismissal(menu);
@@ -125,6 +127,8 @@ namespace Vpet
             {var captured=value;var item=new ToolStripMenuItem(value.ToString()){Tag=value};item.Click+=delegate{Model.Settings.Personality=captured;Save();};personality.DropDownItems.Add(item);}
             personality.DropDownItems.Add(new ToolStripSeparator());personality.DropDownItems.Add("Emote frequency…",null,delegate{OpenSettings(1);});
             personality.DropDownItems.Add("Custom emote folder…",null,delegate{OpenEmoteFolder();});menu.Items.Add(personality);
+            var toyChest=new ToolStripMenuItem("Display Toy Chest"){CheckOnClick=true};
+            toyChest.Click+=delegate{Toys.SetVisible(toyChest.Checked);};menu.Items.Add(toyChest);
             menu.Items.Add("Upload Vpet…",null,delegate{OpenSettings(2);});
             menu.Items.Add("Settings…",null,delegate{OpenSettings(0);});
             menu.Items.Add("Check for updates…",null,delegate{CheckForUpdates(true);});
@@ -133,6 +137,7 @@ namespace Vpet
             menu.Opening+=delegate
             {
                 menuOpen=true;
+                toyChest.Checked=Model.Settings.Toys.DisplayChest;
                 displayArea.Checked=Model.Settings.DisplayRestrictedArea;
                 displayArea.Enabled=Model.Settings.Movement==MovementMode.Restricted;
                 foreach(ToolStripMenuItem item in type.DropDownItems)item.Checked=(MovementMode)item.Tag==Model.Settings.Movement;
@@ -157,6 +162,7 @@ namespace Vpet
             crossingWindow.CompanionHandle=Handle;crossingWindow.OtherCompanionHandle=bubble.Handle;
             SetLayer(Model.Settings.Layer);bubble.SetLayer(Model.Settings.Layer);crossingWindow.SetLayer(Model.Settings.Layer);
             restrictedOverlay.Update();
+            Toys.Update();
         }
         public void SettingsChanged(bool resetReaction)
         {
@@ -221,7 +227,7 @@ namespace Vpet
             if(!buttonDown)return;
             Point cursor=Cursor.Position;int dx=cursor.X-mouseStart.X,dy=cursor.Y-mouseStart.Y;
             if(!moved&&Math.Abs(dx)+Math.Abs(dy)<4)return;
-            if(!moved){moved=true;Model.Dragging=true;Model.FaceDownIdle();Model.CancelRoute();Model.ShakeUntil=0;ShowReaction(Reactions.Pickup(Model.Settings.Personality));}
+            if(!moved){moved=true;Toys.Model.CancelFetchForPetDrag(Now);Model.Dragging=true;Model.FaceDownIdle();Model.CancelRoute();Model.ShakeUntil=0;ShowReaction(Reactions.Pickup(Model.Settings.Personality));}
             Model.DragTo(new PointF(dragStart.X+dx,dragStart.Y+dy));
         }
         void EndDrag(object sender,MouseEventArgs e){if(e.Button==MouseButtons.Left)FinishDrag();}
@@ -246,13 +252,15 @@ namespace Vpet
             bool hovering=IsHovered();
             if(hovering&&!Model.Hovered&&!buttonDown&&!menuOpen&&!SettingsOpen&&now-lastHover>=5)
             {ShowReaction(Reactions.Hover(Model.Settings.Personality));lastHover=now;}
-            Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging;
+            Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging||Toys.Busy;
+            Toys.Model.BeforePetTick(now,dt);
             Model.Tick(now,dt);
+            Toys.Model.AfterPetTick(now,dt);
             if(Model.Walking!=lastWalk){phase=0;lastWalk=Model.Walking;}
             else phase+=dt*(Model.Walking?8*Model.ActualSpeed/(100*Model.Current.Scale):4);
             if(now>=nextRandom&&!Model.Dragging&&!Model.Shaking(now)&&!Model.Paused&&now>=bubbleUntil)
                 ShowReaction(Reactions.Choose(Model.Settings.Personality,8+CustomEmotes.Count,random));
-            Render();restrictedOverlay.Update();
+            Render();restrictedOverlay.Update();Toys.Update();
             if(now>=nextSave){Save();nextSave=now+15;}
             if(smoke)SmokeStep(now);
             else if(now>=nextUpdateCheck&&!checkingUpdate&&!installingUpdate)CheckForUpdates(false);
@@ -401,7 +409,7 @@ namespace Vpet
         void RefreshDisplays()
         {
             var displays=Native.Displays();string signature=string.Join("|",displays.Select(d=>d.Id+d.Work.ToString()+d.Scale));
-            if(signature!=displaySignature){displaySignature=signature;Model.SetDisplays(displays);}
+            if(signature!=displaySignature){displaySignature=signature;Model.SetDisplays(displays);if(Toys!=null)Toys.RecoverDisplays();}
         }
         void RefreshEmotes()
         {
@@ -444,7 +452,7 @@ namespace Vpet
         void OnClosing(object sender,FormClosingEventArgs e)
         {
             if(closing)return;closing=true;timer.Stop();menuDismissal.Dispose();Save();
-            if(SettingsOpen)settingsWindow.Close();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
+            if(SettingsOpen)settingsWindow.Close();Toys.Dispose();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
             if(rendered!=null)rendered.Dispose();if(crossingRendered!=null)crossingRendered.Dispose();if(customReaction!=null)customReaction.Dispose();Replacements.Dispose();
             if(reactionPreview!=null)reactionPreview.Dispose();
             foreach(var item in CustomEmotes)item.Dispose();Sprites.Dispose();timer.Dispose();
