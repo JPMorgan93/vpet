@@ -1,4 +1,10 @@
-# Vpet 1.2.1
+# Vpet 1.2.2
+
+- Add visible zoom controls to both Sprite Maker previews: editable percentage, zoom in/out, 100%, Fit, and Ctrl + mouse wheel.
+- Keep the image under the pointer while zooming, with scrollbars for larger previews. Zoom preserves frame selections, artwork, and alignment offsets.
+- Replace the application, installer, and shortcut icon with the supplied Vpet Pixel icon.
+
+## Vpet 1.2.1
 
 - Keep the sprite sheet's scroll position when selecting and setting animation frames.
 - Drag the red selection border to move a frame; drag its corners to resize it.

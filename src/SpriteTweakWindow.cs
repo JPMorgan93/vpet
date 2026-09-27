@@ -19,6 +19,8 @@ namespace Vpet
         readonly Label status=new Label{Dock=DockStyle.Fill,AutoSize=false};
         readonly Label frameLabel=MakerUi.Label("");
         readonly TweakPreview preview;
+        readonly PreviewZoomBar zoom=new PreviewZoomBar();
+        readonly SpriteSheetViewport viewport=new SpriteSheetViewport{Dock=DockStyle.Fill,AutoScroll=true,BackColor=Color.FromArgb(220,216,229)};
         readonly Button tweak,undo;
         readonly Button[] cycles=new Button[10];
         readonly System.Collections.Generic.Stack<SpriteFrame[][]> history=new System.Collections.Generic.Stack<SpriteFrame[][]>();
@@ -30,27 +32,34 @@ namespace Vpet
         {
             this.maker=maker;project=maker.Project;Text="Tweak and Complete";Font=new Font("Segoe UI",10);ClientSize=new Size(880,750);MinimumSize=new Size(740,640);
             BackColor=Color.FromArgb(248,247,252);StartPosition=FormStartPosition.CenterParent;AutoScaleMode=AutoScaleMode.Dpi;
-            var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=7,Padding=new Padding(16)};
-            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,52));
+            var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=8,Padding=new Padding(16)};
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,52));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,0);
             for(int i=0;i<10;i++)if(project.Enabled(i)){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});choices.Controls.Add(cycles[i]);}
-            preview=new TweakPreview(project);preview.Dock=DockStyle.Fill;preview.BeforeNudge+=Remember;preview.Changed+=delegate{maker.Dirty=true;RefreshPreview();};root.Controls.Add(preview,0,1);
-            root.Controls.Add(slider,0,2);slider.Enabled=false;slider.ValueChanged+=delegate{RefreshPreview();};
-            var controls=MakerUi.Flow();root.Controls.Add(controls,0,3);tweak=MakerUi.Button("Tweak",delegate{ToggleTweak();});controls.Controls.Add(tweak);controls.Controls.Add(frameLabel);
+            root.Controls.Add(zoom,0,1);
+            preview=new TweakPreview(project);preview.BeforeNudge+=Remember;preview.Changed+=delegate{maker.Dirty=true;RefreshPreview();};viewport.Controls.Add(preview);root.Controls.Add(viewport,0,2);
+            viewport.Resize+=delegate{preview.RefreshSize(viewport.ClientSize);};
+            zoom.ZoomChanged+=delegate(int value,Point? anchor){viewport.ChangeZoom(preview,preview.Zoom,value/100f,preview.ImageOrigin,delegate{preview.Zoom=value/100f;preview.RefreshSize(viewport.ClientSize);},delegate{return preview.ImageOrigin;},anchor);};
+            zoom.FitRequested+=FitPreview;Shown+=delegate{FitPreview();};
+            preview.ZoomWheel+=delegate(int delta,Point point){zoom.Step(delta,viewport.PointToClient(preview.PointToScreen(point)));};
+            root.Controls.Add(slider,0,3);slider.Enabled=false;slider.ValueChanged+=delegate{RefreshPreview();};
+            var controls=MakerUi.Flow();root.Controls.Add(controls,0,4);tweak=MakerUi.Button("Tweak",delegate{ToggleTweak();});controls.Controls.Add(tweak);controls.Controls.Add(frameLabel);
             // Keep the preview's ground line still when controls/offset text change.
             tweak.MinimumSize=new Size(150,34);frameLabel.AutoSize=false;frameLabel.Size=new Size(380,28);
-            root.Controls.Add(tweaks,0,4);tweaks.Enabled=false;
+            root.Controls.Add(tweaks,0,5);tweaks.Enabled=false;
             tweaks.Controls.Add(MakerUi.Button("Magic Tweak",delegate{try{Remember();project.MagicTweak(cycle);maker.Dirty=true;RefreshPreview();}catch(Exception ex){history.Pop();MakerUi.Error(this,ex);}}));
             tweaks.Controls.Add(MakerUi.Button("Save Tweaks",delegate{if(maker.SaveProject(false))status.Text="Tweaks saved to your project.";}));
             undo=MakerUi.Button("Undo",delegate{if(history.Count>0){project.Data.Frames=history.Pop();maker.Dirty=true;RefreshPreview();}});tweaks.Controls.Add(undo);
             tweaks.Controls.Add(MakerUi.Button("Reset Cycle",delegate{Remember();foreach(int slot in slots){project.Data.Frames[cycle][slot].OffsetX=0;project.Data.Frames[cycle][slot].OffsetY=0;}maker.Dirty=true;RefreshPreview();}));
-            root.Controls.Add(status,0,5);
-            var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;root.Controls.Add(bottom,0,6);
+            root.Controls.Add(status,0,6);
+            var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;root.Controls.Add(bottom,0,7);
             bottom.Controls.Add(MakerUi.Button("Complete",Complete));bottom.Controls.Add(MakerUi.Button("Back to Sprite Maker",delegate{Close();}));
             timer.Tick+=delegate{if(!tweaking)RefreshPreview();};timer.Start();
             FormClosed+=delegate{timer.Dispose();};SelectCycle(0);
         }
+        void FitPreview()
+        {zoom.SetPercent((int)Math.Floor(Math.Min((viewport.ClientSize.Width-54f)/project.Data.Width,(viewport.ClientSize.Height-54f)/project.Data.Height)*100),null);}
         void SelectCycle(int row)
         {
             cycle=row;slots=project.Slots(row);slider.Value=0;slider.Maximum=Math.Max(0,slots.Length-1);slider.Enabled=tweaking&&slots.Length>1;clock.Restart();
@@ -98,9 +107,15 @@ namespace Vpet
         public int Cycle,Slot;
         public bool Editing;
         public event Action BeforeNudge,Changed;
+        public event Action<int,Point> ZoomWheel;
+        public float Zoom=1;
         bool dragging;
         Point origin,offset;
-        float PreviewScale {get{return Math.Max(.25f,Math.Min(8,Math.Min((Width-50f)/project.Data.Width,(Height-50f)/project.Data.Height)));}}
+        internal PointF ImageOrigin {get{return new PointF((Width-project.Data.Width*Zoom)/2,(Height-project.Data.Height*Zoom)/2);}}
+        internal void RefreshSize(Size viewport)
+        {Size=new Size(Math.Max(viewport.Width,(int)Math.Ceiling(project.Data.Width*Zoom)+50),Math.Max(viewport.Height,(int)Math.Ceiling(project.Data.Height*Zoom)+50));Invalidate();}
+        protected override void ScaleControl(SizeF factor,BoundsSpecified specified)
+        {base.ScaleControl(factor,specified&~BoundsSpecified.Size);if(Parent!=null)RefreshSize(Parent.ClientSize);}
         public TweakPreview(SpriteProject project){this.project=project;DoubleBuffered=true;TabStop=true;SetStyle(ControlStyles.Selectable,true);}
         protected override void OnMouseDown(MouseEventArgs e)
         {
@@ -110,11 +125,17 @@ namespace Vpet
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);if(!dragging)return;var frame=project.Data.Frames[Cycle][Slot];
-            frame.OffsetX=Math.Max(-4096,Math.Min(4096,offset.X+(int)Math.Round((e.X-origin.X)/PreviewScale)));
-            frame.OffsetY=Math.Max(-4096,Math.Min(4096,offset.Y+(int)Math.Round((e.Y-origin.Y)/PreviewScale)));if(Changed!=null)Changed();
+            frame.OffsetX=Math.Max(-4096,Math.Min(4096,offset.X+(int)Math.Round((e.X-origin.X)/Zoom)));
+            frame.OffsetY=Math.Max(-4096,Math.Min(4096,offset.Y+(int)Math.Round((e.Y-origin.Y)/Zoom)));if(Changed!=null)Changed();
         }
         protected override void OnMouseUp(MouseEventArgs e){base.OnMouseUp(e);dragging=false;Capture=false;}
         protected override void OnMouseCaptureChanged(EventArgs e){base.OnMouseCaptureChanged(e);if(!Capture)dragging=false;}
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            if((ModifierKeys&Keys.Control)!=0)
+            {if(!Capture&&e.Delta!=0&&ZoomWheel!=null)ZoomWheel(e.Delta,e.Location);var handled=e as HandledMouseEventArgs;if(handled!=null)handled.Handled=true;return;}
+            base.OnMouseWheel(e);
+        }
         protected override bool ProcessCmdKey(ref Message msg,Keys keyData)
         {
             Keys key=keyData&Keys.KeyCode;
@@ -129,7 +150,7 @@ namespace Vpet
         protected override void OnPaint(PaintEventArgs e)
         {
             MakerUi.Checker(e.Graphics,e.ClipRectangle,16);var frame=project.Data.Frames[Cycle][Slot];if(frame==null)return;
-            float scale=PreviewScale,w=project.Data.Width*scale,h=project.Data.Height*scale,x=(Width-w)/2,y=(Height-h)/2;
+            float scale=Zoom,w=project.Data.Width*scale,h=project.Data.Height*scale,x=ImageOrigin.X,y=ImageOrigin.Y;
             using(var brush=new SolidBrush(Color.FromArgb(90,255,255,255)))e.Graphics.FillRectangle(brush,x,y,w,h);
             using(var image=project.Source.Clone(project.Selection(frame),PixelFormat.Format32bppArgb))
             {e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;e.Graphics.DrawImage(image,new RectangleF(x+frame.OffsetX*scale,y+frame.OffsetY*scale,w,h),new RectangleF(0,0,image.Width,image.Height),GraphicsUnit.Pixel);}
