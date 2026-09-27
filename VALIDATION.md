@@ -1,5 +1,13 @@
 # Prototype validation
 
+## Version 1.4.0
+
+2,955 automated assertions passed. New checks cover independent animation sizes, shared sizes within a type, odd/even bottom-center padding, exact cropping on both axes, fully clipped blank frames through project save/export/runtime import, and version 1 project/sprite migration. Toy checks verify exactly three bounce peaks with successive half heights, varied pet return strengths, persisted help preferences, a red-only arrow, and a plus-shaped center icon.
+
+78 native Sprite Maker checks passed, including restoring each animation's size fields and clipping in the preview. 49 native toy checks passed, including the Ball toggle, removal during fetch, hover-only help for border/center/ball, transparent-interior and covered-window exclusions, the actual help window above the chest, and hiding hints on pointer exit or toggle. 35 updater/settings UI checks passed using fake releases: saved auto-update settings take effect at startup, manual checks install directly regardless of the option, periodic checks remain notifications, offline automatic checks stay quiet, and release descriptions have completion controls only. No live update was installed by these UI tests. Settings, preview, arrow and hover-help artwork were visually inspected.
+
+The 1.4.0 installer built successfully. The isolated installer test passed fresh installation, progress-only upgrades, preserved shortcut choices and destination, unchanged icon artwork, post-install completion marker, compatibility with the older helper's entry point, app relaunch with the full smoke test, and cleanup. The personal installed Vpet and its settings were not changed.
+
 ## Version 1.3.0
 
 2,858 automated assertions passed. Toy checks cover saved preferences and older-settings migration; containment when dragging, moving or resizing; monitor/taskbar bounds and disconnection recovery; hidden fences; click bounce and reverse pull direction; and 72 varied ricochet trajectories at 100%, 125% and 200% scale. Predicted resting points match simulated endpoints within 0.04 pixels. Fetch checks cover all movement modes, zero speed, resting interruption, exact quarter-second pause and half-second shake within frame precision, returning to the unchanged restricted circle, launch ownership, relaunching, hover, cancellation, and crossing separated displays with different scaling.
