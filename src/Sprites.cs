@@ -11,14 +11,17 @@ namespace Vpet
     {
         public Bitmap Sheet { get; private set; }
         public Size Cell { get; private set; }
+        public bool HasDiagonals {get;private set;}
+        public int[] Counts {get;private set;}
         readonly Bitmap[][] frames=new Bitmap[10][];
         readonly Bitmap[][] mirrors=new Bitmap[10][];
-        public SpriteSet(Bitmap sheet)
+        public SpriteSet(Bitmap sheet) : this(sheet,true,new[]{4,4,4,4,4,5,5,5,5,5}) {}
+        public SpriteSet(Bitmap sheet,bool diagonals,int[] counts)
         {
-            Sheet=sheet;Cell=new Size(sheet.Width/5,sheet.Height/10);
+            Sheet=sheet;Cell=new Size(sheet.Width/5,sheet.Height/10);HasDiagonals=diagonals;Counts=(int[])counts.Clone();
             for(int row=0;row<10;row++)
             {
-                int count=row<5?4:5;frames[row]=new Bitmap[count];mirrors[row]=new Bitmap[count];
+                int count=counts[row];frames[row]=new Bitmap[count];mirrors[row]=new Bitmap[count];
                 for(int col=0;col<count;col++)
                 {
                     frames[row][col]=sheet.Clone(new Rectangle(col*Cell.Width,row*Cell.Height,Cell.Width,Cell.Height),PixelFormat.Format32bppArgb);
@@ -28,10 +31,22 @@ namespace Vpet
         }
         public Bitmap Frame(bool walk,int facing,int index)
         {
+            if(!HasDiagonals&&(facing%2==1))facing=facing==1||facing==7?0:4;
             // E, SE, S, SW, W, NW, N, NE.
             int[] rowMap={2,4,1,4,2,3,0,3};int row=rowMap[facing]+(walk?5:0);
-            return (facing==0||facing==1||facing==7?mirrors:frames)[row][index%(walk?5:4)];
+            return (facing==0||facing==1||facing==7?mirrors:frames)[row][Math.Max(0,index)%Counts[row]];
         }
+        public int ResolveFacing(int facing,PointF movement,int previous)
+        {
+            if(HasDiagonals)return facing;
+            if(movement.X==0&&movement.Y==0)return facing%2==0?facing:previous;
+            double angle=Math.Atan2(movement.Y,movement.X)*180/Math.PI;
+            double difference=((angle-previous*45+540)%360)-180;
+            if(previous%2==0&&Math.Abs(difference)<=50)return previous;
+            return (((int)Math.Floor(angle/90+.5))%4+4)%4*2;
+        }
+        public void SavePackage(string path)
+        {SpritePackage.Write(path,new SpriteManifest{Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts},Sheet);}
         public static SpriteSet FromReference(string path)
         {
             int[,] bands={{38,62},{108,134},{177,203},{239,265},{305,335},{372,396},{445,471},{520,546},{596,621},{669,699}};
@@ -116,6 +131,8 @@ namespace Vpet
         }
         public static SpriteSet Import(string path)
         {
+            if(string.Equals(Path.GetExtension(path),".vpetsprite",StringComparison.OrdinalIgnoreCase))
+            {SpriteManifest data;var atlas=SpritePackage.Read(path,"sprite",out data);return new SpriteSet(atlas,data.Diagonals,data.Counts);}
             var bitmap=ReadPng(path,500,1500);
             try
             {

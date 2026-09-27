@@ -41,6 +41,7 @@ namespace Vpet
         Point mouseStart;
         PointF dragStart;
         int reaction=-1;
+        int animationFacing=2;
         string displaySignature="",assetSignature="";
         readonly bool smoke;
         readonly string smokeOutput;
@@ -65,7 +66,7 @@ namespace Vpet
             Sprites=SpriteSet.FromReference(referencePath);
             if(prefs.CustomPet)
             {
-                try {var custom=SpriteSet.Import(Path.Combine(DataDirectory,"pet.png"));Sprites.Dispose();Sprites=custom;}
+                try {string package=Path.Combine(DataDirectory,"pet.vpetsprite");var custom=SpriteSet.Import(File.Exists(package)?package:Path.Combine(DataDirectory,"pet.png"));Sprites.Dispose();Sprites=custom;}
                 catch(Exception ex){prefs.CustomPet=false;File.WriteAllText(Path.Combine(DataDirectory,"asset-error.txt"),ex.Message);}
             }
             Model=new PetModel(prefs,random);Model.FrameSize=Sprites.Cell;
@@ -333,7 +334,8 @@ namespace Vpet
         void Render()
         {
             var display=Model.Current;Size size=display.PetSize(Sprites.Cell);
-            var frame=Sprites.Frame(Model.Walking,Model.Facing,(int)phase);
+            animationFacing=Sprites.ResolveFacing(Model.Facing,Model.Walking?Model.LastMotion:PointF.Empty,animationFacing);
+            var frame=Sprites.Frame(Model.Walking,animationFacing,(int)phase);
             float offset=Model.Shaking(Now)?(float)(Math.Sin(Now*65)*3*display.Scale):0;
             PointF anchor=Geometry.Clamp(new PointF(Model.Position.X+offset,Model.Position.Y),display.Allowed(Sprites.Cell,false));
             var location=new Point((int)Math.Round(anchor.X-size.Width/2f),(int)Math.Round(anchor.Y-size.Height));
@@ -409,9 +411,7 @@ namespace Vpet
         }
         public void UseCustom(SpriteSet candidate)
         {
-            string pending=Path.Combine(DataDirectory,"pet.pending.png"),destination=Path.Combine(DataDirectory,"pet.png");
-            candidate.Sheet.Save(pending,System.Drawing.Imaging.ImageFormat.Png);
-            if(File.Exists(destination))File.Replace(pending,destination,null);else File.Move(pending,destination);
+            candidate.SavePackage(Path.Combine(DataDirectory,"pet.vpetsprite"));
             var old=Sprites;Sprites=candidate;Model.FrameSize=Sprites.Cell;Model.Place(Model.Position);Model.CancelRoute();Model.EnsureInsideRestrictedArea();phase=0;
             Model.Settings.CustomPet=true;old.Dispose();Save();if(AssetsChanged!=null)AssetsChanged();
         }

@@ -125,6 +125,7 @@ namespace Vpet
         public bool Hovered, Dragging, Paused, Walking;
         public double ShakeUntil, IdleUntil;
         public float ActualSpeed;
+        public PointF LastMotion;
         public PointF? Destination { get; private set; }
         public string TargetDisplay { get; private set; }
         public string CurrentDisplay { get; private set; }
@@ -302,7 +303,7 @@ namespace Vpet
             if (!Destination.HasValue) { IdleUntil=now+2; return; }
             if(Crossing!=null)
             {
-                ActualSpeed=Settings.Speed*2*Current.Scale;Walking=true;Facing=Crossing.Direction;
+                ActualSpeed=Settings.Speed*2*Current.Scale;Walking=true;Facing=Crossing.Direction;LastMotion=new PointF((float)Math.Cos(Facing*Math.PI/4),(float)Math.Sin(Facing*Math.PI/4));
                 Crossing.Progress=Math.Min(1,Crossing.Progress+ActualSpeed*Math.Min(.1f,dt)/Crossing.TravelLength);
                 bool arriving=Crossing.Progress>=.5f;Position=arriving?Crossing.DestinationAnchor:Crossing.SourceAnchor;
                 CurrentDisplay=arriving?Crossing.To.Id:Crossing.From.Id;
@@ -321,7 +322,8 @@ namespace Vpet
                 if(plannedCrossing!=null){Crossing=plannedCrossing;Walking=true;ActualSpeed=Settings.Speed*2*scale;Facing=Crossing.Direction;return;}
                 CancelRoute(); IdleUntil=now+10+random.NextDouble()*20; return;
             }
-            Facing=Geometry.Direction(new PointF(target.X-Position.X,target.Y-Position.Y),Facing);
+            LastMotion=new PointF(target.X-Position.X,target.Y-Position.Y);
+            Facing=Geometry.Direction(LastMotion,Facing);
             ActualSpeed=Settings.Speed*2*scale*(plannedCrossing!=null?1:distance<15*scale?.25f:distance<40*scale?.5f:1);
             Position=Geometry.Toward(Position,target,ActualSpeed*Math.Min(.1f,dt)); Walking=true;
         }
