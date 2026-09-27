@@ -2,6 +2,10 @@
 
 Open **Settings → Sprite → Open Sprite Maker**.
 
+Both the sheet selector and **Tweak and Complete** have a **Preview zoom** toolbar directly above the image. Type a percentage, use **+ / −**, choose **100%** for actual pixel size, or choose **Fit** to see the whole sheet/frame. **Ctrl + mouse wheel** zooms around the pointer; scrollbars let you reach enlarged areas. Toolbar changes zoom around the center of the visible area. Zoom changes only the preview, keeping source pixels, selected rectangles, and saved offsets unchanged.
+
+Zoom supports 1–1600%. The maximum is reduced for very large sheets to stay within Windows' canvas size limits. The animation preview initially fits the frame to the window; **Fit** can be used again after resizing the window.
+
 ## Select animation frames
 
 1. Choose **Upload Sprite Sheet** and select a PNG with a transparent background. Sheets can have any arrangement, up to 4096 × 4096 pixels and 64 MiB. Use zoom and the scrollbars to inspect larger sheets.
