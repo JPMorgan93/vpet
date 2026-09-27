@@ -34,6 +34,7 @@ namespace Vpet
         [DataMember] public string PetName = "";
         [DataMember] public NameVisibility NameDisplay = NameVisibility.Always;
         [DataMember] public bool LaunchOnStartup;
+        [DataMember] public ToyPreferences Toys = new ToyPreferences();
 
         [OnDeserializing]
         void InitializeDefaults(StreamingContext context)
@@ -41,6 +42,7 @@ namespace Vpet
             Speed=50;Radius=250;DisplayRestrictedArea=true;Facing=2;
             X=Y=AnchorX=AnchorY=float.NaN;Frequency=Frequency.Sometimes;
             PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;
+            Toys=new ToyPreferences();
         }
 
         public void Validate()
@@ -53,6 +55,7 @@ namespace Vpet
             if (!Enum.IsDefined(typeof(Frequency), Frequency)) Frequency = Frequency.Sometimes;
             PetName=CleanName(PetName);
             if (!Enum.IsDefined(typeof(NameVisibility), NameDisplay)) NameDisplay=NameVisibility.Always;
+            if(Toys==null)Toys=new ToyPreferences();Toys.Validate();
         }
         public static string CleanName(string name)
         {
@@ -123,6 +126,8 @@ namespace Vpet
         public Size FrameSize = new Size(32, 36);
         public int Facing = 2;
         public bool Hovered, Dragging, Paused, Walking;
+        // A deliberate toy interaction temporarily owns the route, without changing saved movement preferences.
+        public bool Playing { get; private set; }
         public double ShakeUntil, IdleUntil;
         public float ActualSpeed;
         public PointF LastMotion;
@@ -217,6 +222,8 @@ namespace Vpet
             foreach(var d in Displays)d.NameFootroom=Settings.HasName?Math.Min(PetCaption.Footroom(d.Scale),Math.Max(0,d.Work.Height-d.PetSize(FrameSize).Height)):0;
         }
         public void CancelRoute() { if(Crossing!=null)Place(Position);Destination = null; TargetDisplay = null; plannedCrossing=null;Crossing=null;settlingDrag=false; Walking = false; }
+        public void BeginPlay(){CancelRoute();Playing=true;IdleUntil=0;ShakeUntil=0;}
+        public void EndPlay(double now){CancelRoute();Playing=false;ShakeUntil=0;IdleUntil=now+2;}
         public void Release(double now)
         {
             Dragging=false;
@@ -244,7 +251,7 @@ namespace Vpet
         }
         public void EnsureInsideRestrictedArea()
         {
-            if(Settings.Movement==MovementMode.Restricted&&Geometry.Distance(Position,Anchor)>Settings.Radius)Place(Anchor);
+            if(!Playing&&Settings.Movement==MovementMode.Restricted&&Geometry.Distance(Position,Anchor)>Settings.Radius)Place(Anchor);
         }
         public void ChangeMode(MovementMode mode, double now)
         {
@@ -257,13 +264,13 @@ namespace Vpet
         {
             var targetArea = Displays.Find(d => d.Id == displayId); if (targetArea == null) return false;
             target = Geometry.Clamp(target, targetArea.Allowed(FrameSize));
-            if (Settings.Movement == MovementMode.Restricted && Geometry.Distance(target, Anchor) > Settings.Radius) return false;
+            if (!Playing && Settings.Movement == MovementMode.Restricted && Geometry.Distance(target, Anchor) > Settings.Radius) return false;
             Destination=target;TargetDisplay=displayId;plannedCrossing=null;Crossing=null;
             if (displayId != CurrentDisplay)
             {
                 var nextDisplay=DisplayCrossing.NextDisplay(Current,targetArea,Displays,FrameSize);
                 plannedCrossing=DisplayCrossing.Plan(Current,nextDisplay,FrameSize,target);
-                if (Settings.Movement == MovementMode.Restricted &&
+                if (!Playing && Settings.Movement == MovementMode.Restricted &&
                     !plannedCrossing.FitsCircle(Anchor,Settings.Radius))
                 { CancelRoute(); return false; }
             }
@@ -298,12 +305,14 @@ namespace Vpet
                 return;
             }
             if(Hovered||Dragging||Shaking(now))FaceDownIdle();
-            if (Displays.Count==0 || Dragging || Hovered || Paused || now<IdleUntil || Shaking(now) || Settings.Movement==MovementMode.Static||Settings.Speed==0) return;
-            if (!Destination.HasValue) PickDestination();
+            if (Displays.Count==0 || Dragging || Hovered || Paused || now<IdleUntil || Shaking(now) || (!Playing&&(Settings.Movement==MovementMode.Static||Settings.Speed==0))) return;
+            if (!Destination.HasValue && !Playing) PickDestination();
+            if (Playing&&!Destination.HasValue)return;
             if (!Destination.HasValue) { IdleUntil=now+2; return; }
+            float speed=Playing&&Settings.Speed==0?50:Settings.Speed;
             if(Crossing!=null)
             {
-                ActualSpeed=Settings.Speed*2*Current.Scale;Walking=true;Facing=Crossing.Direction;LastMotion=new PointF((float)Math.Cos(Facing*Math.PI/4),(float)Math.Sin(Facing*Math.PI/4));
+                ActualSpeed=speed*2*Current.Scale;Walking=true;Facing=Crossing.Direction;LastMotion=new PointF((float)Math.Cos(Facing*Math.PI/4),(float)Math.Sin(Facing*Math.PI/4));
                 Crossing.Progress=Math.Min(1,Crossing.Progress+ActualSpeed*Math.Min(.1f,dt)/Crossing.TravelLength);
                 bool arriving=Crossing.Progress>=.5f;Position=arriving?Crossing.DestinationAnchor:Crossing.SourceAnchor;
                 CurrentDisplay=arriving?Crossing.To.Id:Crossing.From.Id;
@@ -319,12 +328,12 @@ namespace Vpet
             if (distance <= scale)
             {
                 Position=target;
-                if(plannedCrossing!=null){Crossing=plannedCrossing;Walking=true;ActualSpeed=Settings.Speed*2*scale;Facing=Crossing.Direction;LastMotion=new PointF((float)Math.Cos(Facing*Math.PI/4),(float)Math.Sin(Facing*Math.PI/4));return;}
+                if(plannedCrossing!=null){Crossing=plannedCrossing;Walking=true;ActualSpeed=speed*2*scale;Facing=Crossing.Direction;LastMotion=new PointF((float)Math.Cos(Facing*Math.PI/4),(float)Math.Sin(Facing*Math.PI/4));return;}
                 CancelRoute(); IdleUntil=now+10+random.NextDouble()*20; return;
             }
             LastMotion=new PointF(target.X-Position.X,target.Y-Position.Y);
             Facing=Geometry.Direction(LastMotion,Facing);
-            ActualSpeed=Settings.Speed*2*scale*(plannedCrossing!=null?1:distance<15*scale?.25f:distance<40*scale?.5f:1);
+            ActualSpeed=speed*2*scale*(plannedCrossing!=null?1:distance<15*scale?.25f:distance<40*scale?.5f:1);
             Position=Geometry.Toward(Position,target,ActualSpeed*Math.Min(.1f,dt)); Walking=true;
         }
         public void Store()
