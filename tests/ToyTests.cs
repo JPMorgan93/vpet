@@ -139,7 +139,7 @@ namespace Vpet
                         foreach(var window in windows.Windows.Where(w=>w.Visible))
                         {
                             Check(IsAbove(pet.Handle,window.Handle),"Toy stays below pet in "+mode);
-                            Check(((Native.GetWindowLongPtr(window.Handle,-20).ToInt64()&8)!=0)==(mode==LayerMode.OverEverything),"Toy topmost flag follows "+mode);
+                            Check(((Native.GetWindowLongPtr(window.Handle,-20).ToInt64()&8)!=0)==(mode==LayerMode.OverEverything),window.Text+" topmost flag follows "+mode+" ("+Native.GetWindowLongPtr(window.Handle,-20)+", pet "+Native.GetWindowLongPtr(pet.Handle,-20)+")");
                             if(mode==LayerMode.UnderAll)Check(IsAbove(application.Handle,window.Handle),"Under All locks toys below application");
                         }
                     }
