@@ -32,6 +32,9 @@ namespace Vpet
         readonly MenuDismissal menuDismissal;
         SettingsWindow settingsWindow;
         Bitmap rendered,crossingRendered,customReaction;
+        Bitmap reactionPreview;
+        float reactionPreviewScale;
+        bool reactionPreviewBelow;
         Form dragWindow;
         double previousTime,phase,lastHover=-10,bubbleUntil,nextRandom,nextDisplayCheck,nextAssetCheck,nextSave;
         bool lastWalk,buttonDown,moved,menuOpen,closing;
@@ -180,12 +183,24 @@ namespace Vpet
         public void RestoreEmote(int index){Replacements.Restore(index);ShowReaction(index);if(AssetsChanged!=null)AssetsChanged();}
         void ShowReaction(int index)
         {
+            if(reactionPreview!=null){reactionPreview.Dispose();reactionPreview=null;}
             if(customReaction!=null){customReaction.Dispose();customReaction=null;}
             reaction=index;
             if(index>=8)
             {if(index-8>=CustomEmotes.Count){reaction=-1;return;}customReaction=(Bitmap)CustomEmotes[index-8].Image.Clone();}
             else if(Replacements.Get(index)!=null)customReaction=(Bitmap)Replacements.Get(index).Clone();
             bubbleUntil=Now+3;nextRandom=bubbleUntil+Reactions.Interval(Model.Settings.Frequency,random);
+        }
+        Bitmap ReactionImage(float scale,bool below)
+        {
+            // Resample a high-resolution emote once, not on every animation tick.
+            if(reactionPreview==null||reactionPreviewScale!=scale||reactionPreviewBelow!=below)
+            {
+                if(reactionPreview!=null)reactionPreview.Dispose();
+                reactionPreview=Artwork.Bubble(reaction,customReaction,scale,below);
+                reactionPreviewScale=scale;reactionPreviewBelow=below;
+            }
+            return (Bitmap)reactionPreview.Clone();
         }
         void BeginDrag(object sender,MouseEventArgs e)
         {
@@ -339,7 +354,7 @@ namespace Vpet
             if(showName)
             {
                 bool below=location.Y-(int)Math.Ceiling(62*display.Scale)<display.Work.Top;
-                using(var reactionImage=showReaction?Artwork.Bubble(reaction,customReaction,display.Scale,below):null)
+                using(var reactionImage=showReaction?ReactionImage(display.Scale,below):null)
                 using(var caption=PetCaption.Draw(Model.Settings.PetName,display.Scale,reactionImage,display.Work.Width,size.Height,below))
                 {
                     int x=Math.Max(display.Work.Left,Math.Min(display.Work.Right-caption.Width,(int)anchor.X-caption.Width/2));
@@ -351,7 +366,7 @@ namespace Vpet
             else if(showReaction)
             {
                 int bh=(int)(62*display.Scale);bool below=location.Y-bh<display.Work.Top;
-                using(var image=Artwork.Bubble(reaction,customReaction,display.Scale,below))
+                using(var image=ReactionImage(display.Scale,below))
                 {
                     int bx=Math.Max(display.Work.Left,Math.Min(display.Work.Right-image.Width,(int)anchor.X-image.Width/2));
                     int by=below?location.Y+size.Height:location.Y-image.Height;
@@ -413,6 +428,7 @@ namespace Vpet
             if(closing)return;closing=true;timer.Stop();menuDismissal.Dispose();Save();
             if(SettingsOpen)settingsWindow.Close();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
             if(rendered!=null)rendered.Dispose();if(crossingRendered!=null)crossingRendered.Dispose();if(customReaction!=null)customReaction.Dispose();Replacements.Dispose();
+            if(reactionPreview!=null)reactionPreview.Dispose();
             foreach(var item in CustomEmotes)item.Dispose();Sprites.Dispose();timer.Dispose();
         }
     }

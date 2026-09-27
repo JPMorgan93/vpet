@@ -1,5 +1,9 @@
 # Prototype validation
 
+## Version 1.1.5
+
+819 assertions passed, including 512-pixel PNG persistence, rejection above the new limit, and smooth sampled edges. The compact emote list and high-resolution rendering were visually inspected. An isolated installer identity verified progress-only updates with desktop shortcuts both enabled and disabled, destination and unrelated-file preservation, compatibility with an older updater's interactive launch, completion confirmation, app relaunch in smoke mode, and cleanup. The existing personal Vpet installation was not changed. The repeatable isolated test is installer/Test-Update.ps1.
+
 ## Version 1.1.4
 
 816 assertions passed. Pixel-level checks confirm horizontal and vertical centering of visible custom artwork with uneven transparent padding, portrait/landscape/square proportions, both tail orientations, and 100%, 125%, 150%, and 200% scaling. Bubble dimensions and complete outlines remain unchanged, and a fully transparent emote leaves the white body intact. Generated artwork was visually inspected, and the EXE installer compiled successfully.
