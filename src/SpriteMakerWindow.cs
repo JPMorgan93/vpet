@@ -62,7 +62,7 @@ namespace Vpet
             var frameChoices=MakerUi.Flow();root.Controls.Add(frameChoices,0,3);
             for(int i=0;i<5;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);frameChoices.Controls.Add(slots[i]);}
             frameChoices.Controls.Add(MakerUi.Button("Set",delegate{SetFrame();}));frameChoices.Controls.Add(MakerUi.Button("Clear",delegate{ClearFrame();}));frameChoices.Controls.Add(selectionHelp);
-            var viewport=new Panel{Dock=DockStyle.Fill,AutoScroll=true,BackColor=Color.FromArgb(220,216,229),BorderStyle=BorderStyle.FixedSingle};viewport.Controls.Add(sheet);root.Controls.Add(viewport,0,4);root.Controls.Add(status,0,5);
+            var viewport=new SpriteSheetViewport{Dock=DockStyle.Fill,AutoScroll=true,BackColor=Color.FromArgb(220,216,229),BorderStyle=BorderStyle.FixedSingle};viewport.Controls.Add(sheet);root.Controls.Add(viewport,0,4);root.Controls.Add(status,0,5);
             sheet.DimensionsChanged+=delegate(int w,int h){SetDimensions(w,h);};
             frameWidth.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};frameHeight.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};
             diagonal.CheckedChanged+=delegate{if(Project!=null&&!syncing){Project.Data.Diagonals=diagonal.Checked;Dirty=true;if(!Project.Enabled(Cycle))Cycle=0;ChooseCycle(Cycle);}};
@@ -126,7 +126,7 @@ namespace Vpet
         {
             for(int i=0;i<10;i++){cycles[i].Visible=Project==null?i%5<3:Project.Enabled(i);cycles[i].BackColor=i==Cycle?Color.FromArgb(221,211,241):Color.White;}
             for(int i=0;i<5;i++){bool saved=Project!=null&&Project.Data.Frames[Cycle][i]!=null;slots[i].Text=(i+1)+(saved?" ✓":"");slots[i].ForeColor=saved?Color.DarkGreen:Color.Black;slots[i].BackColor=i==Slot?Color.FromArgb(221,211,241):Color.White;}
-            selectionHelp.Text=Project==null?"Upload a transparent PNG to begin.":"Click to place frame "+(Slot+1)+"; drag a red corner to resize all frames.";
+            selectionHelp.Text=Project==null?"Upload a transparent PNG to begin.":"Click to place frame "+(Slot+1)+"; drag its border to move, or a corner to resize.";
             complete.Enabled=false;
             if(Project==null)status.Text="Upload a sheet or load a saved project. Use the scrollbars to move around larger sheets.";
             else
@@ -145,6 +145,12 @@ namespace Vpet
             {window.Icon=Icon;window.ShowDialog(this);if(window.ExportedPath!=null)ExportedPath=window.ExportedPath;}RefreshState();
         }
     }
+    internal sealed class SpriteSheetViewport : Panel
+    {
+        // Focusing the large canvas must not scroll its top-left into view.
+        // Scrollbars and the mouse wheel still control the viewport normally.
+        protected override Point ScrollToControl(Control activeControl){return DisplayRectangle.Location;}
+    }
     internal sealed class SpriteSheetView : Control
     {
         public SpriteProject Project;
@@ -153,7 +159,8 @@ namespace Vpet
         public event Action<int,int> DimensionsChanged;
         float zoom=1;
         int corner=-1;
-        Point fixedCorner;
+        bool moving;
+        Point fixedCorner,dragOrigin,frameOrigin;
         public float Zoom {get{return zoom;}set{zoom=value;RefreshSize();}}
         public SpriteSheetView(){DoubleBuffered=true;Size=new Size(640,350);Cursor=Cursors.Cross;}
         protected override void ScaleControl(SizeF factor,BoundsSpecified specified)
@@ -164,25 +171,50 @@ namespace Vpet
         }
         public void RefreshSize(){Size=Project==null?new Size(640,350):new Size((int)Math.Ceiling(Project.Source.Width*zoom),(int)Math.Ceiling(Project.Source.Height*zoom));Invalidate();}
         Point ImagePoint(Point point){return new Point(Math.Max(0,(int)Math.Floor(point.X/zoom)),Math.Max(0,(int)Math.Floor(point.Y/zoom)));}
+        int HitCorner(Point point)
+        {
+            if(Draft==null||Project==null)return -1;
+            var r=Project.Selection(Draft);Point[] points={r.Location,new Point(r.Right,r.Top),new Point(r.Left,r.Bottom),new Point(r.Right,r.Bottom)};
+            // On small zoomed frames, only the visible handle counts as a corner.
+            float reach=Math.Min(7,Math.Min(r.Width,r.Height)*zoom/4);
+            for(int i=0;i<4;i++)if(Math.Abs(point.X-points[i].X*zoom)<=reach&&Math.Abs(point.Y-points[i].Y*zoom)<=reach)return i;
+            return -1;
+        }
+        bool HitBorder(Point point)
+        {
+            if(Draft==null||Project==null)return false;
+            var r=Project.Selection(Draft);float left=r.Left*zoom,top=r.Top*zoom,right=r.Right*zoom,bottom=r.Bottom*zoom;
+            return (point.X>=left-5&&point.X<=right+5&&(Math.Abs(point.Y-top)<=5||Math.Abs(point.Y-bottom)<=5))||
+                (point.Y>=top-5&&point.Y<=bottom+5&&(Math.Abs(point.X-left)<=5||Math.Abs(point.X-right)<=5));
+        }
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            base.OnMouseDown(e);if(Project==null||e.Button!=MouseButtons.Left)return;Focus();corner=-1;
+            base.OnMouseDown(e);if(Project==null||e.Button!=MouseButtons.Left)return;Focus();corner=HitCorner(e.Location);moving=false;
             if(Draft!=null)
             {
                 var rect=Project.Selection(Draft);Point[] points={rect.Location,new Point(rect.Right,rect.Top),new Point(rect.Left,rect.Bottom),new Point(rect.Right,rect.Bottom)};
-                for(int i=0;i<4;i++)if(Math.Abs(e.X-points[i].X*zoom)<=7&&Math.Abs(e.Y-points[i].Y*zoom)<=7){corner=i;fixedCorner=points[3-i];Capture=true;return;}
+                if(corner>=0){fixedCorner=points[3-corner];Capture=true;return;}
+                if(HitBorder(e.Location)){moving=true;dragOrigin=e.Location;frameOrigin=new Point(Draft.X,Draft.Y);Capture=true;Cursor=Cursors.SizeAll;return;}
             }
             var p=ImagePoint(e.Location);Draft=new SpriteFrame{X=p.X,Y=p.Y};Invalidate();
         }
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            base.OnMouseMove(e);if(corner<0||!Capture)return;
+            base.OnMouseMove(e);if(Project==null)return;
+            if(moving&&Capture)
+            {
+                Draft.X=Math.Max(0,Math.Min(Math.Max(0,Project.Source.Width-Project.Data.Width),frameOrigin.X+(int)Math.Round((e.X-dragOrigin.X)/zoom)));
+                Draft.Y=Math.Max(0,Math.Min(Math.Max(0,Project.Source.Height-Project.Data.Height),frameOrigin.Y+(int)Math.Round((e.Y-dragOrigin.Y)/zoom)));
+                Invalidate();return;
+            }
+            if(corner<0||!Capture){int hit=HitCorner(e.Location);Cursor=hit>=0?(hit==0||hit==3?Cursors.SizeNWSE:Cursors.SizeNESW):HitBorder(e.Location)?Cursors.SizeAll:Cursors.Cross;return;}
             var p=ImagePoint(e.Location);int w=Math.Max(1,Math.Min(100,Math.Abs(p.X-fixedCorner.X))),h=Math.Max(1,Math.Min(150,Math.Abs(p.Y-fixedCorner.Y)));
             Draft.X=(corner==0||corner==2)?Math.Max(0,fixedCorner.X-w):fixedCorner.X;
             Draft.Y=corner<2?Math.Max(0,fixedCorner.Y-h):fixedCorner.Y;
             if(DimensionsChanged!=null)DimensionsChanged(w,h);Invalidate();
         }
-        protected override void OnMouseUp(MouseEventArgs e){base.OnMouseUp(e);corner=-1;Capture=false;}
+        protected override void OnMouseUp(MouseEventArgs e){base.OnMouseUp(e);if(e.Button!=MouseButtons.Left)return;corner=-1;moving=false;Capture=false;}
+        protected override void OnMouseCaptureChanged(EventArgs e){base.OnMouseCaptureChanged(e);if(!Capture){corner=-1;moving=false;}}
         protected override void OnPaint(PaintEventArgs e)
         {
             MakerUi.Checker(e.Graphics,e.ClipRectangle,16);if(Project==null)return;
