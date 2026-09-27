@@ -1,8 +1,8 @@
-# Vpet 1.1.5
+# Vpet 1.1.6
 
 ## Files to distribute
 
-- `dist/Vpet-Setup-1.1.5-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
+- `dist/Vpet-Setup-1.1.6-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
 - `dist/SHA256SUMS.txt` — SHA-256 checksum for that exact installer.
 
 The installer contains only the application, the reference sprite sheet, `Vpet.ico`, and the getting-started guide. Source code, tests, development settings, logs, and compiler tools are excluded. GitHub Actions attaches the installer and checksum to a public release after a successful main-branch build. See `GITHUB.md`.

@@ -1,4 +1,11 @@
-# Vpet 1.1.5
+# Vpet 1.1.6
+
+- Dragging uses progressive display fragments instead of snapping the entire pet between monitor bounds.
+- Preserve mouse capture throughout a cross-display drag, including pickup during a walking transition.
+- Releasing midway across a display edge smoothly settles the pet onto a connected display.
+- Add a review and implementation outline for Sprite Maker; the editor is not included in this release.
+
+## Vpet 1.1.5
 
 - Accept custom emote PNGs up to 512 × 512 pixels and resize smoothly while preserving centering and proportions.
 - Reduce the gap above the uploaded-emote list.

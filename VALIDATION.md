@@ -1,5 +1,9 @@
 # Prototype validation
 
+## Version 1.1.6
+
+2,339 assertions passed, including continuous drag positions at shared edges, progressive fragments in both directions across monitor gaps, mixed scaling, stacked and offset displays, release settling while hovered/in Static mode, outer-edge bounds, and display disconnection. An isolated native mouse-input test dragged the pet both ways across this PC's two monitors and verified retained capture, split fragments, arrival, and release. Other physical display layouts were covered by model tests rather than additional hardware.
+
 ## Version 1.1.5
 
 819 assertions passed, including 512-pixel PNG persistence, rejection above the new limit, and smooth sampled edges. The compact emote list and high-resolution rendering were visually inspected. An isolated installer identity verified progress-only updates with desktop shortcuts both enabled and disabled, destination and unrelated-file preservation, compatibility with an older updater's interactive launch, completion confirmation, app relaunch in smoke mode, and cleanup. The existing personal Vpet installation was not changed. The repeatable isolated test is installer/Test-Update.ps1.

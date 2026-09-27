@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectRoot
 if ((git config --get vpet.autoSync) -ne 'true') { Write-Output 'Auto-sync is disabled for this checkout. Enable with: git config vpet.autoSync true'; exit 0 }
-$paths = @('src', 'assets', 'tests', 'installer', 'scripts', '.github', '.vscode', '.gitignore', 'README.md', 'RELEASE.md', 'VALIDATION.md', 'CHANGELOG.md', 'GITHUB.md', 'Vpet Development Specification.md', 'build.ps1', 'build-release.ps1', 'release.json', 'app.manifest', 'Launch Vpet.cmd', 'Create Desktop Shortcut.ps1')
+$paths = @('src', 'assets', 'tests', 'installer', 'scripts', '.github', '.vscode', '.gitignore', 'README.md', 'RELEASE.md', 'VALIDATION.md', 'SPRITE-MAKER-REVIEW.md', 'CHANGELOG.md', 'GITHUB.md', 'Vpet Development Specification.md', 'build.ps1', 'build-release.ps1', 'release.json', 'app.manifest', 'Launch Vpet.cmd', 'Create Desktop Shortcut.ps1')
 Write-Output 'Vpet auto-sync: saves are committed and pushed only on test, after a quiet period and passing checks. Ctrl+C stops syncing.'
 $previous = ''
 $stableSince = Get-Date
