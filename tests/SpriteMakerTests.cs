@@ -52,6 +52,8 @@ namespace Vpet
                     {
                         Check(loaded.Cell==new Size(20,24)&&loaded.HasDiagonals,"Runtime metadata survives export/import");
                         for(int row=0;row<10;row++)Check(loaded.Counts[row]==row%5+1,"Each animation retains its actual frame count");
+                        Check(loaded.Frame(false,3,4).GetPixel(10,23).R==190,"Fifth idle frame renders its own pixels");
+                        Check(loaded.Frame(false,3,5)==loaded.Frame(false,3,0),"Five-frame idle wraps after its actual last frame");
                         for(int direction=0;direction<8;direction++)for(int index=0;index<20;index++)Check(loaded.Frame(false,direction,index)!=null&&loaded.Frame(true,direction,index)!=null,"All directions loop variable frames");
                     }
                 }
@@ -69,6 +71,7 @@ namespace Vpet
                     using(var built=loaded.Build())
                     {
                         Check(built.Counts[2]==3&&built.Counts[3]==0,"Nonconsecutive slots compact in order; disabled cycles omitted");
+                        Check(built.Frame(false,4,2).GetPixel(7,10).R==190,"Nonconsecutive fifth slot exports after the earlier populated slots");
                         Check(!built.HasDiagonals&&built.Frame(false,1,0)==built.Frame(false,0,0),"Missing diagonal uses cardinal artwork");
                         Check(built.ResolveFacing(1,new PointF(10,2),2)==0,"Cardinal fallback follows actual shallow angle");
                         Check(built.ResolveFacing(1,new PointF(2,10),0)==2,"Cardinal fallback follows actual steep angle");

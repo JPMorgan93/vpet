@@ -58,7 +58,9 @@ The test executable checks movement timing, diagonal speed, hover and release be
 - Sprite-sheet validation, animated previews, Apply, Restore Default, and template export.
 - Saved settings, position, facing, radius, and imported artwork; tray controls and single-instance protection.
 
-## Artwork format
+## Legacy PNG artwork format
+
+For arbitrary sheet layouts, variable frame counts, and optional diagonals, use [Sprite Maker](SPRITE-MAKER.md). The grid rules in this section apply to older PNG sheets imported directly.
 
 The original annotated image is preserved at `assets/reference/Base Vpet Sprite Sheet.png`. It is an artwork guide, not an uploadable runtime grid.
 
