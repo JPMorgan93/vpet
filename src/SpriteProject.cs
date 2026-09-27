@@ -69,6 +69,7 @@ namespace Vpet
         }
         public static SpriteProject FromPng(string path)
         {
+            if(!string.Equals(Path.GetExtension(path),".png",StringComparison.OrdinalIgnoreCase)||new FileInfo(path).Length>SpritePackage.Limit)throw new InvalidDataException("Choose a PNG up to 4096 × 4096 pixels and 64 MiB.");
             var image=SpritePackage.ReadPng(File.ReadAllBytes(path),4096,4096);
             if(!HasTransparency(image)){image.Dispose();throw new InvalidDataException("The sprite sheet needs a transparent background.");}
             return new SpriteProject(image);
@@ -204,7 +205,7 @@ namespace Vpet
                 catch(SerializationException ex){throw new InvalidDataException("Invalid sprite manifest.",ex);}
                 Validate(data,kind);
                 var image=ReadPng(ReadEntry(zip.GetEntry(imageName),Limit),kind=="project"?4096:500,kind=="project"?4096:1500);
-                if(!SpriteProject.HasTransparency(image)||(kind=="sprite"&&(image.Width!=data.Width*5||image.Height!=data.Height*10)))
+                if((kind=="project"&&!SpriteProject.HasTransparency(image))||(kind=="sprite"&&(image.Width!=data.Width*5||image.Height!=data.Height*10)))
                 {image.Dispose();throw new InvalidDataException("Sprite image dimensions/transparency do not match the manifest.");}
                 if(kind=="sprite")for(int row=0;row<10;row++)for(int col=0;col<data.Counts[row];col++)
                     using(var frame=image.Clone(new Rectangle(col*data.Width,row*data.Height,data.Width,data.Height),PixelFormat.Format32bppArgb))

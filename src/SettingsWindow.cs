@@ -161,8 +161,8 @@ namespace Vpet
         {
             var page=Page("Sprite");
             LabelAt(page,"Make this pet your own",24,20,550,30,true);
-            LabelAt(page,"Transparent PNG · 5 columns × 10 rows · cells up to 100 × 150 px\nIdle rows use 4 frames; walking rows use 5. See the guide for row order.",24,59,570,50,false);
-            ButtonAt(page,"Choose sprite sheet…",24,121,185,ChooseSheet);
+            LabelAt(page,"Create a sprite in Sprite Maker or upload a .vpetsprite file.\nLegacy 5 × 10 PNG sheets are supported. Cells: up to 100 × 150 px.",24,59,570,50,false);
+            ButtonAt(page,"Upload Custom Sprite",24,121,185,ChooseSheet);
             useButton.Text="Use this pet";useButton.Location=new Point(224,121);useButton.Size=new Size(155,36);useButton.Enabled=false;useButton.Click+=UsePending;page.Controls.Add(useButton);
             ButtonAt(page,"Restore default",394,121,175,delegate
             {
@@ -175,8 +175,8 @@ namespace Vpet
             animationPreview=new DoubleBufferedPanel{Location=new Point(24,265),Size=new Size(545,140),BackColor=Color.FromArgb(233,228,242)};page.Controls.Add(animationPreview);
             animationPreview.Paint+=delegate(object sender,PaintEventArgs e)
             {
-                var sprites=pending??pet.Sprites;bool walk=previewActivity.SelectedIndex==1;int count=walk?5:4;
-                int frame=(int)(previewClock.Elapsed.TotalSeconds*(walk?8:4))%count;
+                var sprites=pending??pet.Sprites;bool walk=previewActivity.SelectedIndex==1;
+                int frame=(int)(previewClock.Elapsed.TotalSeconds*(walk?8:4));
                 float scale=Math.Min(3,Math.Min(130f/sprites.Cell.Width,120f/sprites.Cell.Height));
                 int w=(int)(sprites.Cell.Width*scale),h=(int)(sprites.Cell.Height*scale);
                 e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;
@@ -196,6 +196,15 @@ namespace Vpet
                 {try{using(var template=SpriteSet.BlankTemplate())template.Save(dialog.FileName,ImageFormat.Png);}catch(Exception ex){ShowError(ex.Message);}}
             });
             LabelAt(page,"Blank template: 100 × 150 px cells with labeled guide boxes. Draw on a separate layer, then remove all guide boxes and labels before exporting a transparent PNG. Leave the fifth cell of each idle row empty.",247,756,310,115,false);
+            foreach(Control control in page.Controls)if(control.Top>=170)control.Top+=44;
+            ButtonAt(page,"Open Sprite Maker",24,165,185,delegate
+            {
+                using(var maker=new SpriteMakerWindow{Icon=Icon})
+                {
+                    maker.ShowDialog(this);
+                    if(maker.ExportedPath!=null)try{LoadSprite(maker.ExportedPath);}catch(Exception ex){ShowError(ex.Message);}
+                }
+            });
             foreach(Control control in page.Controls)control.Top+=136;
             LabelAt(page,"Load Vpet on PC startup",24,20,550,28,true);
             var startup=ComboAt(page,new[]{"No (Default)","Yes"},24,56,250,pet.Model.Settings.LaunchOnStartup?1:0);
@@ -215,16 +224,20 @@ namespace Vpet
         }
         void ChooseSheet(object sender,EventArgs e)
         {
-            using(var dialog=new OpenFileDialog{Filter="PNG sprite sheet|*.png",Title="Choose a transparent Vpet sprite sheet"})
+            using(var dialog=new OpenFileDialog{Filter="Vpet sprites|*.vpetsprite;*.png|Vpet sprite package|*.vpetsprite|Legacy PNG sheet|*.png",Title="Upload Custom Sprite"})
             {
                 if(dialog.ShowDialog(this)!=DialogResult.OK)return;
                 try
                 {
-                    var candidate=SpriteSet.Import(dialog.FileName);if(pending!=null)pending.Dispose();pending=candidate;
-                    useButton.Enabled=true;importStatus.Text="Previewing "+Path.GetFileName(dialog.FileName)+". Choose “Use this pet” to apply.";UpdateSheetPreview();
+                    LoadSprite(dialog.FileName);
                 }
                 catch(Exception ex){ShowError(ex.Message);}
             }
+        }
+        void LoadSprite(string path)
+        {
+            var candidate=SpriteSet.Import(path);if(pending!=null)pending.Dispose();pending=candidate;
+            useButton.Enabled=true;importStatus.Text="Previewing "+Path.GetFileName(path)+". Choose “Use this pet” to apply.";UpdateSheetPreview();
         }
         void UsePending(object sender,EventArgs e)
         {

@@ -52,7 +52,7 @@ namespace Vpet
             commands.Controls.Add(MakerUi.Button("Upload Sprite Sheet",Upload));
             commands.Controls.Add(MakerUi.Button("Save Project",delegate{SaveProject(false);}));
             commands.Controls.Add(MakerUi.Button("Save Project As…",delegate{SaveProject(true);}));
-            commands.Controls.Add(MakerUi.Button("Load Project",Load));
+            commands.Controls.Add(MakerUi.Button("Load Project",LoadProject));
             complete=MakerUi.Button("Tweak and Complete",OpenTweak);commands.Controls.Add(complete);
             var options=MakerUi.Flow();root.Controls.Add(options,0,1);
             options.Controls.Add(diagonal);options.Controls.Add(MakerUi.Label("Frame width"));options.Controls.Add(frameWidth);options.Controls.Add(MakerUi.Label("Height"));options.Controls.Add(frameHeight);
@@ -63,7 +63,7 @@ namespace Vpet
             for(int i=0;i<5;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);frameChoices.Controls.Add(slots[i]);}
             frameChoices.Controls.Add(MakerUi.Button("Set",delegate{SetFrame();}));frameChoices.Controls.Add(MakerUi.Button("Clear",delegate{ClearFrame();}));frameChoices.Controls.Add(selectionHelp);
             var viewport=new Panel{Dock=DockStyle.Fill,AutoScroll=true,BackColor=Color.FromArgb(220,216,229),BorderStyle=BorderStyle.FixedSingle};viewport.Controls.Add(sheet);root.Controls.Add(viewport,0,4);root.Controls.Add(status,0,5);
-            sheet.Changed+=delegate{Dirty=true;RefreshState();};sheet.DimensionsChanged+=delegate(int w,int h){SetDimensions(w,h);};
+            sheet.DimensionsChanged+=delegate(int w,int h){SetDimensions(w,h);};
             frameWidth.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};frameHeight.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};
             diagonal.CheckedChanged+=delegate{if(Project!=null&&!syncing){Project.Data.Diagonals=diagonal.Checked;Dirty=true;if(!Project.Enabled(Cycle))Cycle=0;ChooseCycle(Cycle);}};
             zoom.SelectedIndexChanged+=delegate{sheet.Zoom=new[]{.25f,.5f,1f,2f,4f}[zoom.SelectedIndex];};
@@ -85,7 +85,7 @@ namespace Vpet
                 catch(Exception ex){MakerUi.Error(this,ex);}
             }
         }
-        void Load(object sender,EventArgs e)
+        void LoadProject(object sender,EventArgs e)
         {
             using(var dialog=new OpenFileDialog{Filter="Vpet project|*.vpetproject"})if(dialog.ShowDialog(this)==DialogResult.OK)
                 try{var project=SpriteProject.Load(dialog.FileName);if(!ConfirmDiscard()){project.Dispose();return;}SetProject(project,dialog.FileName);}
@@ -150,7 +150,6 @@ namespace Vpet
         public SpriteProject Project;
         public SpriteFrame Draft;
         public int Cycle,Slot;
-        public event Action Changed;
         public event Action<int,int> DimensionsChanged;
         float zoom=1;
         int corner=-1;

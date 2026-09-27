@@ -99,7 +99,7 @@ namespace Vpet
         public event Action BeforeNudge,Changed;
         bool dragging;
         Point origin,offset;
-        float Scale {get{return Math.Max(.25f,Math.Min(8,Math.Min((Width-50f)/project.Data.Width,(Height-50f)/project.Data.Height)));}}
+        float PreviewScale {get{return Math.Max(.25f,Math.Min(8,Math.Min((Width-50f)/project.Data.Width,(Height-50f)/project.Data.Height)));}}
         public TweakPreview(SpriteProject project){this.project=project;DoubleBuffered=true;TabStop=true;SetStyle(ControlStyles.Selectable,true);}
         protected override void OnMouseDown(MouseEventArgs e)
         {
@@ -109,8 +109,8 @@ namespace Vpet
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);if(!dragging)return;var frame=project.Data.Frames[Cycle][Slot];
-            frame.OffsetX=Math.Max(-4096,Math.Min(4096,offset.X+(int)Math.Round((e.X-origin.X)/Scale)));
-            frame.OffsetY=Math.Max(-4096,Math.Min(4096,offset.Y+(int)Math.Round((e.Y-origin.Y)/Scale)));if(Changed!=null)Changed();
+            frame.OffsetX=Math.Max(-4096,Math.Min(4096,offset.X+(int)Math.Round((e.X-origin.X)/PreviewScale)));
+            frame.OffsetY=Math.Max(-4096,Math.Min(4096,offset.Y+(int)Math.Round((e.Y-origin.Y)/PreviewScale)));if(Changed!=null)Changed();
         }
         protected override void OnMouseUp(MouseEventArgs e){base.OnMouseUp(e);dragging=false;Capture=false;}
         protected override void OnMouseCaptureChanged(EventArgs e){base.OnMouseCaptureChanged(e);if(!Capture)dragging=false;}
@@ -128,7 +128,7 @@ namespace Vpet
         protected override void OnPaint(PaintEventArgs e)
         {
             MakerUi.Checker(e.Graphics,e.ClipRectangle,16);var frame=project.Data.Frames[Cycle][Slot];if(frame==null)return;
-            float scale=Scale,w=project.Data.Width*scale,h=project.Data.Height*scale,x=(Width-w)/2,y=(Height-h)/2;
+            float scale=PreviewScale,w=project.Data.Width*scale,h=project.Data.Height*scale,x=(Width-w)/2,y=(Height-h)/2;
             using(var brush=new SolidBrush(Color.FromArgb(90,255,255,255)))e.Graphics.FillRectangle(brush,x,y,w,h);
             using(var image=project.Source.Clone(project.Selection(frame),PixelFormat.Format32bppArgb))
             {e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;e.Graphics.DrawImage(image,new RectangleF(x+frame.OffsetX*scale,y+frame.OffsetY*scale,w,h));}
