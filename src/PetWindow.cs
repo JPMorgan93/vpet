@@ -330,6 +330,7 @@ namespace Vpet
                 using(var preview=Artwork.Scale(Sprites.Frame(false,2,0),new Size(128,144)))preview.Save(Path.Combine(smokeOutput,"pet.png"));
                 Model.ChangeMode(MovementMode.Restricted,now);restrictedOverlay.Update();
                 Model.Settings.PetName="Mochi";Model.Settings.NameDisplay=NameVisibility.Always;NameChanged();
+                Toys.SetVisible(true);Toys.Model.SpawnBall(now);Toys.Update();
                 ShowReaction(1);OpenSettings(0);smokeStep++;
             }
             else if(smokeStep>=1&&smokeStep<=3&&now>smokeStep+1)
@@ -337,7 +338,7 @@ namespace Vpet
                 using(var screenshot=new Bitmap(settingsWindow.Width,settingsWindow.Height))
                 {settingsWindow.DrawToBitmap(screenshot,new Rectangle(Point.Empty,screenshot.Size));screenshot.Save(Path.Combine(smokeOutput,"settings-"+(smokeStep-1)+".png"));}
                 if(smokeStep<3)settingsWindow.SelectTab(smokeStep);
-                else {settingsWindow.Close();Model.Settings.Layer=LayerMode.Dynamic;ApplyLayer();}
+                else {settingsWindow.Close();Model.Settings.Layer=LayerMode.Dynamic;ApplyLayer();Toys.Model.LaunchPull(new PointF(-35,15),now);}
                 smokeStep++;
             }
             else if(smokeStep==4&&now>5)
@@ -349,7 +350,7 @@ namespace Vpet
             {Model.Settings.Layer=LayerMode.OverEverything;ApplyLayer();ShowReaction(7);smokeStep++;}
             else if(smokeStep==6&&now>7)
             {
-                File.WriteAllText(Path.Combine(smokeOutput,"smoke-result.txt"),"PASS: layered pet and reaction windows rendered; three settings tabs opened and captured; layer switches completed; "+Model.Displays.Count+" display(s); cell "+Sprites.Cell+".");
+                File.WriteAllText(Path.Combine(smokeOutput,"smoke-result.txt"),"PASS: layered pet, reaction, toy chest, play zone and ball windows rendered; ball launched with live timer; three settings tabs opened and captured; layer switches completed; "+Model.Displays.Count+" display(s); cell "+Sprites.Cell+".");
                 Close();
             }
         }
