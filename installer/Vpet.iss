@@ -77,6 +77,18 @@ begin
   Result := IsUpgrade;
 end;
 
+procedure CurPageChanged(PageID: Integer);
+begin
+  if IsUpgrade and (PageID = wpReady) then
+    { Inno can retain Ready when every preceding page is skipped. }
+    PostMessage(WizardForm.NextButton.Handle, $00F5, 0, 0);
+  if IsUpgrade and (PageID = wpFinished) then
+  begin
+    WizardForm.FinishedHeadingLabel.Caption := 'Vpet update complete';
+    WizardForm.FinishedLabel.Caption := 'Vpet {#AppVersion} is up to date. Your settings, artwork, and shortcut choices have been kept.';
+  end;
+end;
+
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   Command: String;
