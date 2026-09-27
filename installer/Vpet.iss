@@ -26,6 +26,7 @@ AppMutex=Local\VpetPrototype
 CloseApplications=no
 RestartApplications=no
 DisableProgramGroupPage=yes
+DisableReadyPage=yes
 UsePreviousTasks=yes
 InfoBeforeFile=Getting Started.txt
 
