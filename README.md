@@ -1,10 +1,10 @@
-# Vpet 1.5.3
+# Vpet 1.5.4
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.5.3-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.5.4-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -16,7 +16,7 @@ The installer installs for the current user and provides an uninstaller in Windo
 
 **Settings > Sprite > Auto-update on app startup**, directly below the Windows startup option, offers **No (Default)** and **Yes**. Yes checks and automatically installs the newest public release when Vpet starts, with download/installation progress and no continue prompt. No keeps startup checks as notifications. Checks every six hours while running remain notifications, so automatic installation happens at startup. Offline checks leave the pet running normally.
 
-**Check for updates** remains in the right-click menu. It downloads and installs an available update directly, regardless of the auto-update preference. Settings, custom art and shortcut choices are preserved. Release notes appear once after successful installation and relaunch; an up-to-date check shows status without repeating old notes. Users of **1.0.0 must install 1.1.0 once** to enable future update checks.
+**Check for updates** remains in the right-click menu. A window shows your installed version and either confirms that it is current or shows the available version with an **Update** button. Choose Update to download and install it. Settings, custom art and shortcut choices are preserved. Release notes appear once after successful installation and relaunch, including every skipped release since the last version you ran, grouped newest first. The history is bundled for offline viewing. Older installations without a recorded last-run version use their installed version as the starting point. Up-to-date checks show status without repeating old notes. Users of **1.0.0 must install 1.1.0 once** to enable future update checks.
 
 See [GITHUB.md](GITHUB.md) for VS Code save syncing, the `test` branch, and promoting releases to `main`.
 
@@ -130,7 +130,7 @@ Chest visibility, fence visibility, play-zone geometry and chest position are sa
 
 `bin/Vpet.Tests.exe --toy-window-tests` exercises real desktop controls with isolated preferences, including dragging, resizing, aiming, outside-menu dismissal and all three stacking modes.
 
-The **Triangle** toggle adds or removes a small instrument. Right-click the triangle to choose **Chime (Default)**, **Honk**, or **Drum (Snare)**. The choice is saved and used for both your clicks and the pet's replies. Selecting a sound does not count as a tap. Tap the instrument repeatedly to play the selected sound on each press. After a brief pause (0.75 seconds), the pet walks to the instrument and repeats the same number and rhythm of taps. Very fast taps are spaced at least 0.1 seconds apart during playback so each is audible. Drag the triangle to move it inside the fence. A new tap during playback starts a new phrase; launching the ball or picking up the pet interrupts the phrase.
+The **Triangle** toggle adds or removes a small instrument. Right-click the triangle, including its hollow center, to choose **Chime** (the default), **Honk**, or **Drum**. The choice is saved and used for both your clicks and the pet's replies. Selecting a sound does not count as a tap. Tap the instrument repeatedly to play the selected sound on each press. After a brief pause (0.75 seconds), the pet walks to the instrument and repeats the same number and rhythm of taps. Very fast taps are spaced at least 0.1 seconds apart during playback so each is audible. Drag the triangle to move it inside the fence. A new tap during playback starts a new phrase; launching the ball or picking up the pet interrupts the phrase.
 
 Available toys also attract a spontaneous visit every **60–120 seconds**, chosen randomly after the previous action. The pet may return a ball or play a short triangle phrase. Toy visits temporarily override Static, speed 0, and restricted roaming just like user-triggered fetching; saved movement rules resume afterwards. Menus, settings, hovering and dragging pause the pet's actions.
 

@@ -1,6 +1,6 @@
 # Create a custom Vpet
 
-Open **Settings > Sprite > Open Sprite Maker**. **How to Guide** is available in both Sprite Maker windows.
+Open **Settings > Sprite > Open Sprite Maker**. **Tweak and Complete** sits at the bottom right, with **How to Guide** immediately to its left. The Tweak and Complete window uses the same footer arrangement with **Complete** and **How to Guide**.
 
 ## Step 1 — Upload the sprite sheet
 
@@ -42,7 +42,7 @@ When required animations are ready, choose **Tweak and Complete**. Its own **How
 - **Magic Tweak** aligns every pose's lowest nontransparent pixel row to the green ground line, centering its midpoint. A single bottom pixel is the anchor; midpoints between pixels use the left pixel. Faint alpha counts. It never stretches artwork or changes the source.
 - The purple rectangle is the output frame. Artwork outside it is clipped from the preview and export, even if a whole frame is moved outside. Move it back to recover clipped source pixels.
 - **Undo** reverses alignment edits, **Reset Cycle** removes that cycle's offsets, and **Save Tweaks** saves the editable project.
-- **Resume Preview** plays the adjusted animation. **Back to Sprite Maker** lets you change selections and sizes. Both previews have independent zoom controls.
+- **Resume Preview** plays the adjusted animation. Close the Tweak and Complete window with its **X** to return to Sprite Maker and change selections or sizes; your tweaks stay in the open project. Both previews have independent zoom controls.
 
 **Complete** saves the project and exports a `.vpetsprite` with the PNG atlas and animation frame counts. Keep the project for later editing. Close Sprite Maker to preview the export in settings, then choose **Use this pet**. Later, **Upload Custom Sprite** can load the exported file. Exporting alone does not change the active pet.
 

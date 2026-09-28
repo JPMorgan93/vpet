@@ -23,10 +23,12 @@ https://github.com/JPMorgan93/vpet.
 Settings > Sprite > Auto-update on app startup appears below the PC startup
 option. Choose Yes to install the newest release automatically at app startup.
 No is the default. Periodic checks while running announce available updates.
-Check for updates remains in the pet menu and installs available releases
-directly, without a continue prompt. Progress is shown during the update.
+Check for updates in the pet menu shows your current version and either
+confirms it is up to date or offers an Update button for the available version.
+Choose Update to begin. Progress is shown during the update.
 Settings, artwork and shortcut choices are preserved. Release notes appear
-only after the update succeeds and Vpet reopens. Up-to-date checks show status.
+only after the update succeeds and Vpet reopens, including all skipped releases
+since the last version you ran. Up-to-date checks show status without old notes.
 Users on version 1.0.0 must install 1.1.0 once to enable update checks.
 
 SPRITE MAKER
@@ -76,7 +78,7 @@ reaction rows; missing reactions keep their normal behavior. Download current
 sprite sheet in Sprite settings exports your active pet's PNG for editing.
 
 Toggle Triangle in the chest menu to add the instrument. Right-click the triangle
-for Chime (Default), Honk, or Drum (Snare). The saved sound applies to your taps
+for Chime, Honk, or Drum. The saved sound applies to your taps
 and the pet's replies. Each tap plays the selected sound. Pause
 briefly after your last tap; your pet walks over and repeats the count and rhythm.
 Drag the triangle to reposition it. A new tap during playback starts a new phrase.

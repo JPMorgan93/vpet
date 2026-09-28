@@ -1,4 +1,11 @@
-# Vpet 1.5.3
+# Vpet 1.5.4
+
+- Move Tweak and Complete to the bottom right of Sprite Maker, with How to Guide immediately to its left. Remove Back to Sprite Maker from the Tweak and Complete footer; close that window to return to the editor.
+- Make the hollow center of the triangle toy clickable, including right-clicking to open its sound menu. Simplify the sound names to Chime, Honk, and Drum; Chime remains the default.
+- Manual Check for updates opens a window showing the installed version and either the newest available version with an Update button, or confirmation that Vpet is current. Optional automatic updates at startup still install automatically.
+- After a successful update, show the changes from every release since the last version run, grouped by version. The installed app includes the full change history for offline viewing, and the installer supports updates from older Vpet versions.
+
+## Vpet 1.5.3
 
 - Right-click the triangle to choose Chime (Default), Honk, or Drum (Snare). The saved sound is used for both your taps and the pet's replies, while preserving tap counts and rhythm.
 - Add Update Sprite Sheet to Sprite Maker. Replace an open project's PNG while retaining all frame coordinates, frame sizes, alignment tweaks, facing, diagonal settings, and optional emote mappings.
