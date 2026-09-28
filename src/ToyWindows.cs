@@ -55,11 +55,12 @@ namespace Vpet
             Menu.Items.Add(display);
             var ball=new ToolStripMenuItem("Ball"){CheckOnClick=true};
             ball.Click+=delegate{if(ball.Checked)Model.SpawnBall(now());else{EndGesture(false);Model.RemoveBall(now());}Update();};Menu.Items.Add(ball);
-            var help=new ToolStripMenuItem("Help Messages"){CheckOnClick=true,Checked=Model.Settings.HelpMessages};
-            help.Click+=delegate{Model.Settings.HelpMessages=help.Checked;Update();save();};Menu.Items.Add(help);
             var triangle=new ToolStripMenuItem("Triangle"){CheckOnClick=true};
             triangle.Click+=delegate{if(triangle.Checked)Model.SpawnTriangle();else{EndGesture(false);Model.RemoveTriangle(now());}Update();};Menu.Items.Add(triangle);
+            // Keep toy entries above this footer; Help Messages stays directly above Close Toy Chest.
             Menu.Items.Add(new ToolStripSeparator());
+            var help=new ToolStripMenuItem("Help Messages"){CheckOnClick=true,Checked=Model.Settings.HelpMessages};
+            help.Click+=delegate{Model.Settings.HelpMessages=help.Checked;Update();save();};Menu.Items.Add(help);
             Menu.Items.Add("Close Toy Chest",null,delegate{SetVisible(false);});
             Menu.Opening+=delegate{display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
             Chest.ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);

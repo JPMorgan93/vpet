@@ -58,7 +58,8 @@ Fetching temporarily overrides Static mode, zero speed and restricted roaming.
 Your saved settings remain intact; a restricted pet walks back into its circle.
 Dragging the pet cancels play. Close Toy Chest in the chest menu puts away all toys.
 
-Toggle Help Messages in the chest menu for hints above the chest when hovering
+Help Messages stays directly above Close Toy Chest at the bottom of the menu.
+Toggle it for hints above the chest when hovering
 over the fence border, its plus control, or a toy. Moving away hides the hint.
 
 NEW SPRITE AND TOY CONTROLS
@@ -73,5 +74,6 @@ Drag the triangle to reposition it. A new tap during playback starts a new phras
 Pets also visit available toys on a randomized 60-120 second schedule. Toy visits
 can temporarily leave Static or restricted movement, then restore normal rules.
 
-A pause symbol appears while settings or other controls pause movement. It is
+A pause symbol appears only while Vpet settings are open. Toys and right-click
+menus do not trigger it. It is
 not a replaceable reaction. Try It Out previews temporarily replace this symbol.

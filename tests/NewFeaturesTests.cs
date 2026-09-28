@@ -137,9 +137,15 @@ namespace Vpet
             using(var pet=new PetWindow(Path.Combine(artifacts,"pause-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"pause-smoke")))
             {
                 pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Paused=true;
-                Check(pet.ShowPause,"Paused pet shows the reserved pause symbol");pet.PreviewReaction(1);Check(!pet.ShowPause&&pet.ActiveReaction==1,"Try a reaction temporarily replaces pause indicator");
+                Check(!pet.ShowPause,"Pausing movement alone never shows the pause symbol");
+                pet.ContextMenuStrip.Show(pet,new Point(10,10));Application.DoEvents();Check(!pet.ShowPause,"Pet right-click menu does not show the settings pause symbol");pet.ContextMenuStrip.Close();
+                pet.Toys.SetVisible(true);pet.Toys.Menu.Show(pet.Toys.Chest,new Point(10,10));Application.DoEvents();
+                Check(pet.Toys.Busy&&!pet.ShowPause,"Toy chest menu never shows the settings pause symbol");pet.Toys.Menu.Close();pet.Toys.SetVisible(false);
+                pet.OpenSettings(1);Application.DoEvents();
+                Check(pet.SettingsOpen&&pet.ShowPause,"Open Vpet settings shows the reserved pause symbol");pet.PreviewReaction(1);Check(!pet.ShowPause&&pet.ActiveReaction==1,"Try a reaction temporarily replaces pause indicator");
                 typeof(PetWindow).GetField("explicitPreviewUntil",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(pet,0d);
-                Check(pet.ShowPause,"Pause symbol returns after explicit preview");pet.Model.Paused=false;Check(!pet.ShowPause,"Pause clears when pet resumes");
+                Check(pet.ShowPause,"Pause symbol returns after explicit preview while settings stay open");MakerField<SettingsWindow>(pet,"settingsWindow").Close();
+                Check(!pet.SettingsOpen&&!pet.ShowPause,"Closing settings immediately removes pause even before movement resumes");pet.Model.Paused=false;
                 using(var project=MakerFixture())
                 {
                     project.Data.EmoteAnimations=true;project.Data.Frames[11][0]=new SpriteFrame();project.Source.SetPixel(2,2,Color.Lime);pet.UseCustom(project.Build());

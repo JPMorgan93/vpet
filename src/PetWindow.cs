@@ -185,7 +185,7 @@ namespace Vpet
         }
         public void ResetReactionTimer(){nextRandom=Now+Reactions.Interval(Model.Settings.Frequency,random);}
         double reactionStarted,explicitPreviewUntil;
-        internal bool ShowPause {get{return Model.Paused&&!Model.Dragging&&!buttonDown&&Now>=explicitPreviewUntil;}}
+        internal bool ShowPause {get{return SettingsOpen&&!Model.Dragging&&!buttonDown&&Now>=explicitPreviewUntil;}}
         public void PreviewReaction(int index){ShowReaction(index);explicitPreviewUntil=bubbleUntil;}
         public void PreviewCustomEmote(string name)
         {

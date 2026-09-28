@@ -1,4 +1,9 @@
-# Vpet 1.5.0
+# Vpet 1.5.1
+
+- Keep Help Messages at the bottom of the toy chest menu, directly above Close Toy Chest and below all toy options.
+- Show the pause emote only while Vpet settings are open. Toy interactions, the toy chest menu, and the pet's right-click menu no longer trigger it. Try It Out previews still temporarily replace the settings pause symbol.
+
+## Vpet 1.5.0
 
 - Add Close Toy Chest to the chest menu, putting away the chest, fence, ball, and triangle together.
 - Add a triangle instrument. Tap it for a short chime; after a brief pause, your pet walks over and repeats the number and rhythm of your taps. Drag the triangle to reposition it inside the play zone.

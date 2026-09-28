@@ -1,10 +1,10 @@
-# Vpet 1.5.0
+# Vpet 1.5.1
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.5.0-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.5.1-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -120,7 +120,7 @@ Right-click your pet and select **Display Toy Chest**. A chest and a blue dashed
 
 The zone fits inside one monitor's usable area, avoiding taskbars and gaps between screens. Move its center onto another monitor to move the play space there. It defaults to 480 × 320 pixels at 100% scaling, with a minimum of 160 × 140; its maximum is the monitor's working area. Chest and ball size follow the app's launch display scale. The chest, fence and ball follow **Window Location**, stay below the pet, and never take keyboard focus. Empty transparent space passes clicks through.
 
-Right-click the chest for **Display Play Zone**, **Ball**, **Help Messages**, **Triangle**, and **Close Toy Chest**. Hiding the fence keeps its boundaries active. Ball is a toggle: check it to add one red ball, uncheck it to remove the ball and cancel fetching. Help Messages defaults on and displays hints above the chest only while hovering over the fence border/center or a toy; disable it to hide those hints. The fence uses a plus-shaped center control.
+Right-click the chest for **Display Play Zone**, **Ball**, **Triangle**, **Help Messages**, and **Close Toy Chest**. Hiding the fence keeps its boundaries active. Ball is a toggle: check it to add one red ball, uncheck it to remove the ball and cancel fetching. Help Messages stays directly above Close Toy Chest at the bottom of the menu. It defaults on and displays hints above the chest only while hovering over the fence border/center or a toy; disable it to hide those hints. The fence uses a plus-shaped center control.
 
 Click the ball for three bounces, each reaching half the previous height, or drag away from it to aim in the opposite direction. Release to launch along the solid red arrow; a longer pull increases power up to a limit. The ball reflects off the fence and slows to a stop. Pet return shots vary randomly in both direction and strength.
 
@@ -134,7 +134,7 @@ The **Triangle** toggle adds or removes a small instrument. Tap it repeatedly fo
 
 Available toys also attract a spontaneous visit every **60–120 seconds**, chosen randomly after the previous action. The pet may return a ball or play a short triangle phrase. Toy visits temporarily override Static, speed 0, and restricted roaming just like user-triggered fetching; saved movement rules resume afterwards. Menus, settings, hovering and dragging pause the pet's actions.
 
-A **pause symbol** appears in the speech bubble while settings or other controls pause movement. It is a built-in status indicator, excluded from replaceable reactions. Explicit **Try It Out** previews temporarily replace it, then the pause symbol returns.
+A **pause symbol** appears in the speech bubble only while the Vpet settings window is open. Toy interactions and right-click menus do not trigger it. It is a built-in status indicator, excluded from replaceable reactions. Explicit **Try It Out** previews temporarily replace it, then the pause symbol returns.
 
 ## Local storage
 

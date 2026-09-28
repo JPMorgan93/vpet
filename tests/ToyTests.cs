@@ -133,9 +133,9 @@ namespace Vpet
                     Check(toggle!=null&&!toys.Settings.DisplayChest,"Pet menu provides Display Toy Chest, default off");toggle.PerformClick();Application.DoEvents();
                     Check(windows.Chest.Visible&&windows.Fence.Visible,"Toggling chest shows chest and fence");
                     Check(windows.Menu.Items[0].Text=="Display Play Zone"&&windows.Menu.Items[1].Text=="Ball","Chest menu begins with fence toggle followed by Ball");
-                    Check(windows.Menu.Items.Count==6&&windows.Menu.Items[2].Text=="Help Messages"&&windows.Menu.Items[3].Text=="Triangle"&&windows.Menu.Items[5].Text=="Close Toy Chest","Chest menu includes toy toggles, help toggle and Close Toy Chest");
+                    Check(windows.Menu.Items.Count==6&&windows.Menu.Items[2].Text=="Triangle"&&windows.Menu.Items[3] is ToolStripSeparator&&windows.Menu.Items[4].Text=="Help Messages"&&windows.Menu.Items[5].Text=="Close Toy Chest","Chest menu keeps toys above its footer, with Help Messages directly above Close Toy Chest");
                     windows.Menu.Items[1].PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");
-                    windows.Menu.Items[3].PerformClick();Check(windows.Triangle.Visible&&toys.HasTriangle,"Triangle toggle creates the instrument");
+                    windows.Menu.Items[2].PerformClick();Check(windows.Triangle.Visible&&toys.HasTriangle,"Triangle toggle creates the instrument");
                     foreach(LayerMode mode in Enum.GetValues(typeof(LayerMode)))
                     {
                         pet.Model.Settings.Layer=mode;pet.ApplyLayer();windows.Update();Application.DoEvents();
@@ -165,7 +165,7 @@ namespace Vpet
                     var ball=Point.Round(toys.Ball);ToyMouse(windows.Ball,0x201,ball);ToyMouse(windows.Ball,0x202,ball);toys.AdvanceBall(.1f);
                     Check(toys.BounceHeight>0&&toys.Launcher==BallLauncher.None,"Native click triggers bounce only");
                     ToyMouse(windows.Ball,0x201,ball);ToyMouse(windows.Ball,0x200,new Point(ball.X+50,ball.Y-25));
-                    Check(windows.Arrow.Visible&&toys.Aiming,"Pull gesture shows launch arrow");ToyMouse(windows.Ball,0x202,Cursor.Position);
+                    Check(windows.Arrow.Visible&&toys.Aiming&&!pet.ShowPause,"Pull gesture shows launch arrow without a pause emote");ToyMouse(windows.Ball,0x202,Cursor.Position);
                     Check(!windows.Arrow.Visible&&toys.Velocity.X<0&&toys.Velocity.Y>0&&toys.Launcher==BallLauncher.User&&pet.Model.Playing,"Release launches opposite pull and triggers fetch");
                     ToyMouse(windows.Ball,0x201,ball);ToyMouse(windows.Ball,0x200,new Point(ball.X+70,ball.Y));windows.Ball.Capture=false;Application.DoEvents();
                     Check(!toys.Aiming&&!windows.Arrow.Visible,"Lost capture cancels aim and removes arrow");
@@ -186,7 +186,7 @@ namespace Vpet
                     Native.RECT helpBounds,chestBounds;Native.GetWindowRect(windows.Help.Handle,out helpBounds);Native.GetWindowRect(windows.Chest.Handle,out chestBounds);
                     Check(helpBounds.Bottom<=chestBounds.Top,"Help message is positioned above the chest (help bottom "+helpBounds.Bottom+", chest top "+chestBounds.Top+")");
                     Cursor.Position=new Point((int)toys.Zone.Left+50,(int)toys.Zone.Top+50);windows.Update();Check(!windows.Help.Visible,"Moving away hides the message");
-                    windows.Menu.Items[2].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
+                    windows.Menu.Items[4].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
                     windows.Menu.Items[5].PerformClick();Check(windows.Windows.All(w=>!w.Visible)&&!toys.Settings.DisplayChest&&!toys.HasTriangle,"Close Toy Chest hides every toy window and removes the instrument");
                     Check(!pet.Model.Playing,"Turning chest off cancels pending fetch");
                     pet.Close();application.Close();
