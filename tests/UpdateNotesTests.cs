@@ -77,6 +77,12 @@ namespace Vpet
                 var check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
                 string text=string.Join(" ",check.Controls[0].Controls.OfType<Label>().Select(l=>l.Text));
                 Check(check.Visible&&text.Contains(ReleaseInfo.Version)&&text.Contains("9.8.7")&&!text.Contains("Must only"),"Manual window shows current and available versions without release descriptions");
+                foreach(string caption in new[]{"Close","Update"})
+                {
+                    var button=FindButton(check,caption);var bounds=new Rectangle(check.PointToClient(button.PointToScreen(Point.Empty)),button.Size);
+                    Check(check.ClientRectangle.Contains(bounds),"Update status keeps the "+caption+" button fully inside the window");
+                }
+                Check(check.Controls[0].Controls.OfType<Label>().All(l=>l.Right<=check.Controls[0].ClientSize.Width),"Update status wraps its explanation within the window");
                 using(var image=new Bitmap(check.Width,check.Height)){check.DrawToBitmap(image,new Rectangle(Point.Empty,check.Size));image.Save(Path.Combine(artifacts,"update-available.png"));}
                 FindButton(check,"Close").PerformClick();Check(installs==(auto?1:0),"Closing update status never installs");
                 AwaitUpdate(pet.CheckForUpdatesAsync(true));check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");

@@ -95,7 +95,7 @@ namespace Vpet
             t.SetVisible(false,due+1);ToyStep(t,p,due+500,.01f);Check(!p.Playing,"Closed chest never restarts spontaneous play");
             byte[] wave=ToyChime.CreateWave();Check(wave.Length==22094&&System.Text.Encoding.ASCII.GetString(wave,0,4)=="RIFF"&&BitConverter.ToInt32(wave,24)==22050,"Chime is a valid half-second PCM wave");
             int peak=0;for(int i=44;i<wave.Length;i+=2)peak=Math.Max(peak,Math.Abs((int)BitConverter.ToInt16(wave,i)));Check(peak>1000&&peak<16000,"Generated chime is audible with headroom against clipping");
-            using(var image=ToyArtwork.Triangle(1)){Check(image.GetPixel(0,0).A==0&&SpriteProject.VisibleBounds(image).Height>30,"Triangle drawing retains transparent corners and a visible instrument");image.Save(Path.Combine(artifacts,"triangle.png"));}
+            using(var image=ToyArtwork.Triangle(1)){Check(image.GetPixel(0,0).A==0&&SpriteProject.VisibleBounds(image).Height>30,"Triangle drawing retains transparent corners and a visible instrument");Check(image.GetPixel(22,22).A==1,"Hollow triangle center uses the lowest nonzero alpha for input without a visible fill");image.Save(Path.Combine(artifacts,"triangle.png"));}
             p=Pet(MovementMode.Static);t=Toys(p);t.RemoveBall(0);t.SpawnTriangle();p.Place(t.Triangle);chimes=0;t.ChimePlayed+=delegate{chimes++;};
             t.PressTriangle(0);t.PressTriangle(.2);t.PressTriangle(.4);double now=0;
             while(chimes<4&&now<10){now+=.01;ToyStep(t,p,now,.01f);}

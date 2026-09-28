@@ -16,6 +16,7 @@ namespace Vpet
             ClientSize=new Size(460,220);MinimumSize=new Size(420,255);StartPosition=FormStartPosition.CenterScreen;
             BackColor=Color.FromArgb(248,247,252);MinimizeBox=false;MaximizeBox=false;
             var root=new TableLayoutPanel{Dock=DockStyle.Fill,Padding=new Padding(20),ColumnCount=1,RowCount=3};Controls.Add(root);
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.Controls.Add(new Label{AutoSize=true,Dock=DockStyle.Fill,Font=new Font(Font,FontStyle.Bold),Margin=new Padding(0,0,0,14),Text="Your version: Vpet "+ReleaseInfo.Version},0,0);
             root.Controls.Add(status,0,1);
