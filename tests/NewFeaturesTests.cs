@@ -96,6 +96,20 @@ namespace Vpet
             byte[] wave=ToyChime.CreateWave();Check(wave.Length==22094&&System.Text.Encoding.ASCII.GetString(wave,0,4)=="RIFF"&&BitConverter.ToInt32(wave,24)==22050,"Chime is a valid half-second PCM wave");
             int peak=0;for(int i=44;i<wave.Length;i+=2)peak=Math.Max(peak,Math.Abs((int)BitConverter.ToInt16(wave,i)));Check(peak>1000&&peak<16000,"Generated chime is audible with headroom against clipping");
             using(var image=ToyArtwork.Triangle(1)){Check(image.GetPixel(0,0).A==0&&SpriteProject.VisibleBounds(image).Height>30,"Triangle drawing retains transparent corners and a visible instrument");image.Save(Path.Combine(artifacts,"triangle.png"));}
+            p=Pet(MovementMode.Static);t=Toys(p);t.RemoveBall(0);t.SpawnTriangle();p.Place(t.Triangle);chimes=0;t.ChimePlayed+=delegate{chimes++;};
+            t.PressTriangle(0);t.PressTriangle(.2);t.PressTriangle(.4);double now=0;
+            while(chimes<4&&now<10){now+=.01;ToyStep(t,p,now,.01f);}
+            Check(chimes==4&&t.Fetch==FetchPhase.Repeating,"First repeat note begins after the user's three taps");
+            t.DragTriangle(new PointF(t.Triangle.X-80,t.Triangle.Y));
+            while(p.Playing&&now<30){now+=.01;ToyStep(t,p,now,.01f);}
+            Check(chimes==6&&!p.Playing,"Moving instrument during playback reroutes pet and plays only the remaining notes");
+            p=Pet(MovementMode.Static);p.SetDisplays(new List<DisplayArea>{new DisplayArea("left",new Rectangle(-1000,100,900,650),1),new DisplayArea("right",new Rectangle(200,0,1000,760),1.5f)});
+            p.Place(new PointF(-500,400));t=Toys(p);t.RemoveBall(0);t.MoveZone(new PointF(800,400));t.SpawnTriangle();t.PressTriangle(0);now=0;
+            while(p.Crossing==null&&now<25){now+=.01;ToyStep(t,p,now,.01f);}
+            var crossing=p.Crossing;Check(crossing!=null,"Triangle visit uses seamless cross-display routing");
+            t.PressTriangle(now);Check(p.Crossing==crossing&&t.RememberedNotes==2,"Further taps preserve the ongoing display transition");
+            p.SetDisplays(new List<DisplayArea>{new DisplayArea("left",new Rectangle(-1000,100,900,650),1)});t.RecoverDisplays();
+            Check(t.DisplayId=="left"&&ToyModel.ContainsInclusive(t.TriangleBounds,t.Triangle),"Disconnected display recovers the triangle into its play zone");
         }
         static void NewMakerWindows()
         {
