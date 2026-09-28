@@ -162,5 +162,4 @@ The detailed behavior and source artwork mapping are in [Vpet Development Specif
 
 Open **Settings → Sprite → Open Sprite Maker** to select frames from any transparent PNG sheet, save editing projects, preview animations, and export a custom pet. Drag the red border to move a selection or a corner to resize it. Magic Tweak aligns poses by their lowest visible pixels to a shared ground point without stretching. Each animation supports 1–5 frames, with optional diagonals. See the [Sprite Maker guide](SPRITE-MAKER.md) for the full workflow.
 
-
 **Load Last Project**, next to Load Project in Sprite Maker, reopens the most recently opened or saved .vpetproject. The path is remembered across Vpet restarts. Open or save a project once to enable the button; save edits before closing to resume them later. If the file moves, use Load Project to locate it again. Missing or unreadable projects leave current work intact.

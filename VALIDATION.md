@@ -1,5 +1,9 @@
 # Prototype validation
 
+## Version 1.5.2
+
+3,032 automated assertions and 109 native Sprite Maker/settings checks passed. Last-project checks cover older/null preference migration, initially disabled state, immediate persistence after opening, restoring dimensions and tweaks after a preferences reload, switching the remembered project, preserving history/current work after missing or corrupt file errors, and reopening through the new button. The button layout and missing-file guidance were visually inspected. The EXE installer built successfully; tests used isolated files and preferences.
+
 ## Version 1.5.1
 
 3,032 automated assertions and 95 native Sprite Maker/settings checks passed. The settings checks verify that movement pauses and either right-click menu do not display the pause emote, opening settings does, explicit reaction previews still work, and closing settings removes the symbol immediately.
