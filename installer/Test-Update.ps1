@@ -32,11 +32,27 @@ try {
  $links=New-Object -ComObject WScript.Shell
  if($links.CreateShortcut($shortcut).IconLocation -notlike '*Vpet-Pixel.ico*'){throw 'Start menu shortcut did not switch to the new icon path'}
  if(Test-Path (Join-Path $app 'pending-update.txt')){throw 'Fresh install incorrectly requested update notes'}
+ # Simulate an older installed EXE with no last-run tracking. The installer
+ # must capture its version before replacing it with the current binary.
+ $legacySource=Join-Path $folder 'LegacyVpet.cs'
+ $legacyExe=Join-Path $folder 'LegacyVpet.exe'
+ [IO.File]::WriteAllText($legacySource,'[assembly:System.Reflection.AssemblyFileVersion("1.5.1.0")] [assembly:System.Reflection.AssemblyInformationalVersion("1.5.1")] class LegacyVpet { static void Main() {} }')
+ & (Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe') /nologo /target:winexe ('/out:'+$legacyExe) $legacySource
+ if($LASTEXITCODE -ne 0){throw 'Legacy version fixture compilation failed'}
+ Copy-Item -LiteralPath $legacyExe -Destination (Join-Path $app 'Vpet.exe') -Force
  $sentinel=Join-Path $app 'user-data.txt';[IO.File]::WriteAllText($sentinel,'Preserve me')
  $update='/SILENT /SP- /SUPPRESSMSGBOXES /NORESTART /RESTARTEXITCODE=3010 /VPETHELPER'
  Run $installer $update
  if([IO.File]::ReadAllText((Join-Path $app 'pending-update.txt')).Trim() -ne $version){throw 'Successful update did not request release notes on relaunch'}
+ $fromFile=Join-Path $app 'pending-update-from.txt'
+ if([IO.File]::ReadAllText($fromFile).Trim() -ne '1.5.1.0'){throw 'Upgrade did not retain the previous binary version for skipped-release notes'}
  Write-Output 'PASS: only an upgrade records completion notes for the installed version'
+ Run $installer $update
+ if([IO.File]::ReadAllText($fromFile).Trim() -ne '1.5.1.0'){throw 'Another installation without running Vpet lost the unseen release history'}
+ [IO.File]::WriteAllText((Join-Path $app 'last-run-version.txt'),'1.5.2')
+ Run $installer $update
+ if([IO.File]::ReadAllText($fromFile).Trim() -ne '1.5.2'){throw 'Upgrade did not prefer the last version actually run'}
+ Write-Output 'PASS: upgrades retain skipped-version history, preserve unseen notes across installs, and prefer the last-run version'
  if(Test-Path $desktop){throw 'Update created unwanted shortcut'}
  if((Get-ItemProperty $key).InstallLocation.TrimEnd('\') -ne $app){throw 'Update changed destination'}
  Write-Output 'PASS: progress-only update preserves no-shortcut choice and existing destination'
