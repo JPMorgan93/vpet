@@ -1,5 +1,11 @@
 # Prototype validation
 
+## Version 1.5.1
+
+3,032 automated assertions and 95 native Sprite Maker/settings checks passed. The settings checks verify that movement pauses and either right-click menu do not display the pause emote, opening settings does, explicit reaction previews still work, and closing settings removes the symbol immediately.
+
+59 native toy checks passed, including Help Messages directly above Close Toy Chest below all toys, working menu toggles, and ball aiming without the pause emote. The first toy run reported a one-pixel difference in an existing mouse-driven resize assertion; an unchanged rerun passed. The EXE installer built successfully. No personal installation or preferences were changed.
+
 ## Version 1.5.0
 
 3,032 automated assertions passed. New checks cover left/right source normalization, optional reaction frame counts and fallback, version 1/2 project migration, preserved selections when optional rows are disabled, clipping and runtime package round-trips. Toy checks cover exact triangle tap counts and rhythm in all movement modes, rapid taps, settings pauses, interruption, returning to the restricted circle, instrument containment and display recovery, preserved crossings on additional taps, remaining-note playback after relocation, randomized visits, and generated PCM audio bounds.
