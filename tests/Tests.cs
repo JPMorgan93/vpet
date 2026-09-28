@@ -36,7 +36,7 @@ namespace Vpet
                 if(Array.IndexOf(args,"--toy-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();ToyWindowsTest();Console.WriteLine("PASS: "+count+" toy chest native UI checks.");return 0;}
                 if(Array.IndexOf(args,"--maker-window-tests")>=0)
-                {Native.EnableDpi();Application.EnableVisualStyles();MakerWindows();AnimationFrameWindows();NewMakerWindows();RecentProjectWindows();Console.WriteLine("PASS: "+count+" Sprite Maker UI checks.");return 0;}
+                {Native.EnableDpi();Application.EnableVisualStyles();MakerWindows();AnimationFrameWindows();NewMakerWindows();RecentProjectWindows();SheetReplacementWindows();Console.WriteLine("PASS: "+count+" Sprite Maker UI checks.");return 0;}
                 if(Array.IndexOf(args,"--update-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();UpdateNotesWindows();Console.WriteLine("PASS: "+count+" update description UI checks.");return 0;}
                 if(Array.IndexOf(args,"--public-release-test")>=0)
@@ -46,7 +46,7 @@ namespace Vpet
                     Check(Updates.Hash(download)==hash,"Published installer download matches the public checksum");
                     Console.WriteLine("PASS: public GitHub release "+update.Version+" discovered and installer downloaded/verified. No installer was executed.");return 0;
                 }
-                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();UpdateDescriptions();StartupSettings();MakerProjects();ToyBehavior();OptionalAnimations();TrianglePlay();
+                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();UpdateDescriptions();StartupSettings();MakerProjects();ToyBehavior();OptionalAnimations();TrianglePlay();InstrumentSounds();SheetReplacement();
                 Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
             }
             catch(Exception ex){Console.Error.WriteLine(ex);return 1;}
