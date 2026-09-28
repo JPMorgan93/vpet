@@ -31,7 +31,9 @@ namespace Vpet
         internal int Cycle,Slot;
         internal bool Dirty;
         string projectPath;
-        readonly Button[] cycles=new Button[10],slots=new Button[5];
+        readonly Button[] cycles=new Button[SpriteProject.TotalCycles],slots=new Button[5];
+        readonly CheckBox emotes=new CheckBox{Text="Emote Animations (optional)",AutoSize=true,Margin=new Padding(10)};
+        readonly ComboBox facing=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList,Width=125,Margin=new Padding(4,8,4,4)};
         readonly CheckBox diagonal=new CheckBox{Text="Diagonal animations",AutoSize=true,Checked=true,Margin=new Padding(10)};
         readonly NumericUpDown frameWidth=new NumericUpDown{Minimum=1,Maximum=100,Value=32,Width=64,Margin=new Padding(4,8,4,4)};
         readonly NumericUpDown frameHeight=new NumericUpDown{Minimum=1,Maximum=150,Value=36,Width=64,Margin=new Padding(4,8,4,4)};
@@ -55,10 +57,12 @@ namespace Vpet
             commands.Controls.Add(MakerUi.Button("Save Project As…",delegate{SaveProject(true);}));
             commands.Controls.Add(MakerUi.Button("Load Project",LoadProject));
             complete=MakerUi.Button("Tweak and Complete",OpenTweak);commands.Controls.Add(complete);
+            commands.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,false);}));
             var options=MakerUi.Flow();root.Controls.Add(options,0,1);
             options.Controls.Add(diagonal);options.Controls.Add(MakerUi.Label("Animation frame width"));options.Controls.Add(frameWidth);options.Controls.Add(MakerUi.Label("Height"));options.Controls.Add(frameHeight);
+            options.Controls.Add(MakerUi.Label("Sheet faces"));facing.Items.AddRange(new object[]{"Left","Right"});facing.SelectedIndex=0;options.Controls.Add(facing);options.Controls.Add(emotes);
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,2);
-            for(int i=0;i<10;i++){int index=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{ChooseCycle(index);});choices.Controls.Add(cycles[i]);}
+            for(int i=0;i<cycles.Length;i++){int index=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{ChooseCycle(index);});choices.Controls.Add(cycles[i]);}
             var frameChoices=MakerUi.Flow();root.Controls.Add(frameChoices,0,3);
             for(int i=0;i<5;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);frameChoices.Controls.Add(slots[i]);}
             frameChoices.Controls.Add(MakerUi.Button("Set",delegate{SetFrame();}));frameChoices.Controls.Add(MakerUi.Button("Clear",delegate{ClearFrame();}));frameChoices.Controls.Add(selectionHelp);
@@ -66,6 +70,8 @@ namespace Vpet
             sheet.DimensionsChanged+=delegate(int w,int h){SetDimensions(w,h);};
             frameWidth.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};frameHeight.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};
             diagonal.CheckedChanged+=delegate{if(Project!=null&&!syncing){Project.Data.Diagonals=diagonal.Checked;Dirty=true;if(!Project.Enabled(Cycle))Cycle=0;ChooseCycle(Cycle);}};
+            emotes.CheckedChanged+=delegate{if(Project!=null&&!syncing){Project.Data.EmoteAnimations=emotes.Checked;Dirty=true;if(!Project.Enabled(Cycle))Cycle=0;ChooseCycle(Cycle);}};
+            facing.SelectedIndexChanged+=delegate{if(Project!=null&&!syncing){Project.Data.FacesRight=facing.SelectedIndex==1;Dirty=true;RefreshState();}};
             zoom.ZoomChanged+=delegate(int value,Point? anchor){viewport.ChangeZoom(sheet,sheet.Zoom,value/100f,PointF.Empty,delegate{sheet.Zoom=value/100f;},delegate{return PointF.Empty;},anchor);};
             zoom.FitRequested+=delegate{if(Project!=null)zoom.SetPercent((int)Math.Floor(Math.Min((viewport.ClientSize.Width-20f)/Project.Source.Width,(viewport.ClientSize.Height-20f)/Project.Source.Height)*100),null);};
             sheet.ZoomWheel+=delegate(int delta,Point point){zoom.Step(delta,viewport.PointToClient(sheet.PointToScreen(point)));};
@@ -75,7 +81,7 @@ namespace Vpet
         internal void SetProject(SpriteProject project,string path)
         {
             if(Project!=null)Project.Dispose();Project=project;projectPath=path;Dirty=false;Cycle=Slot=0;sheet.Project=project;
-            syncing=true;diagonal.Checked=project.Data.Diagonals;frameWidth.Value=project.Width(0);frameHeight.Value=project.Height(0);syncing=false;
+            syncing=true;diagonal.Checked=project.Data.Diagonals;emotes.Checked=project.Data.EmoteAnimations;facing.SelectedIndex=project.Data.FacesRight?1:0;frameWidth.Value=project.Width(0);frameHeight.Value=project.Height(0);syncing=false;
             zoom.MaximumPercent=Math.Min(1600,3000000/Math.Max(project.Source.Width,project.Source.Height));
             ChooseCycle(0);sheet.RefreshSize();zoom.SetPercent(zoom.Percent,null);
         }
@@ -127,7 +133,8 @@ namespace Vpet
         internal void ClearFrame(){if(Project==null)return;Project.Data.Frames[Cycle][Slot]=null;sheet.Draft=null;Dirty=true;RefreshState();}
         internal void RefreshState()
         {
-            for(int i=0;i<10;i++){cycles[i].Visible=Project==null?i%5<3:Project.Enabled(i);cycles[i].BackColor=i==Cycle?Color.FromArgb(221,211,241):Color.White;}
+            for(int i=0;i<cycles.Length;i++){cycles[i].Visible=Project==null?i<10&&i%5<3:Project.Enabled(i);cycles[i].BackColor=i==Cycle?Color.FromArgb(221,211,241):Color.White;}
+            diagonal.Enabled=emotes.Enabled=facing.Enabled=Project!=null;
             for(int i=0;i<5;i++){bool saved=Project!=null&&Project.Data.Frames[Cycle][i]!=null;slots[i].Text=(i+1)+(saved?" ✓":"");slots[i].ForeColor=saved?Color.DarkGreen:Color.Black;slots[i].BackColor=i==Slot?Color.FromArgb(221,211,241):Color.White;}
             selectionHelp.Text=Project==null?"Upload a transparent PNG to begin.":"Frame "+(Slot+1)+": drag border to move; corners resize all "+SpriteProject.Cycles[Cycle]+" frames.";
             complete.Enabled=false;

@@ -13,13 +13,13 @@ namespace Vpet
         public Size Cell { get; private set; }
         public bool HasDiagonals {get;private set;}
         public int[] Counts {get;private set;}
-        readonly Bitmap[][] frames=new Bitmap[10][];
-        readonly Bitmap[][] mirrors=new Bitmap[10][];
+        readonly Bitmap[][] frames,mirrors;
         public SpriteSet(Bitmap sheet) : this(sheet,true,new[]{4,4,4,4,4,5,5,5,5,5}) {}
         public SpriteSet(Bitmap sheet,bool diagonals,int[] counts)
         {
-            Sheet=sheet;Cell=new Size(sheet.Width/5,sheet.Height/10);HasDiagonals=diagonals;Counts=(int[])counts.Clone();
-            for(int row=0;row<10;row++)
+            Sheet=sheet;Cell=new Size(sheet.Width/5,sheet.Height/counts.Length);HasDiagonals=diagonals;Counts=(int[])counts.Clone();
+            frames=new Bitmap[counts.Length][];mirrors=new Bitmap[counts.Length][];
+            for(int row=0;row<counts.Length;row++)
             {
                 int count=counts[row];frames[row]=new Bitmap[count];mirrors[row]=new Bitmap[count];
                 for(int col=0;col<count;col++)
@@ -46,7 +46,13 @@ namespace Vpet
             return (((int)Math.Floor(angle/90+.5))%4+4)%4*2;
         }
         public void SavePackage(string path)
-        {SpritePackage.Write(path,new SpriteManifest{Version=2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts},Sheet);}
+        {SpritePackage.Write(path,new SpriteManifest{Version=Counts.Length>10?3:2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts},Sheet);}
+        public Bitmap EmoteFrame(int reaction,int index)
+        {
+            int row=SpriteProject.MovementCycles+reaction;
+            if(reaction<0||reaction>=Reactions.Names.Length||row>=Counts.Length||Counts[row]==0)return null;
+            return frames[row][Math.Max(0,index)%Counts[row]];
+        }
         public static SpriteSet FromReference(string path)
         {
             int[,] bands={{38,62},{108,134},{177,203},{239,265},{305,335},{372,396},{445,471},{520,546},{596,621},{669,699}};
@@ -253,6 +259,12 @@ namespace Vpet
         }
         static void DrawReaction(Graphics graphics,int index,float top)
         {
+            if(index==-1)
+            {
+                using(var ink=new SolidBrush(Color.FromArgb(94,72,139)))
+                {graphics.FillRectangle(ink,22,top+13,8,26);graphics.FillRectangle(ink,37,top+13,8,26);}
+                return;
+            }
             graphics.InterpolationMode=InterpolationMode.HighQualityBicubic;
             graphics.PixelOffsetMode=PixelOffsetMode.HighQuality;
             graphics.DrawImage(SystemEmoji.Image(index),new RectangleF(12,top+4,44,44));

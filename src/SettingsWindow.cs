@@ -190,12 +190,12 @@ namespace Vpet
                 using(var dialog=new SaveFileDialog{Filter="PNG image|*.png",FileName="vpet-template.png"})if(dialog.ShowDialog(this)==DialogResult.OK)
                 {try{using(var original=SpriteSet.FromReference(pet.ReferencePath))original.Sheet.Save(dialog.FileName,ImageFormat.Png);}catch(Exception ex){ShowError(ex.Message);}}
             });
-            ButtonAt(page,"Download blank sprite sheet…",247,706,285,delegate
+            ButtonAt(page,"Download current sprite sheet…",247,706,285,delegate
             {
-                using(var dialog=new SaveFileDialog{Filter="PNG image|*.png",FileName="vpet-blank-template.png"})if(dialog.ShowDialog(this)==DialogResult.OK)
-                {try{using(var template=SpriteSet.BlankTemplate())template.Save(dialog.FileName,ImageFormat.Png);}catch(Exception ex){ShowError(ex.Message);}}
+                using(var dialog=new SaveFileDialog{Filter="PNG image|*.png",FileName="vpet-current-sheet.png"})if(dialog.ShowDialog(this)==DialogResult.OK)
+                {try{pet.Sprites.Sheet.Save(dialog.FileName,ImageFormat.Png);}catch(Exception ex){ShowError(ex.Message);}}
             });
-            LabelAt(page,"Blank template: 100 × 150 px cells with labeled guide boxes. Draw on a separate layer, then remove all guide boxes and labels before exporting a transparent PNG. Leave the fifth cell of each idle row empty.",247,756,310,115,false);
+            LabelAt(page,"Download the active pet's transparent PNG sheet to edit in your art program, then upload it to Sprite Maker. Rows follow the animation buttons; optional emote rows follow walking rows. Use the How to Guide to select frames and export a usable sprite.",247,756,310,115,false);
             foreach(Control control in page.Controls)if(control.Top>=170)control.Top+=44;
             ButtonAt(page,"Open Sprite Maker",24,165,185,delegate
             {

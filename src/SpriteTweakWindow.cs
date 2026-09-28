@@ -22,7 +22,7 @@ namespace Vpet
         readonly PreviewZoomBar zoom=new PreviewZoomBar();
         readonly SpriteSheetViewport viewport=new SpriteSheetViewport{Dock=DockStyle.Fill,AutoScroll=true,BackColor=Color.FromArgb(220,216,229)};
         readonly Button tweak,undo;
-        readonly Button[] cycles=new Button[10];
+        readonly Button[] cycles=new Button[SpriteProject.TotalCycles];
         readonly System.Collections.Generic.Stack<SpriteFrame[][]> history=new System.Collections.Generic.Stack<SpriteFrame[][]>();
         int cycle;
         int[] slots;
@@ -36,7 +36,7 @@ namespace Vpet
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,52));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,0);
-            for(int i=0;i<10;i++)if(project.Enabled(i)){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});choices.Controls.Add(cycles[i]);}
+            for(int i=0;i<cycles.Length;i++)if(project.Enabled(i)&&project.Slots(i).Length>0){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});choices.Controls.Add(cycles[i]);}
             root.Controls.Add(zoom,0,1);
             preview=new TweakPreview(project);preview.BeforeNudge+=Remember;preview.Changed+=delegate{maker.Dirty=true;RefreshPreview();};viewport.Controls.Add(preview);root.Controls.Add(viewport,0,2);
             viewport.Resize+=delegate{preview.RefreshSize(viewport.ClientSize);};
@@ -55,6 +55,7 @@ namespace Vpet
             root.Controls.Add(status,0,6);
             var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;root.Controls.Add(bottom,0,7);
             bottom.Controls.Add(MakerUi.Button("Complete",Complete));bottom.Controls.Add(MakerUi.Button("Back to Sprite Maker",delegate{Close();}));
+            bottom.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,true);}));
             timer.Tick+=delegate{if(!tweaking)RefreshPreview();};timer.Start();
             FormClosed+=delegate{timer.Dispose();};SelectCycle(0);
         }
@@ -63,7 +64,7 @@ namespace Vpet
         void SelectCycle(int row)
         {
             cycle=row;slots=project.Slots(row);slider.Value=0;slider.Maximum=Math.Max(0,slots.Length-1);slider.Enabled=tweaking&&slots.Length>1;clock.Restart();
-            for(int i=0;i<10;i++)if(cycles[i]!=null)cycles[i].BackColor=i==row?Color.FromArgb(221,211,241):Color.White;RefreshPreview();
+            for(int i=0;i<cycles.Length;i++)if(cycles[i]!=null)cycles[i].BackColor=i==row?Color.FromArgb(221,211,241):Color.White;RefreshPreview();
         }
         void ToggleTweak()
         {
@@ -71,12 +72,12 @@ namespace Vpet
         }
         void Remember()
         {
-            var copy=new SpriteFrame[10][];for(int row=0;row<10;row++){copy[row]=new SpriteFrame[5];for(int col=0;col<5;col++)if(project.Data.Frames[row][col]!=null)copy[row][col]=project.Data.Frames[row][col].Copy();}history.Push(copy);
+            var copy=new SpriteFrame[SpriteProject.TotalCycles][];for(int row=0;row<copy.Length;row++){copy[row]=new SpriteFrame[5];for(int col=0;col<5;col++)if(project.Data.Frames[row][col]!=null)copy[row][col]=project.Data.Frames[row][col].Copy();}history.Push(copy);
         }
         void RefreshPreview()
         {
             if(slots==null||slots.Length==0)return;
-            int index=tweaking?Math.Min(slider.Value,slots.Length-1):(int)(clock.Elapsed.TotalSeconds*(cycle<5?4:8))%slots.Length;
+            int index=tweaking?Math.Min(slider.Value,slots.Length-1):(int)(clock.Elapsed.TotalSeconds*(cycle>=10?6:cycle<5?4:8))%slots.Length;
             bool differentCycle=preview.Cycle!=cycle;preview.Cycle=cycle;preview.Slot=slots[index];if(differentCycle)preview.RefreshSize(viewport.ClientSize);preview.Invalidate();
             var frame=project.Data.Frames[cycle][slots[index]];frameLabel.Text="Frame "+(index+1)+" / "+slots.Length+" · slot "+(slots[index]+1)+(tweaking?" · offset "+frame.OffsetX+", "+frame.OffsetY:"");
             string problem=project.FrameProblem(cycle,frame,true);status.ForeColor=problem==null?Color.DarkGreen:Color.Firebrick;

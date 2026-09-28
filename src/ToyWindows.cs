@@ -16,31 +16,33 @@ namespace Vpet
         readonly Func<double> now;
         internal readonly LayeredWindow Chest=new LayeredWindow(false){Text="Vpet toy chest",Cursor=Cursors.SizeAll};
         internal readonly LayeredWindow Ball=new LayeredWindow(false){Text="Vpet ball",Cursor=Cursors.Hand};
+        internal readonly LayeredWindow Triangle=new LayeredWindow(false){Text="Vpet triangle",Cursor=Cursors.Hand};
         internal readonly LayeredWindow Fence=new LayeredWindow(false){Text="Vpet play zone"};
         internal readonly LayeredWindow Arrow=new LayeredWindow(true){Text="Ball launch direction"};
         internal readonly LayeredWindow Help=new LayeredWindow(true){Text="Toy help"};
         internal readonly ContextMenuStrip Menu=new ContextMenuStrip();
         readonly MenuDismissal dismissal;
-        readonly Bitmap chestImage,ballImage;
-        Point? chestLocation,ballLocation;
+        readonly Bitmap chestImage,ballImage,triangleImage;
+        readonly ToyChime chime=new ToyChime();
+        Point? chestLocation,ballLocation,triangleLocation;
         Bitmap helpImage;
         string helpText;
         Point? helpLocation;
         string fenceKey="";
         LayeredWindow captured;
         Point pointerStart;
-        PointF chestStart,centerStart,pull;
+        PointF chestStart,triangleStart,centerStart,pull;
         RectangleF zoneStart;
         ZoneEdge resizeEdges;
         bool moveZone,dragged,disposed;
         LayerMode? layer;
         internal bool Busy {get{return captured!=null||Menu.Visible;}}
-        internal IEnumerable<LayeredWindow> Windows {get{yield return Help;yield return Ball;yield return Arrow;yield return Fence;yield return Chest;}}
+        internal IEnumerable<LayeredWindow> Windows {get{yield return Help;yield return Ball;yield return Triangle;yield return Arrow;yield return Fence;yield return Chest;}}
 
         public ToyWindows(PetModel pet,LayeredWindow petWindow,LayeredWindow crossingWindow,Action save,Func<double> now,Random random)
         {
             this.pet=pet;this.petWindow=petWindow;this.crossingWindow=crossingWindow;this.save=save;this.now=now;
-            Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);ballImage=ToyArtwork.Ball(Model.Scale);
+            Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);ballImage=ToyArtwork.Ball(Model.Scale);triangleImage=ToyArtwork.Triangle(Model.Scale);Model.ChimePlayed+=chime.Play;
             foreach(var window in Windows)
             {
                 IntPtr handle=window.Handle;Native.BackgroundAdornments.Add(handle);
@@ -55,7 +57,11 @@ namespace Vpet
             ball.Click+=delegate{if(ball.Checked)Model.SpawnBall(now());else{EndGesture(false);Model.RemoveBall(now());}Update();};Menu.Items.Add(ball);
             var help=new ToolStripMenuItem("Help Messages"){CheckOnClick=true,Checked=Model.Settings.HelpMessages};
             help.Click+=delegate{Model.Settings.HelpMessages=help.Checked;Update();save();};Menu.Items.Add(help);
-            Menu.Opening+=delegate{display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
+            var triangle=new ToolStripMenuItem("Triangle"){CheckOnClick=true};
+            triangle.Click+=delegate{if(triangle.Checked)Model.SpawnTriangle();else{EndGesture(false);Model.RemoveTriangle(now());}Update();};Menu.Items.Add(triangle);
+            Menu.Items.Add(new ToolStripSeparator());
+            Menu.Items.Add("Close Toy Chest",null,delegate{SetVisible(false);});
+            Menu.Opening+=delegate{display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
             Chest.ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
         }
         public void SetVisible(bool visible)
@@ -80,6 +86,7 @@ namespace Vpet
         {
             if(e.Button!=MouseButtons.Left||!Model.Settings.DisplayChest)return;
             var window=(LayeredWindow)sender;if(window==Arrow||window==Help)return;
+            triangleStart=Model.Triangle;
             pointerStart=Cursor.Position;chestStart=Model.Chest;centerStart=Model.Center;zoneStart=Model.Zone;
             if(window==Fence)
             {
@@ -107,6 +114,7 @@ namespace Vpet
             if(Geometry.Distance(pull,PointF.Empty)>=4)dragged=true;
             if(!dragged)return;
             if(captured==Chest)Model.DragChest(new PointF(chestStart.X+pull.X,chestStart.Y+pull.Y));
+            else if(captured==Triangle)Model.DragTriangle(new PointF(triangleStart.X+pull.X,triangleStart.Y+pull.Y));
             else if(captured==Fence)
             {
                 if(moveZone)Model.MoveZone(new PointF(centerStart.X+pull.X,centerStart.Y+pull.Y));
@@ -123,6 +131,7 @@ namespace Vpet
                 if(released&&dragged&&Geometry.Distance(pull,PointF.Empty)>=4)Model.LaunchPull(pull,now());
                 else if(released)Model.Bounce();else Model.CancelAim();
             }
+            else if(window==Triangle&&released&&!dragged)Model.PressTriangle(now());
             Arrow.Hide();pull=PointF.Empty;save();
         }
         public void Update()
@@ -141,6 +150,12 @@ namespace Vpet
                 if(ballLocation!=ballPoint||!Ball.Visible){Present(Ball,ballImage,ballPoint);ballLocation=ballPoint;}
             }
             else Ball.Hide();
+            if(Model.HasTriangle)
+            {
+                var point=new Point((int)Math.Round(Model.Triangle.X-triangleImage.Width/2f),(int)Math.Round(Model.Triangle.Y-triangleImage.Height/2f));
+                if(triangleLocation!=point||!Triangle.Visible){Present(Triangle,triangleImage,point);triangleLocation=point;}
+            }
+            else Triangle.Hide();
             if(Model.Settings.DisplayZone)
             {
                 string key=Model.Zone.ToString();
@@ -159,6 +174,12 @@ namespace Vpet
         internal string HelpAt(Point point,IntPtr hitWindow)
         {
             if(!Model.Settings.HelpMessages||!Model.Settings.DisplayChest||Menu.Visible)return null;
+            if(Model.HasTriangle&&Triangle.Visible&&(hitWindow==Triangle.Handle||hitWindow==Help.Handle))
+            {
+                Point local=Triangle.PointToClient(point);
+                if(local.X>=0&&local.Y>=0&&local.X<triangleImage.Width&&local.Y<triangleImage.Height&&triangleImage.GetPixel(local.X,local.Y).A>0)
+                    return "Tap the triangle to chime. Pause briefly after your last tap; your pet walks over and repeats your taps. Drag to move the triangle.";
+            }
             if(Model.HasBall&&Ball.Visible&&(hitWindow==Ball.Handle||hitWindow==Help.Handle))
             {
                 Point local=Ball.PointToClient(point);
@@ -217,13 +238,26 @@ namespace Vpet
         public void Dispose()
         {
             if(disposed)return;EndGesture(false);disposed=true;dismissal.Dispose();Menu.Dispose();
-            foreach(var window in Windows)window.Close();chestImage.Dispose();ballImage.Dispose();if(helpImage!=null)helpImage.Dispose();
+            Model.ChimePlayed-=chime.Play;chime.Dispose();
+            foreach(var window in Windows)window.Close();chestImage.Dispose();ballImage.Dispose();triangleImage.Dispose();if(helpImage!=null)helpImage.Dispose();
         }
     }
 
     // Draw at the desktop scale without introducing extra bitmap assets or opaque window backgrounds.
     internal static class ToyArtwork
     {
+        public static Bitmap Triangle(float scale)
+        {
+            var image=new Bitmap((int)Math.Ceiling(44*scale),(int)Math.Ceiling(44*scale),PixelFormat.Format32bppArgb);
+            using(var g=Graphics.FromImage(image))using(var outline=new Pen(Color.FromArgb(62,58,82),6))using(var metal=new Pen(Color.FromArgb(213,223,238),3))using(var stick=new Pen(Color.FromArgb(119,79,37),3))
+            {
+                g.ScaleTransform(scale,scale);g.SmoothingMode=SmoothingMode.AntiAlias;
+                var points=new[]{new PointF(30,36),new PointF(6,36),new PointF(22,8),new PointF(38,36)};
+                outline.LineJoin=metal.LineJoin=LineJoin.Round;g.DrawLines(outline,points);g.DrawLines(metal,points);
+                g.DrawLine(Pens.SlateGray,22,1,22,8);g.DrawLine(stick,24,31,40,20);
+            }
+            return image;
+        }
         public static Bitmap LaunchArrow(Rectangle bounds,PointF start,PointF end,float scale)
         {
             var image=new Bitmap(bounds.Width,bounds.Height,PixelFormat.Format32bppArgb);

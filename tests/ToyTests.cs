@@ -81,8 +81,8 @@ namespace Vpet
                 for(int i=0;i<18000&&pet.Playing;i++)ToyStep(toys,pet,kick+i*.01,.01f);
                 Check(!pet.Playing&&toys.Fetch==FetchPhase.None,"Pet returns to ordinary movement after kicking "+mode);
                 if(mode==MovementMode.Restricted)Check(Geometry.Distance(pet.Position,anchor)<=30,"Restricted pet walks back inside its unchanged circle");
-                for(int i=0;i<300;i++)ToyStep(toys,pet,kick+200+i*.01,.01f);
-                Check(!pet.Playing&&toys.Launcher==BallLauncher.Pet,"Pet launch never starts another chase");
+                for(int i=0;i<300;i++)ToyStep(toys,pet,kick+30+i*.01,.01f);
+                Check(!pet.Playing&&toys.Launcher==BallLauncher.Pet,"Pet launch does not immediately trigger another chase before spontaneous play is due");
             }
 
             pet=Pet(MovementMode.Static);toys=Toys(pet);toys.LaunchPull(new PointF(30,0),0);pet.Hovered=true;var stopped=pet.Position;
@@ -133,8 +133,9 @@ namespace Vpet
                     Check(toggle!=null&&!toys.Settings.DisplayChest,"Pet menu provides Display Toy Chest, default off");toggle.PerformClick();Application.DoEvents();
                     Check(windows.Chest.Visible&&windows.Fence.Visible,"Toggling chest shows chest and fence");
                     Check(windows.Menu.Items[0].Text=="Display Play Zone"&&windows.Menu.Items[1].Text=="Ball","Chest menu begins with fence toggle followed by Ball");
-                    Check(windows.Menu.Items.Count==3&&windows.Menu.Items[2].Text=="Help Messages","Chest menu contains toggles only, without old help messages");
+                    Check(windows.Menu.Items.Count==6&&windows.Menu.Items[2].Text=="Help Messages"&&windows.Menu.Items[3].Text=="Triangle"&&windows.Menu.Items[5].Text=="Close Toy Chest","Chest menu includes toy toggles, help toggle and Close Toy Chest");
                     windows.Menu.Items[1].PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");
+                    windows.Menu.Items[3].PerformClick();Check(windows.Triangle.Visible&&toys.HasTriangle,"Triangle toggle creates the instrument");
                     foreach(LayerMode mode in Enum.GetValues(typeof(LayerMode)))
                     {
                         pet.Model.Settings.Layer=mode;pet.ApplyLayer();windows.Update();Application.DoEvents();
@@ -179,7 +180,7 @@ namespace Vpet
                     Check(helpBounds.Bottom<=chestBounds.Top,"Help message is positioned above the chest (help bottom "+helpBounds.Bottom+", chest top "+chestBounds.Top+")");
                     Cursor.Position=new Point((int)toys.Zone.Left+50,(int)toys.Zone.Top+50);windows.Update();Check(!windows.Help.Visible,"Moving away hides the message");
                     windows.Menu.Items[2].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
-                    toggle.PerformClick();Check(!windows.Chest.Visible&&!windows.Ball.Visible&&!windows.Fence.Visible&&!windows.Arrow.Visible,"Turning chest off hides every toy window");
+                    windows.Menu.Items[5].PerformClick();Check(windows.Windows.All(w=>!w.Visible)&&!toys.Settings.DisplayChest&&!toys.HasTriangle,"Close Toy Chest hides every toy window and removes the instrument");
                     Check(!pet.Model.Playing,"Turning chest off cancels pending fetch");
                     pet.Close();application.Close();
                 }

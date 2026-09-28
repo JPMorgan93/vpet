@@ -184,21 +184,23 @@ namespace Vpet
             Model.Settings.LaunchOnStartup=enabled;Save();
         }
         public void ResetReactionTimer(){nextRandom=Now+Reactions.Interval(Model.Settings.Frequency,random);}
-        public void PreviewReaction(int index){ShowReaction(index);}
+        double reactionStarted,explicitPreviewUntil;
+        internal bool ShowPause {get{return Model.Paused&&!Model.Dragging&&!buttonDown&&Now>=explicitPreviewUntil;}}
+        public void PreviewReaction(int index){ShowReaction(index);explicitPreviewUntil=bubbleUntil;}
         public void PreviewCustomEmote(string name)
         {
             // Resolve the current name after a refresh, since adding/removing files changes indices.
             RefreshEmotes();
             int index=CustomEmotes.FindIndex(emote=>string.Equals(emote.Name,name,StringComparison.OrdinalIgnoreCase));
-            if(index>=0)ShowReaction(Reactions.Names.Length+index);
+            if(index>=0){ShowReaction(Reactions.Names.Length+index);explicitPreviewUntil=bubbleUntil;}
         }
-        public void ReplaceEmote(int index,string path){Replacements.Replace(index,path);ShowReaction(index);if(AssetsChanged!=null)AssetsChanged();}
-        public void RestoreEmote(int index){Replacements.Restore(index);ShowReaction(index);if(AssetsChanged!=null)AssetsChanged();}
+        public void ReplaceEmote(int index,string path){Replacements.Replace(index,path);PreviewReaction(index);if(AssetsChanged!=null)AssetsChanged();}
+        public void RestoreEmote(int index){Replacements.Restore(index);PreviewReaction(index);if(AssetsChanged!=null)AssetsChanged();}
         void ShowReaction(int index)
         {
             if(reactionPreview!=null){reactionPreview.Dispose();reactionPreview=null;}
             if(customReaction!=null){customReaction.Dispose();customReaction=null;}
-            reaction=index;
+            reaction=index;reactionStarted=Now;
             if(index>=8)
             {if(index-8>=CustomEmotes.Count){reaction=-1;return;}customReaction=(Bitmap)CustomEmotes[index-8].Image.Clone();}
             else if(Replacements.Get(index)!=null)customReaction=(Bitmap)Replacements.Get(index).Clone();
@@ -206,6 +208,7 @@ namespace Vpet
         }
         Bitmap ReactionImage(float scale,bool below)
         {
+            if(ShowPause)return Artwork.Bubble(-1,null,scale,below);
             // Resample a high-resolution emote once, not on every animation tick.
             if(reactionPreview==null||reactionPreviewScale!=scale||reactionPreviewBelow!=below)
             {
@@ -362,7 +365,9 @@ namespace Vpet
         {
             var display=Model.Current;Size size=display.PetSize(Sprites.Cell);
             animationFacing=Sprites.ResolveFacing(Model.Facing,Model.Walking?Model.LastMotion:PointF.Empty,animationFacing);
-            var frame=Sprites.Frame(Model.Walking,animationFacing,(int)phase);
+            // Hover and pickup retain their down-idle behavior. Explicit previews work while settings pause movement.
+            var emoteFrame=!ShowPause&&!Model.Hovered&&!buttonDown&&!Model.Dragging&&Now<bubbleUntil?Sprites.EmoteFrame(reaction,(int)((Now-reactionStarted)*6)):null;
+            var frame=emoteFrame??Sprites.Frame(Model.Walking,animationFacing,(int)phase);
             float offset=Model.Shaking(Now)?(float)(Math.Sin(Now*65)*3*display.Scale):0;
             PointF anchor=Geometry.Clamp(new PointF(Model.Position.X+offset,Model.Position.Y),display.Allowed(Sprites.Cell,false));
             var location=new Point((int)Math.Round(anchor.X-size.Width/2f),(int)Math.Round(anchor.Y-size.Height));
@@ -383,7 +388,7 @@ namespace Vpet
                 if(crossingWindow.Visible)crossingWindow.Hide();
             }
             bool showName=Model.Settings.ShowName(Model.Hovered||buttonDown);
-            bool showReaction=reaction>=0&&Now<bubbleUntil;
+            bool showReaction=ShowPause||(reaction>=0&&Now<bubbleUntil);
             if(showName)
             {
                 bool below=location.Y-(int)Math.Ceiling(62*display.Scale)<display.Work.Top;
