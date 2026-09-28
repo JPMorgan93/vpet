@@ -199,7 +199,7 @@ namespace Vpet
             foreach(Control control in page.Controls)if(control.Top>=170)control.Top+=44;
             ButtonAt(page,"Open Sprite Maker",24,165,185,delegate
             {
-                using(var maker=new SpriteMakerWindow{Icon=Icon})
+                using(var maker=new SpriteMakerWindow(pet.Model.Settings,pet.Save){Icon=Icon})
                 {
                     maker.ShowDialog(this);
                     if(maker.ExportedPath!=null)try{LoadSprite(maker.ExportedPath);}catch(Exception ex){ShowError(ex.Message);}

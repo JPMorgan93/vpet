@@ -35,6 +35,7 @@ namespace Vpet
         [DataMember] public NameVisibility NameDisplay = NameVisibility.Always;
         [DataMember] public bool LaunchOnStartup;
         [DataMember] public bool AutoUpdate;
+        [DataMember] public string LastSpriteProject = "";
         [DataMember] public ToyPreferences Toys = new ToyPreferences();
 
         [OnDeserializing]
@@ -42,7 +43,7 @@ namespace Vpet
         {
             Speed=50;Radius=250;DisplayRestrictedArea=true;Facing=2;
             X=Y=AnchorX=AnchorY=float.NaN;Frequency=Frequency.Sometimes;
-            PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;AutoUpdate=false;
+            PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;AutoUpdate=false;LastSpriteProject="";
             Toys=new ToyPreferences();
         }
 
@@ -55,6 +56,7 @@ namespace Vpet
             if (!Enum.IsDefined(typeof(Personality), Personality)) Personality = Personality.Sweet;
             if (!Enum.IsDefined(typeof(Frequency), Frequency)) Frequency = Frequency.Sometimes;
             PetName=CleanName(PetName);
+            if(LastSpriteProject==null)LastSpriteProject="";
             if (!Enum.IsDefined(typeof(NameVisibility), NameDisplay)) NameDisplay=NameVisibility.Always;
             if(Toys==null)Toys=new ToyPreferences();Toys.Validate();
         }

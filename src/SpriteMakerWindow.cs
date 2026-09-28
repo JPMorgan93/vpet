@@ -31,6 +31,8 @@ namespace Vpet
         internal int Cycle,Slot;
         internal bool Dirty;
         string projectPath;
+        readonly Preferences preferences;
+        readonly Action savePreferences;
         readonly Button[] cycles=new Button[SpriteProject.TotalCycles],slots=new Button[5];
         readonly CheckBox emotes=new CheckBox{Text="Emote Animations (optional)",AutoSize=true,Margin=new Padding(10)};
         readonly ComboBox facing=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList,Width=125,Margin=new Padding(4,8,4,4)};
@@ -42,11 +44,12 @@ namespace Vpet
         readonly TextBox status=new TextBox{ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,Dock=DockStyle.Fill,BorderStyle=BorderStyle.None,BackColor=Color.FromArgb(248,247,252)};
         readonly Label selectionHelp=MakerUi.Label("Upload a transparent PNG to begin.");
         readonly SpriteSheetView sheet=new SpriteSheetView();
-        readonly Button complete;
+        readonly Button complete,loadLast;
         bool syncing;
         public string ExportedPath {get;private set;}
-        public SpriteMakerWindow()
+        public SpriteMakerWindow(Preferences preferences=null,Action savePreferences=null)
         {
+            this.preferences=preferences??new Preferences();this.savePreferences=savePreferences;
             Text="Vpet Sprite Maker";Font=new Font("Segoe UI",10);ClientSize=new Size(1000,800);MinimumSize=new Size(800,650);
             StartPosition=FormStartPosition.CenterParent;BackColor=Color.FromArgb(248,247,252);AutoScaleMode=AutoScaleMode.Dpi;
             var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=7,Padding=new Padding(12)};
@@ -56,6 +59,7 @@ namespace Vpet
             commands.Controls.Add(MakerUi.Button("Save Project",delegate{SaveProject(false);}));
             commands.Controls.Add(MakerUi.Button("Save Project As…",delegate{SaveProject(true);}));
             commands.Controls.Add(MakerUi.Button("Load Project",LoadProject));
+            loadLast=MakerUi.Button("Load Last Project",delegate{OpenProject(this.preferences.LastSpriteProject);});commands.Controls.Add(loadLast);
             complete=MakerUi.Button("Tweak and Complete",OpenTweak);commands.Controls.Add(complete);
             commands.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,false);}));
             var options=MakerUi.Flow();root.Controls.Add(options,0,1);
@@ -83,7 +87,7 @@ namespace Vpet
             if(Project!=null)Project.Dispose();Project=project;projectPath=path;Dirty=false;Cycle=Slot=0;sheet.Project=project;
             syncing=true;diagonal.Checked=project.Data.Diagonals;emotes.Checked=project.Data.EmoteAnimations;facing.SelectedIndex=project.Data.FacesRight?1:0;frameWidth.Value=project.Width(0);frameHeight.Value=project.Height(0);syncing=false;
             zoom.MaximumPercent=Math.Min(1600,3000000/Math.Max(project.Source.Width,project.Source.Height));
-            ChooseCycle(0);sheet.RefreshSize();zoom.SetPercent(zoom.Percent,null);
+            RememberProject(path);ChooseCycle(0);sheet.RefreshSize();zoom.SetPercent(zoom.Percent,null);
         }
         void Upload(object sender,EventArgs e)
         {
@@ -97,8 +101,28 @@ namespace Vpet
         void LoadProject(object sender,EventArgs e)
         {
             using(var dialog=new OpenFileDialog{Filter="Vpet project|*.vpetproject"})if(dialog.ShowDialog(this)==DialogResult.OK)
-                try{var project=SpriteProject.Load(dialog.FileName);if(!ConfirmDiscard()){project.Dispose();return;}SetProject(project,dialog.FileName);}
-                catch(Exception ex){MakerUi.Error(this,ex);}
+                OpenProject(dialog.FileName);
+        }
+        void RememberProject(string path)
+        {
+            if(string.IsNullOrWhiteSpace(path))return;
+            preferences.LastSpriteProject=Path.GetFullPath(path);
+            if(savePreferences!=null)savePreferences();
+        }
+        internal bool OpenProject(string path)
+        {
+            // Save/cancel first, so reopening the same file reads any changes just saved by the user.
+            if(!ConfirmDiscard())return false;
+            try
+            {
+                var project=SpriteProject.Load(path);SetProject(project,path);return true;
+            }
+            catch(Exception ex)
+            {
+                status.ForeColor=Color.Firebrick;
+                status.Text="Could not open the project. Your current work is still open. If the file was moved, use Load Project to find it."+Environment.NewLine+ex.Message;
+                return false;
+            }
         }
         internal bool SaveProject(bool choosePath)
         {
@@ -106,7 +130,7 @@ namespace Vpet
             string path=projectPath;
             if(choosePath||string.IsNullOrEmpty(path))using(var dialog=new SaveFileDialog{Filter="Vpet project|*.vpetproject",DefaultExt="vpetproject",FileName=string.IsNullOrEmpty(path)?"my-pet.vpetproject":Path.GetFileName(path)})
             {if(dialog.ShowDialog(this)!=DialogResult.OK)return false;path=dialog.FileName;}
-            try{Project.Save(path);projectPath=path;Dirty=false;RefreshState();return true;}catch(Exception ex){MakerUi.Error(this,ex);return false;}
+            try{Project.Save(path);projectPath=path;Dirty=false;RememberProject(path);RefreshState();return true;}catch(Exception ex){MakerUi.Error(this,ex);return false;}
         }
         bool ConfirmDiscard()
         {
@@ -133,12 +157,14 @@ namespace Vpet
         internal void ClearFrame(){if(Project==null)return;Project.Data.Frames[Cycle][Slot]=null;sheet.Draft=null;Dirty=true;RefreshState();}
         internal void RefreshState()
         {
+            loadLast.Enabled=!string.IsNullOrWhiteSpace(preferences.LastSpriteProject);
             for(int i=0;i<cycles.Length;i++){cycles[i].Visible=Project==null?i<10&&i%5<3:Project.Enabled(i);cycles[i].BackColor=i==Cycle?Color.FromArgb(221,211,241):Color.White;}
             diagonal.Enabled=emotes.Enabled=facing.Enabled=Project!=null;
             for(int i=0;i<5;i++){bool saved=Project!=null&&Project.Data.Frames[Cycle][i]!=null;slots[i].Text=(i+1)+(saved?" ✓":"");slots[i].ForeColor=saved?Color.DarkGreen:Color.Black;slots[i].BackColor=i==Slot?Color.FromArgb(221,211,241):Color.White;}
             selectionHelp.Text=Project==null?"Upload a transparent PNG to begin.":"Frame "+(Slot+1)+": drag border to move; corners resize all "+SpriteProject.Cycles[Cycle]+" frames.";
             complete.Enabled=false;
-            if(Project==null)status.Text="Upload a sheet or load a saved project. Use the scrollbars to move around larger sheets.";
+            if(Project==null)status.Text="Upload a sheet or load a saved project. Use the scrollbars to move around larger sheets."+Environment.NewLine+
+                (loadLast.Enabled?"Load Last Project reopens your most recently opened or saved project.":"Open or save a project to enable Load Last Project.");
             else
             {
                 var problems=Project.Problems(false);complete.Enabled=problems.Count==0;
