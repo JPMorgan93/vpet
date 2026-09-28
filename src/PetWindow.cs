@@ -52,7 +52,7 @@ namespace Vpet
         bool startupUpdatePending=true;
         internal Func<AvailableUpdate> ReadUpdate=Updates.Check;
         internal Action<AvailableUpdate> InstallAvailable;
-        internal Action<string,string> UpdateMessage=(message,title)=>MessageBox.Show(message,title,MessageBoxButtons.OK,MessageBoxIcon.Information);
+        UpdateCheckWindow updateCheckWindow;
         AvailableUpdate availableUpdate;
         string notifiedVersion;
         ToolStripMenuItem installUpdate;
@@ -277,8 +277,20 @@ namespace Vpet
         async void CheckForUpdates(bool manual){await CheckForUpdatesAsync(manual);}
         internal async Task CheckForUpdatesAsync(bool manual)
         {
-            if(checkingUpdate||installingUpdate||updateNotesOpen)return;checkingUpdate=true;nextUpdateCheck=Now+6*60*60;
-            bool installImmediately=manual||(startupUpdatePending&&Model.Settings.AutoUpdate);startupUpdatePending=false;
+            if(closing||installingUpdate||updateNotesOpen)return;
+            if(checkingUpdate){if(manual&&updateCheckWindow!=null)updateCheckWindow.Activate();return;}
+            checkingUpdate=true;nextUpdateCheck=Now+6*60*60;
+            bool installImmediately=!manual&&startupUpdatePending&&Model.Settings.AutoUpdate;startupUpdatePending=false;
+            UpdateCheckWindow checkWindow=null;
+            if(manual)
+            {
+                if(updateCheckWindow==null)
+                {
+                    updateCheckWindow=new UpdateCheckWindow(update=>InstallAvailable(update)){Icon=Icon};
+                    updateCheckWindow.FormClosed+=delegate{updateCheckWindow=null;};
+                }
+                checkWindow=updateCheckWindow;checkWindow.ShowChecking();checkWindow.Show();checkWindow.Activate();
+            }
             try
             {
                 availableUpdate=await Task.Factory.StartNew<AvailableUpdate>(ReadUpdate);
@@ -288,20 +300,21 @@ namespace Vpet
                 {
                     installUpdate.Text="Install Vpet "+availableUpdate.Version+"…";
                     if(installImmediately)InstallAvailable(availableUpdate);
-                    else if(notifiedVersion!=availableUpdate.Version){notifiedVersion=availableUpdate.Version;Notify("Vpet update available","Version "+availableUpdate.Version+" is ready. Click here or use the pet menu to install it.");}
+                    else if(!manual&&notifiedVersion!=availableUpdate.Version){notifiedVersion=availableUpdate.Version;Notify("Vpet update available","Version "+availableUpdate.Version+" is ready. Click here or use the pet menu to install it.");}
                 }
-                else if(manual)UpdateMessage("You have the latest public release ("+ReleaseInfo.Version+").","Vpet updates");
+                if(checkWindow!=null&&!checkWindow.IsDisposed)checkWindow.ShowResult(availableUpdate);
             }
             catch(Exception ex)
             {
                 nextUpdateCheck=Now+30*60;
-                if(manual&&!closing)UpdateMessage("Could not check for updates. Your pet will keep running.\n\n"+ex.Message,"Vpet updates");
+                if(checkWindow!=null&&!checkWindow.IsDisposed&&!closing)checkWindow.ShowError(ex.Message);
             }
             finally{checkingUpdate=false;}
         }
         async void InstallUpdate(AvailableUpdate update)
         {
             if(update==null||installingUpdate||updateNotesOpen||closing)return;
+            if(updateCheckWindow!=null)updateCheckWindow.Close();
             installingUpdate=true;installUpdate.Enabled=false;
             using(var progress=new UpdateProgressWindow(update.Version))
             {
@@ -320,11 +333,12 @@ namespace Vpet
         void ShowUpdateCompletion()
         {
             string directory=AppDomain.CurrentDomain.BaseDirectory;
+            if(!closing)Updates.RecordLastRun(directory,ReleaseInfo.Version);
             if(closing||!Updates.HasCompletion(directory,ReleaseInfo.Version))return;
             updateNotesOpen=true;
             try
             {
-                using(var notes=new UpdateNotesWindow(ReleaseInfo.Version,Updates.CurrentNotes)){notes.Icon=Icon;notes.ShowDialog();}
+                using(var notes=new UpdateNotesWindow(ReleaseInfo.Version,Updates.CompletionNotes(directory,ReleaseInfo.Version))){notes.Icon=Icon;notes.ShowDialog();}
                 Updates.AcknowledgeCompletion(directory,ReleaseInfo.Version);
             }
             finally{updateNotesOpen=false;}
@@ -462,6 +476,7 @@ namespace Vpet
         void OnClosing(object sender,FormClosingEventArgs e)
         {
             if(closing)return;closing=true;timer.Stop();menuDismissal.Dispose();Save();
+            if(updateCheckWindow!=null)updateCheckWindow.Close();
             if(SettingsOpen)settingsWindow.Close();Toys.Dispose();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
             if(rendered!=null)rendered.Dispose();if(crossingRendered!=null)crossingRendered.Dispose();if(customReaction!=null)customReaction.Dispose();Replacements.Dispose();
             if(reactionPreview!=null)reactionPreview.Dispose();

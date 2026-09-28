@@ -22,13 +22,27 @@ namespace Vpet
             Check(Updates.ReleaseNotes(" \r\n ",version).Contains("No update description"),"Blank release descriptions have readable fallback text");
             Check(Updates.ReleaseNotes("<script>never run this</script>",version)=="<script>never run this</script>","Descriptions stay plain text for the read-only viewer");
             Check(!string.IsNullOrWhiteSpace(Updates.CurrentNotes)&&!Updates.CurrentNotes.Contains("## Vpet"),"Installed release embeds only its own description for offline completion");
+            string history="# Vpet 2.0.0\n- Future.\n## Vpet 1.9.0\n- Older.\n## Vpet 1.10.0\n- Middle.\n## Vpet 1.11.0\n- Newest.\n## Vpet 1.8.0\n- Already seen.";
+            string combined=Updates.NotesSince(history,"1.8.0.0","1.11.0");
+            Check(combined.Contains("- Older.")&&combined.Contains("- Middle.")&&combined.Contains("- Newest.")&&!combined.Contains("Future")&&!combined.Contains("Already seen"),"Completion includes every skipped release, excluding the previous and future versions");
+            Check(combined.IndexOf("Vpet 1.11.0")<combined.IndexOf("Vpet 1.10.0")&&combined.IndexOf("Vpet 1.10.0")<combined.IndexOf("Vpet 1.9.0"),"History is ordered by numeric version, newest first");
+            Check(!Updates.NotesSince(history,"1.10.0","1.11.0").Contains("Middle"),"Single-step updates show only the new release");
+            foreach(string unknown in new[]{null,"","garbage","1.11.0","9.0.0"})
+                Check(Updates.NotesSince(history,unknown,"1.11.0")=="Vpet 1.11.0"+Environment.NewLine+"- Newest.","Unknown, same-version, or newer baseline safely falls back to the installed release");
+            Check(Updates.NotesSince("",null,"1.11.0").Contains("No update description"),"Missing history has readable fallback text");
             string folder=Path.Combine(artifacts,"update-completion-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
             Check(!Updates.HasCompletion(folder,version),"Fresh installs do not show update completion");
             string marker=Path.Combine(folder,Updates.CompletionFile);File.WriteAllText(marker,version);
+            string previousFile=Path.Combine(folder,Updates.PreviousVersionFile);File.WriteAllText(previousFile,"9.8.5");
             Check(Updates.HasCompletion(folder,version),"Installer marker requests notes after successful update");
             Check(!Updates.HasCompletion(folder,"9.8.6"),"An older running binary never reports a newer update complete");
-            Updates.AcknowledgeCompletion(folder,"9.8.6");Check(File.Exists(marker),"Older binaries cannot acknowledge a pending newer update");
-            Updates.AcknowledgeCompletion(folder,version);Check(!Updates.HasCompletion(folder,version),"Acknowledged update does not repeat its popup on next launch");
+            Updates.AcknowledgeCompletion(folder,"9.8.6");Check(File.Exists(marker)&&File.Exists(previousFile),"Older binaries cannot acknowledge a pending newer update");
+            Updates.AcknowledgeCompletion(folder,version);Check(!Updates.HasCompletion(folder,version)&&!File.Exists(previousFile),"Acknowledged update clears both completion files and does not repeat its popup");
+            File.WriteAllText(marker,ReleaseInfo.Version);File.WriteAllText(previousFile,"1.5.1.0");
+            string installedNotes=Updates.CompletionNotes(folder,ReleaseInfo.Version);
+            Check(installedNotes.Contains("Vpet 1.5.2")&&installedNotes.Contains("Vpet 1.5.3")&&installedNotes.Contains("Vpet "+ReleaseInfo.Version)&&!installedNotes.Contains("Vpet 1.5.1"),"Installed binary bundles all skipped changes for offline completion");
+            Updates.RecordLastRun(folder,ReleaseInfo.Version);Updates.AcknowledgeCompletion(folder,ReleaseInfo.Version);
+            Check(File.ReadAllText(Path.Combine(folder,Updates.LastRunFile))==ReleaseInfo.Version,"Last-run version survives acknowledgement for the next installer");
         }
         static void UpdateNotesWindows()
         {
@@ -54,15 +68,33 @@ namespace Vpet
             string data=Path.Combine(artifacts,"auto-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(data);new Preferences{AutoUpdate=auto}.Save(Path.Combine(data,"settings.json"));
             using(var pet=new PetWindow(data,Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"auto-smoke")))
             {
-                Check(pet.Model.Settings.AutoUpdate==auto&&MakerField<double>(pet,"nextUpdateCheck")== (auto?0:10),"Saved auto-update option schedules an immediate startup check");int installs=0,messages=0;
+                Check(pet.Model.Settings.AutoUpdate==auto&&MakerField<double>(pet,"nextUpdateCheck")== (auto?0:10),"Saved auto-update option schedules an immediate startup check");int installs=0;
                 pet.ReadUpdate=()=>new AvailableUpdate{Version="9.8.7",Notes="Must only display after completion"};
                 pet.InstallAvailable=update=>{installs++;Check(update.Version=="9.8.7","Installs discovered newest release");};
-                pet.UpdateMessage=(message,title)=>{messages++;Check(!message.Contains("Must only"),"Status message does not display pre-update notes");};
                 AwaitUpdate(pet.CheckForUpdatesAsync(false));Check(installs==(auto?1:0),"Only enabled startup checks auto-install");
                 AwaitUpdate(pet.CheckForUpdatesAsync(false));Check(installs==(auto?1:0),"Periodic checks do not automatically restart the running app");
-                AwaitUpdate(pet.CheckForUpdatesAsync(true));Check(installs==(auto?2:1),"Manual Check for updates installs directly regardless of auto-update setting");
-                pet.ReadUpdate=()=>null;AwaitUpdate(pet.CheckForUpdatesAsync(true));Check(messages==1,"Up-to-date check shows status without old release notes");
-                pet.ReadUpdate=()=>{throw new IOException("Offline test");};AwaitUpdate(pet.CheckForUpdatesAsync(false));Check(messages==1,"Offline automatic check remains quiet");
+                AwaitUpdate(pet.CheckForUpdatesAsync(true));Check(installs==(auto?1:0),"Manual Check for updates waits for Update even when automatic startup updates are enabled");
+                var check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
+                string text=string.Join(" ",check.Controls[0].Controls.OfType<Label>().Select(l=>l.Text));
+                Check(check.Visible&&text.Contains(ReleaseInfo.Version)&&text.Contains("9.8.7")&&!text.Contains("Must only"),"Manual window shows current and available versions without release descriptions");
+                using(var image=new Bitmap(check.Width,check.Height)){check.DrawToBitmap(image,new Rectangle(Point.Empty,check.Size));image.Save(Path.Combine(artifacts,"update-available.png"));}
+                FindButton(check,"Close").PerformClick();Check(installs==(auto?1:0),"Closing update status never installs");
+                AwaitUpdate(pet.CheckForUpdatesAsync(true));check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
+                FindButton(check,"Update").PerformClick();Check(installs==(auto?2:1)&&check.IsDisposed,"Update installs the displayed version once and closes status");
+                pet.ReadUpdate=()=>null;AwaitUpdate(pet.CheckForUpdatesAsync(true));check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
+                Check(check.Controls[0].Controls.OfType<Label>().Any(l=>l.Text.Contains("most recent version"))&&!FindButton(check,"Update").Visible,"Up-to-date window confirms newest version and has no install action");
+                using(var image=new Bitmap(check.Width,check.Height)){check.DrawToBitmap(image,new Rectangle(Point.Empty,check.Size));image.Save(Path.Combine(artifacts,"update-current.png"));}
+                check.Close();pet.ReadUpdate=()=>{throw new IOException("Offline test");};AwaitUpdate(pet.CheckForUpdatesAsync(false));Check(MakerField<UpdateCheckWindow>(pet,"updateCheckWindow")==null,"Offline automatic check remains quiet");
+                AwaitUpdate(pet.CheckForUpdatesAsync(true));check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
+                Check(check.Controls[0].Controls.OfType<Label>().Any(l=>l.Text.Contains("Could not check"))&&!FindButton(check,"Update").Enabled,"Manual network failure shows an error without offering installation");check.Close();
+                using(var gate=new System.Threading.ManualResetEventSlim(false))
+                {
+                    pet.ReadUpdate=()=>{gate.Wait(4000);return new AvailableUpdate{Version="9.8.7"};};
+                    var pending=pet.CheckForUpdatesAsync(true);check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
+                    Check(check.Visible&&!FindButton(check,"Update").Enabled,"Manual check shows progress immediately and cannot install before a result");
+                    check.Close();gate.Set();AwaitUpdate(pending);
+                    Check(MakerField<UpdateCheckWindow>(pet,"updateCheckWindow")==null&&installs==(auto?2:1),"Closing during a check never reopens status or installs later");
+                }
                 using(var settings=new SettingsWindow(pet))
                 {
                     settings.Show();settings.SelectTab(2);Application.DoEvents();

@@ -136,7 +136,7 @@ namespace Vpet
                     Check(windows.Menu.Items.Count==6&&windows.Menu.Items[2].Text=="Triangle"&&windows.Menu.Items[3] is ToolStripSeparator&&windows.Menu.Items[4].Text=="Help Messages"&&windows.Menu.Items[5].Text=="Close Toy Chest","Chest menu keeps toys above its footer, with Help Messages directly above Close Toy Chest");
                     windows.Menu.Items[1].PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");
                     windows.Menu.Items[2].PerformClick();Check(windows.Triangle.Visible&&toys.HasTriangle,"Triangle toggle creates the instrument");
-                    Check(windows.Triangle.ContextMenuStrip==windows.TriangleMenu&&windows.TriangleMenu.Items.Cast<ToolStripItem>().Select(i=>i.Text).SequenceEqual(new[]{"Chime (Default)","Honk","Drum (Snare)"}),"Triangle right-click menu offers the three sound choices");
+                    Check(windows.Triangle.ContextMenuStrip==windows.TriangleMenu&&windows.TriangleMenu.Items.Cast<ToolStripItem>().Select(i=>i.Text).SequenceEqual(new[]{"Chime","Honk","Drum"}),"Triangle right-click menu offers the three sound choices");
                     windows.TriangleMenu.Show(windows.Triangle,new Point(10,10));Application.DoEvents();
                     Check(windows.Busy&&!pet.ShowPause&&((ToolStripMenuItem)windows.TriangleMenu.Items[0]).Checked,"Triangle menu pauses actions without a pause emote and starts with Chime selected");
                     foreach(TriangleSound sound in Enum.GetValues(typeof(TriangleSound)))
@@ -160,6 +160,13 @@ namespace Vpet
                         }
                     }
                     pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();
+                    pet.Present(image,new Point(pet.Model.Current.Work.Left+10,pet.Model.Current.Work.Top+10));
+                    var hollow=Point.Round(toys.Triangle);Cursor.Position=hollow;Application.DoEvents();
+                    Check(Native.WindowFromPoint(new Native.POINT(hollow.X,hollow.Y))==windows.Triangle.Handle,"Windows routes hollow-center input to the triangle instead of the application underneath");
+                    ToyMouse(windows.Triangle,0x204,hollow);ToyMouse(windows.Triangle,0x205,hollow);Application.DoEvents();
+                    Check(windows.TriangleMenu.Visible,"Right-clicking the hollow center opens the sound menu");windows.TriangleMenu.Close();
+                    Native.RECT triangleRect;Native.GetWindowRect(windows.Triangle.Handle,out triangleRect);
+                    Check(Native.WindowFromPoint(new Native.POINT(triangleRect.Left,triangleRect.Top))!=windows.Triangle.Handle,"Empty triangle window corners remain click-through");
                     int taps=0;toys.ChimePlayed+=delegate{taps++;};var instrument=Point.Round(toys.Triangle);
                     ToyMouse(windows.Triangle,0x201,instrument);ToyMouse(windows.Triangle,0x202,instrument);
                     ToyMouse(windows.Triangle,0x201,instrument);ToyMouse(windows.Triangle,0x202,instrument);

@@ -117,6 +117,8 @@ namespace Vpet
             {
                 maker.SetProject(MakerFixture(),null);maker.Show();Application.DoEvents();
                 Check(FindButton(maker,"How to Guide")!=null,"Sheet editor provides an in-app how-to guide");
+                var finish=FindButton(maker,"Tweak and Complete");var guideButton=FindButton(maker,"How to Guide");
+                Check(finish.Parent==guideButton.Parent&&guideButton.Right<finish.Left&&finish.Top==guideButton.Top&&maker.PointToClient(finish.PointToScreen(Point.Empty)).Y>maker.ClientSize.Height-90,"Sprite Maker guide sits left of Tweak and Complete at the bottom right");
                 MakerField<ComboBox>(maker,"facing").SelectedIndex=1;MakerField<CheckBox>(maker,"emotes").Checked=true;Application.DoEvents();
                 Check(maker.Project.Data.FacesRight&&maker.Project.Data.EmoteAnimations,"Facing and optional emote controls update the project");
                 var cycles=MakerField<Button[]>(maker,"cycles");Check(cycles.Skip(10).All(b=>b.Visible)&&MakerField<SpriteSheetViewport>(maker,"viewport").Height>=100,"Optional buttons are visible and leave usable sheet space");
@@ -124,6 +126,7 @@ namespace Vpet
                 using(var tweak=new SpriteTweakWindow(maker))
                 {
                     tweak.Show();Application.DoEvents();Check(FindButton(tweak,"How to Guide")!=null&&FindButton(tweak,"Love")!=null,"Tweak offers its guide and populated reaction animations");
+                    Check(FindButton(tweak,"Back to Sprite Maker")==null,"Tweak footer removes Back to Sprite Maker while retaining the close-window control");
                     FindButton(tweak,"Love").PerformClick();FindButton(tweak,"Tweak").PerformClick();FindButton(tweak,"Magic Tweak").PerformClick();FindButton(tweak,"Undo").PerformClick();
                     Check(maker.Project.Data.Frames.Length==18&&maker.Project.Data.Frames[11][0].OffsetY==0,"Undo preserves all optional rows and restores their offsets");
                     using(var shot=new Bitmap(tweak.Width,tweak.Height)){tweak.DrawToBitmap(shot,new Rectangle(Point.Empty,shot.Size));shot.Save(Path.Combine(artifacts,"emote-tweak.png"));}tweak.Close();

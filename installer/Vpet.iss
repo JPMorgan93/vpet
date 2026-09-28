@@ -50,10 +50,13 @@ Filename: "{app}\Vpet.exe"; Parameters: "--startup"; Flags: nowait skipifsilent;
 
 [UninstallDelete]
 Type: files; Name: "{app}\pending-update.txt"
+Type: files; Name: "{app}\pending-update-from.txt"
+Type: files; Name: "{app}\last-run-version.txt"
 
 [Code]
 var
   IsUpgrade: Boolean;
+  PreviousVersion: String;
 
 function ExistingInstallation(): Boolean;
 begin
@@ -63,17 +66,32 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if IsUpgrade and (CurStep = ssPostInstall) then
+  begin
+    SaveStringToFile(ExpandConstant('{app}\pending-update-from.txt'), PreviousVersion, False);
     SaveStringToFile(ExpandConstant('{app}\pending-update.txt'), '{#AppVersion}', False);
+  end;
 end;
 
 procedure InitializeWizard();
 var
   ExistingDirectory: String;
+  InstalledVersion: String;
+  LastRun, PendingVersion, PendingFrom: AnsiString;
 begin
   IsUpgrade := RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{25F79B0F-454A-4E2F-BE0C-C13D6F067F65}_is1', 'InstallLocation', ExistingDirectory);
   if IsUpgrade then IsUpgrade := FileExists(AddBackslash(ExistingDirectory) + 'Vpet.exe');
   if IsUpgrade then
   begin
+    { Capture before replacing the EXE. Older apps have no last-run file, so
+      fall back to their installed version. Preserve unseen upgrade history. }
+    GetVersionNumbersString(AddBackslash(ExistingDirectory) + 'Vpet.exe', InstalledVersion);
+    PreviousVersion := InstalledVersion;
+    if LoadStringFromFile(AddBackslash(ExistingDirectory) + 'pending-update.txt', PendingVersion) and
+       LoadStringFromFile(AddBackslash(ExistingDirectory) + 'pending-update-from.txt', PendingFrom) then
+      if (Trim(PendingVersion) + '.0' = InstalledVersion) and (Trim(PendingFrom) <> '') then
+        PreviousVersion := Trim(PendingFrom);
+    if LoadStringFromFile(AddBackslash(ExistingDirectory) + 'last-run-version.txt', LastRun) then
+      if Trim(LastRun) <> '' then PreviousVersion := Trim(LastRun);
     WizardForm.Caption := 'Updating Vpet';
     WizardForm.FinishedHeadingLabel.Caption := 'Vpet update complete';
     WizardForm.FinishedLabel.Caption := 'Vpet {#AppVersion} is up to date. Your settings, artwork, and shortcut choices have been kept.';

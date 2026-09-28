@@ -54,7 +54,7 @@ namespace Vpet
             tweaks.Controls.Add(MakerUi.Button("Reset Cycle",delegate{Remember();foreach(int slot in slots){project.Data.Frames[cycle][slot].OffsetX=0;project.Data.Frames[cycle][slot].OffsetY=0;}maker.Dirty=true;RefreshPreview();}));
             root.Controls.Add(status,0,6);
             var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;root.Controls.Add(bottom,0,7);
-            bottom.Controls.Add(MakerUi.Button("Complete",Complete));bottom.Controls.Add(MakerUi.Button("Back to Sprite Maker",delegate{Close();}));
+            bottom.Controls.Add(MakerUi.Button("Complete",Complete));
             bottom.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,true);}));
             timer.Tick+=delegate{if(!tweaking)RefreshPreview();};timer.Start();
             FormClosed+=delegate{timer.Dispose();};SelectCycle(0);

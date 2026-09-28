@@ -22,6 +22,7 @@ $sourceFiles = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src') -Filt
 $sourceFiles += $metadataPath
 $references = @('/r:System.dll', '/r:System.Core.dll', '/r:System.Drawing.dll', '/r:System.Windows.Forms.dll', '/r:System.Runtime.Serialization.dll', '/r:System.IO.Compression.dll')
 $references += "/resource:$notesPath,Vpet.ReleaseNotes"
+$references += "/resource:$(Join-Path $projectRoot 'CHANGELOG.md'),Vpet.ChangeHistory"
 $appPath = Join-Path $outputDirectory 'Vpet.exe'
 & $compiler /nologo /target:winexe /optimize+ /platform:x64 "/out:$appPath" "/win32manifest:$manifestPath" "/win32icon:$(Join-Path $projectRoot 'assets\reference\Vpet.ico')" $references $sourceFiles
 if ($LASTEXITCODE -ne 0) { throw 'Vpet compilation failed.' }

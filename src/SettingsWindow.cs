@@ -224,7 +224,7 @@ namespace Vpet
             LabelAt(page,"Auto-update on app startup",24,156,550,28,true);
             var autoUpdate=ComboAt(page,new[]{"No (Default)","Yes"},24,192,250,pet.Model.Settings.AutoUpdate?1:0);
             autoUpdate.Name="AutoUpdate";autoUpdate.TabIndex=1;
-            LabelAt(page,"Yes installs new releases automatically when Vpet starts. Check for updates always installs directly. Changes appear after the update completes.",24,230,550,55,false);
+            LabelAt(page,"Yes installs new releases automatically when Vpet starts. Check for updates shows the version and an Update button. Changes appear after installation.",24,230,550,55,false);
             autoUpdate.SelectedIndexChanged+=delegate{pet.Model.Settings.AutoUpdate=autoUpdate.SelectedIndex==1;pet.Save();};
         }
         void ChooseSheet(object sender,EventArgs e)

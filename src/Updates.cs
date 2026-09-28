@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -33,9 +34,49 @@ namespace Vpet
     {
         internal const int MaximumInstallerSize=64*1024*1024;
         internal const string CompletionFile="pending-update.txt";
+        internal const string PreviousVersionFile="pending-update-from.txt";
+        internal const string LastRunFile="last-run-version.txt";
         public static string CurrentNotes
         {
             get{using(var stream=System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Vpet.ReleaseNotes"))using(var reader=new StreamReader(stream))return reader.ReadToEnd().Trim();}
+        }
+        internal static string ChangeHistory
+        {
+            get{using(var stream=System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Vpet.ChangeHistory"))using(var reader=new StreamReader(stream))return reader.ReadToEnd().Trim();}
+        }
+        static Version StableVersion(string text)
+        {
+            Version parsed;
+            if(!Regex.IsMatch(text??"",@"^\d+\.\d+\.\d+(\.0)?$")||!Version.TryParse(text,out parsed))return null;
+            return new Version(parsed.Major,parsed.Minor,parsed.Build);
+        }
+        internal static string NotesSince(string history,string previousVersion,string currentVersion)
+        {
+            Version previous=StableVersion(previousVersion),current=StableVersion(currentVersion);
+            bool range=previous!=null&&current!=null&&previous<current;
+            var sections=new SortedDictionary<Version,string>();
+            foreach(Match section in Regex.Matches(history??"",@"(?ms)^#{1,2} Vpet (\d+\.\d+\.\d+)[ \t]*\r?\n(.*?)(?=^#{1,2} Vpet |\z)"))
+            {
+                Version version=StableVersion(section.Groups[1].Value);
+                if(version==null||current==null||version>current||sections.ContainsKey(version))continue;
+                if(range?version<=previous:version!=current)continue;
+                string body=section.Groups[2].Value.Trim();
+                sections.Add(version,"Vpet "+version+Environment.NewLine+(body.Length==0?"No update description was provided for this release.":body));
+            }
+            var notes=new List<string>();foreach(var section in sections)notes.Insert(0,section.Value);
+            return notes.Count==0?"No update description was provided for this release.":string.Join(Environment.NewLine+Environment.NewLine,notes);
+        }
+        internal static string CompletionNotes(string directory,string version)
+        {return NotesSince(ChangeHistory,HasCompletion(directory,version)?ReadVersionFile(directory,PreviousVersionFile):null,version);}
+        static string ReadVersionFile(string directory,string name)
+        {
+            try{return File.ReadAllText(Path.Combine(directory,name)).Trim();}
+            catch(IOException){return null;}catch(UnauthorizedAccessException){return null;}
+        }
+        internal static void RecordLastRun(string directory,string version)
+        {
+            try{File.WriteAllText(Path.Combine(directory,LastRunFile),version);}
+            catch(IOException){}catch(UnauthorizedAccessException){}
         }
         internal static string ReleaseNotes(string body,string version)
         {
@@ -47,12 +88,13 @@ namespace Vpet
         }
         internal static bool HasCompletion(string directory,string version)
         {
-            try{return File.ReadAllText(Path.Combine(directory,CompletionFile)).Trim()==version;}
-            catch(IOException){return false;}catch(UnauthorizedAccessException){return false;}
+            return ReadVersionFile(directory,CompletionFile)==version;
         }
         internal static void AcknowledgeCompletion(string directory,string version)
         {
-            if(HasCompletion(directory,version))try{File.Delete(Path.Combine(directory,CompletionFile));}catch(IOException){}catch(UnauthorizedAccessException){}
+            if(!HasCompletion(directory,version))return;
+            foreach(string name in new[]{CompletionFile,PreviousVersionFile})
+                try{File.Delete(Path.Combine(directory,name));}catch(IOException){}catch(UnauthorizedAccessException){}
         }
         public static AvailableUpdate Parse(string json,string currentVersion,string repository)
         {

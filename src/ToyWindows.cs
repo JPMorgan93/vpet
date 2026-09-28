@@ -66,7 +66,7 @@ namespace Vpet
             Menu.Items.Add("Close Toy Chest",null,delegate{SetVisible(false);});
             Menu.Opening+=delegate{TriangleMenu.Close();display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
             Chest.ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
-            string[] soundNames={"Chime (Default)","Honk","Drum (Snare)"};
+            string[] soundNames={"Chime","Honk","Drum"};
             for(int i=0;i<soundNames.Length;i++)
             {
                 var sound=(TriangleSound)i;var item=new ToolStripMenuItem(soundNames[i]){Tag=sound};
@@ -265,6 +265,10 @@ namespace Vpet
             using(var g=Graphics.FromImage(image))using(var outline=new Pen(Color.FromArgb(62,58,82),6))using(var metal=new Pen(Color.FromArgb(213,223,238),3))using(var stick=new Pen(Color.FromArgb(119,79,37),3))
             {
                 g.ScaleTransform(scale,scale);g.SmoothingMode=SmoothingMode.AntiAlias;
+                // Layered windows pass alpha-zero pixels through before hit testing.
+                // One alpha step makes the hollow interior clickable without a visible fill.
+                using(var inputFill=new SolidBrush(Color.FromArgb(1,213,223,238)))
+                    g.FillPolygon(inputFill,new[]{new PointF(6,36),new PointF(22,8),new PointF(38,36)});
                 var points=new[]{new PointF(30,36),new PointF(6,36),new PointF(22,8),new PointF(38,36)};
                 outline.LineJoin=metal.LineJoin=LineJoin.Round;g.DrawLines(outline,points);g.DrawLines(metal,points);
                 g.DrawLine(Pens.SlateGray,22,1,22,8);g.DrawLine(stick,24,31,40,20);
