@@ -53,10 +53,25 @@ still keeps toys inside when hidden. Toggle Ball to add or remove the ball.
 Click the ball for three bounces, each half as high. Pull back and release along the
 red arrow. The ball ricochets off the fence and slows to a stop.
 Your pet walks to its resting point, pauses for a quarter second, shakes for
-half a second, then returns it with random direction and strength without chasing again.
+half a second, then returns it with random direction and strength without immediately chasing again.
 Fetching temporarily overrides Static mode, zero speed and restricted roaming.
 Your saved settings remain intact; a restricted pet walks back into its circle.
-Dragging the pet cancels fetching. Turning off the chest also puts the ball away.
+Dragging the pet cancels play. Close Toy Chest in the chest menu puts away all toys.
 
 Toggle Help Messages in the chest menu for hints above the chest when hovering
-over the fence border, its plus control, or the ball. Moving away hides the hint.
+over the fence border, its plus control, or a toy. Moving away hides the hint.
+
+NEW SPRITE AND TOY CONTROLS
+Sprite Maker and Tweak and Complete both offer How to Guide with step-by-step
+instructions. Sheet faces can be Left or Right. Optional Emote Animations adds
+reaction rows; missing reactions keep their normal behavior. Download current
+sprite sheet in Sprite settings exports your active pet's PNG for editing.
+
+Toggle Triangle in the chest menu to add the instrument. Each tap chimes. Pause
+briefly after your last tap; your pet walks over and repeats the count and rhythm.
+Drag the triangle to reposition it. A new tap during playback starts a new phrase.
+Pets also visit available toys on a randomized 60-120 second schedule. Toy visits
+can temporarily leave Static or restricted movement, then restore normal rules.
+
+A pause symbol appears while settings or other controls pause movement. It is
+not a replaceable reaction. Try It Out previews temporarily replace this symbol.

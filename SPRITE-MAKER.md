@@ -1,45 +1,49 @@
 # Create a custom Vpet
 
-Open **Settings → Sprite → Open Sprite Maker**.
+Open **Settings > Sprite > Open Sprite Maker**. **How to Guide** is available in both Sprite Maker windows.
 
-Both the sheet selector and **Tweak and Complete** have a **Preview zoom** toolbar directly above the image. Type a percentage, use **+ / −**, choose **100%** for actual pixel size, or choose **Fit** to see the whole sheet/frame. **Ctrl + mouse wheel** zooms around the pointer; scrollbars let you reach enlarged areas. Toolbar changes zoom around the center of the visible area. Zoom changes only the preview, keeping source pixels, selected rectangles, and saved offsets unchanged.
+## Step 1 — Upload the sprite sheet
 
-Zoom supports 1–1600%. The maximum is reduced for very large sheets to stay within Windows' canvas size limits. The animation preview initially fits the frame to the window; **Fit** can be used again after resizing the window.
+Choose **Upload Sprite Sheet** and select a transparent PNG up to 4096 × 4096 pixels and 64 MiB. Sheets can use any arrangement. **Download current sprite sheet** in Sprite settings exports the active pet's PNG for editing; **Save default template** exports the original companion.
 
-## Select animation frames
+Set **Sheet faces** to **Left** or **Right**, matching the side-facing and diagonal artwork. Export normalizes the directional rows, then the app mirrors them for the opposite travel direction. Up/down and reaction artwork are kept as drawn. Downloaded runtime sheets face left.
 
-1. Choose **Upload Sprite Sheet** and select a PNG with a transparent background. Sheets can have any arrangement, up to 4096 × 4096 pixels and 64 MiB. Use zoom and the scrollbars to inspect larger sheets.
-2. Choose an animation type and set its frame **width** and **height** (up to 100 × 150 pixels). These dimensions apply to every frame within that type. For example, Idle Up and Idle Left/Right can use different sizes; switching animations restores that type's dimensions.
-3. Enable **Diagonal animations** if your sheet has diagonal poses. With it off, the pet chooses the closest cardinal animation as it moves. Existing diagonal selections remain saved if you turn this option off and on.
-4. Choose a numbered frame. Click the sheet to place the red box's top-left corner. Drag its red border to move the selection. Drag a red corner to resize every frame in the selected animation type, or type its dimensions above the sheet. Other animation types keep their sizes and selections.
-5. Choose **Set** to save that selection. A green check appears, and the next numbered frame is selected. The sheet keeps its scroll position. **Clear** removes the selected frame.
+## Step 2 — Set frames for all animations
 
-Each enabled animation needs **one to five nonempty frames**. Unused slots are fine; playback follows populated slots in numbered order. Both idle and walking animations support five frames. Select left-facing side/diagonal artwork; right-facing poses are mirrored automatically.
+Choose an animation type and set its frame width and height, up to 100 × 150 pixels. Every frame of that type shares its dimensions; other types can have different sizes.
 
-Alerts identify missing animations, empty selections, or boxes extending outside the sheet. You can save incomplete work using **Save Project** or **Save Project As…**. The `.vpetproject` file includes the original PNG, all selections, dimensions, and alignment offsets. **Load Project** resumes editing without needing the original PNG on disk.
+Choose a numbered slot. Click the sheet to place the red frame, drag its border to move it, or drag a corner to resize all frames of this animation type. Choose **Set** to save the selection and advance to the next slot. The scroll position stays fixed. **Clear** removes a slot. Each required animation needs 1–5 nonempty selections, played in numbered order. Gaps in slot numbering are allowed.
 
-## Preview and align
+Turn **Diagonal animations** off if your sheet has no diagonal poses. Saved diagonal selections remain in the project and can be enabled again.
 
-When every required cycle has at least one valid frame, choose **Tweak and Complete**.
+Turn **Emote Animations (optional)** on to add Music, Love, Question, Anger, Sad, Fear, Disgust, and Proud buttons. Create any reactions you want; empty rows never block export and use normal pet behavior. Selected frames must still be valid. Turning this option off preserves its selections in the project but excludes them from export. At runtime, matching default reactions (including replaced reaction images) use these animations at six frames per second; extra custom emotes and the pause indicator use normal behavior. Hover and pickup keep the pet's down-idle animation.
 
-- Choose an animation to watch it play.
-- **Tweak** pauses playback and enables the slider numbered **0 through N−1**, where N is the number of saved frames. A one-frame animation stays at 0. Controls keep their space so the preview's ground line stays still when you resume playback.
-- Drag the preview to move that frame's artwork, or click the preview and use arrow keys. Hold Shift to move five pixels at a time.
-- **Magic Tweak** puts the **lowest nontransparent pixel row** of each pose on the same green ground line. It aligns the midpoint of that row horizontally, so changing tails or arms above the feet do not shift the ground point. For a single bottom pixel, that pixel is the anchor. Midpoints between pixels use the left pixel consistently. All nonzero alpha counts, including faint shadows.
-- The shared ground point sits at the bottom-center of this animation's frame. Excess artwork is clipped to that rectangle. Magic Tweak never stretches artwork or changes source pixels; manual nudging afterward can change the alignment.
-- **Undo** reverses alignment edits. **Reset Cycle** removes offsets from the selected animation. **Save Tweaks** saves the project, including all current offsets.
-- Clipping is allowed. Anything outside the frame is cut off in the preview and final sprite, even when a frame is shifted completely out of view. Save Tweaks keeps the offsets in the project so the same crop returns when reopened. The original PNG remains intact for later editing.
+## Step 3 — Review your selections
 
-Use **Back to Sprite Maker** to change selections. Tweaks remain in the project. Closing Sprite Maker asks whether to save any unsaved changes.
+Check each slot and resolve any missing-frame or invalid-selection messages. Use **Preview zoom**, **+ / −**, **100%**, **Fit**, or **Ctrl + mouse wheel** to inspect the image. Scrollbars reach enlarged areas. Zoom changes only the preview, keeping source coordinates and offsets unchanged. Zoom supports 1–1600%, reduced for very large canvases to respect Windows limits.
 
-## Export and use your pet
+## Step 4 — Save the project
 
-Choose **Complete** to save the project and export a separate **`.vpetsprite`** file. This package includes a PNG atlas, animation frame counts, and the diagonal setting. Keep the `.vpetproject` for later editing and share the `.vpetsprite` for use in Vpet.
+**Save Project** stores a `.vpetproject` with the original PNG, all selections, dimensions, sheet facing, enabled options and alignment offsets. Incomplete projects can be saved. **Save Project As** makes another copy. **Load Project** resumes editing without needing the original PNG on disk.
 
-Each animation is clipped to its own dimensions before export. Smaller frames receive transparent padding to the largest enabled frame size, aligned at the same bottom-center pixel, without stretching. This keeps the pet's ground point stable between differently sized animation types. The padding cannot restore artwork cut off by clipping.
+## Step 5 — Tweak, complete, and use your pet
 
-Vpet 1.4.0 writes version 2 project and sprite packages. Earlier version 1 files still load; old shared project dimensions become the initial size for every animation. New exports require Vpet 1.4.0 or later, including support for fully clipped blank frames.
+When required animations are ready, choose **Tweak and Complete**. Its own **How to Guide** covers the controls:
 
-Close Sprite Maker after exporting. Sprite settings will preview the new sprite; choose **Use this pet** to apply it. You can also choose **Upload Custom Sprite** and select any exported `.vpetsprite` file. Loading or exporting a sprite does not replace the active pet until you choose **Use this pet**.
+- Choose an animation to watch it play. Only populated optional reaction rows appear here.
+- **Tweak** pauses playback and enables the frame slider. Select a frame to adjust it. A one-frame animation stays at slider position 0.
+- Drag the artwork, or click the preview and use arrow keys to move one pixel. Hold Shift for five pixels.
+- **Magic Tweak** aligns every pose's lowest nontransparent pixel row to the green ground line, centering its midpoint. A single bottom pixel is the anchor; midpoints between pixels use the left pixel. Faint alpha counts. It never stretches artwork or changes the source.
+- The purple rectangle is the output frame. Artwork outside it is clipped from the preview and export, even if a whole frame is moved outside. Move it back to recover clipped source pixels.
+- **Undo** reverses alignment edits, **Reset Cycle** removes that cycle's offsets, and **Save Tweaks** saves the editable project.
+- **Resume Preview** plays the adjusted animation. **Back to Sprite Maker** lets you change selections and sizes. Both previews have independent zoom controls.
 
-The original five-column, ten-row PNG format remains supported. Those legacy sheets keep four idle frames and five walking frames per cycle. The default and blank template buttons still export templates for that legacy format.
+**Complete** saves the project and exports a `.vpetsprite` with the PNG atlas and animation frame counts. Keep the project for later editing. Close Sprite Maker to preview the export in settings, then choose **Use this pet**. Later, **Upload Custom Sprite** can load the exported file. Exporting alone does not change the active pet.
+
+Each animation is clipped before export. Smaller frames receive transparent padding to the largest populated, enabled frame size, aligned at bottom-center without stretching. Padding cannot restore clipped pixels.
+
+## File compatibility
+
+Vpet 1.5.0 saves version 3 projects and continues loading version 1 and 2 projects. Older dimensions, crops and offsets are preserved, with empty optional reaction rows added. Runtime exports without emote animations use version 2 (Vpet 1.4.0 or later). Exports containing emote animations use version 3 and require Vpet 1.5.0 or later.
+
+The original five-column, ten-row PNG format still works with four idle and five walking frames. Runtime atlases with emotes have eight additional rows in the reaction order above. Downloaded PNGs carry artwork only: use Sprite Maker to select populated cells and restore their animation metadata before exporting a usable `.vpetsprite`.

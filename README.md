@@ -1,10 +1,10 @@
-# Vpet 1.4.0
+# Vpet 1.5.0
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.4.0-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.5.0-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -68,7 +68,7 @@ The original annotated image is preserved at `assets/reference/Base Vpet Sprite 
 
 Use **Settings → Sprite → Save default template** to export a valid transparent PNG. Default cells are **32 × 36**, in a **160 × 360** sheet. Custom sheets use **5 columns × 10 rows**, with equal cells no larger than **100 × 150** pixels. There are no margins or gutters.
 
-Use **Download blank sprite sheet** below that button for a 500 × 1,500 PNG with labeled 100 × 150 frame boxes. Draw your sprites on a separate layer, remove the guide layer, and export with transparency. Each box identifies the activity, direction, and frame number; unused fifth idle cells must remain transparent. Right-facing poses are mirrored from the left-facing artwork.
+Use **Download current sprite sheet**, below the default template button, to save the active pet's transparent PNG. Edit that image and upload it to Sprite Maker to select frames and export a .vpetsprite. Directional rows in downloaded sheets face left; optional emote rows follow the ten movement rows. The PNG alone does not contain frame-count metadata.
 
 | Row | Cycle | Active frames |
 | --- | --- | --- |
@@ -120,15 +120,21 @@ Right-click your pet and select **Display Toy Chest**. A chest and a blue dashed
 
 The zone fits inside one monitor's usable area, avoiding taskbars and gaps between screens. Move its center onto another monitor to move the play space there. It defaults to 480 × 320 pixels at 100% scaling, with a minimum of 160 × 140; its maximum is the monitor's working area. Chest and ball size follow the app's launch display scale. The chest, fence and ball follow **Window Location**, stay below the pet, and never take keyboard focus. Empty transparent space passes clicks through.
 
-Right-click the chest for **Display Play Zone**, **Ball**, and **Help Messages**. Hiding the fence keeps its boundaries active. Ball is a toggle: check it to add one red ball, uncheck it to remove the ball and cancel fetching. Help Messages defaults on and displays hints above the chest only while hovering over the fence border/center or the ball; disable it to hide those hints. The fence uses a plus-shaped center control.
+Right-click the chest for **Display Play Zone**, **Ball**, **Help Messages**, **Triangle**, and **Close Toy Chest**. Hiding the fence keeps its boundaries active. Ball is a toggle: check it to add one red ball, uncheck it to remove the ball and cancel fetching. Help Messages defaults on and displays hints above the chest only while hovering over the fence border/center or a toy; disable it to hide those hints. The fence uses a plus-shaped center control.
 
 Click the ball for three bounces, each reaching half the previous height, or drag away from it to aim in the opposite direction. Release to launch along the solid red arrow; a longer pull increases power up to a limit. The ball reflects off the fence and slows to a stop. Pet return shots vary randomly in both direction and strength.
 
-User launches interrupt wandering or resting. The pet approaches the predicted resting point, waits for the ball to stop, pauses for ¼ second, shakes for ½ second, and launches it in a random direction. A pet launch never triggers another fetch. Fetching temporarily overrides Static mode and the restricted circle; speed 0 uses speed 50 during fetching. Saved settings are unchanged. Restricted pets walk back into their circle afterwards. At screen edges the pet approaches as closely as its full sprite can fit. Hovering pauses the pet; dragging it cancels fetching. Moving or resizing the play zone updates the fetch destination.
+User launches interrupt wandering or resting. The pet approaches the predicted resting point, waits for the ball to stop, pauses for ¼ second, shakes for ½ second, and launches it in a random direction. A pet launch does not immediately trigger another fetch; later spontaneous toy play is independent. Fetching temporarily overrides Static mode and the restricted circle; speed 0 uses speed 50 during fetching. Saved settings are unchanged. Restricted pets walk back into their circle afterwards. At screen edges the pet approaches as closely as its full sprite can fit. Hovering pauses the pet; dragging it cancels fetching. Moving or resizing the play zone updates the fetch destination.
 
-Chest visibility, fence visibility, play-zone geometry and chest position are saved. Hiding the chest also removes the ball and stops fetching; restarting does not restore an in-progress ball game. A disconnected monitor relocates the play zone and toys to a connected work area.
+Chest visibility, fence visibility, play-zone geometry and chest position are saved. Hiding or closing the chest removes both toys and ends active play; restarting does not restore an in-progress ball game. A disconnected monitor relocates the play zone and toys to a connected work area.
 
 `bin/Vpet.Tests.exe --toy-window-tests` exercises real desktop controls with isolated preferences, including dragging, resizing, aiming, outside-menu dismissal and all three stacking modes.
+
+The **Triangle** toggle adds or removes a small instrument. Tap it repeatedly for a chime on each press. After a brief pause (0.75 seconds), the pet walks to the instrument and repeats the same number and rhythm of taps. Very fast taps are spaced at least 0.1 seconds apart during playback so each is audible. Drag the triangle to move it inside the fence. A new tap during playback starts a new phrase; launching the ball or picking up the pet interrupts the phrase.
+
+Available toys also attract a spontaneous visit every **60–120 seconds**, chosen randomly after the previous action. The pet may return a ball or play a short triangle phrase. Toy visits temporarily override Static, speed 0, and restricted roaming just like user-triggered fetching; saved movement rules resume afterwards. Menus, settings, hovering and dragging pause the pet's actions.
+
+A **pause symbol** appears in the speech bubble while settings or other controls pause movement. It is a built-in status indicator, excluded from replaceable reactions. Explicit **Try It Out** previews temporarily replace it, then the pause symbol returns.
 
 ## Local storage
 
