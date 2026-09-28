@@ -120,7 +120,7 @@ namespace Vpet
             catch(Exception ex)
             {
                 status.ForeColor=Color.Firebrick;
-                status.Text="Could not open the project. Your current work is still open. If the file was moved, use Load Project to find it."+Environment.NewLine+ex.Message;
+                status.Text="Could not open the project. "+(Project==null?"":"Your current work is still open. ")+"If the file was moved, use Load Project to find it."+Environment.NewLine+ex.Message;
                 return false;
             }
         }

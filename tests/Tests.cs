@@ -36,7 +36,7 @@ namespace Vpet
                 if(Array.IndexOf(args,"--toy-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();ToyWindowsTest();Console.WriteLine("PASS: "+count+" toy chest native UI checks.");return 0;}
                 if(Array.IndexOf(args,"--maker-window-tests")>=0)
-                {Native.EnableDpi();Application.EnableVisualStyles();MakerWindows();AnimationFrameWindows();NewMakerWindows();Console.WriteLine("PASS: "+count+" Sprite Maker UI checks.");return 0;}
+                {Native.EnableDpi();Application.EnableVisualStyles();MakerWindows();AnimationFrameWindows();NewMakerWindows();RecentProjectWindows();Console.WriteLine("PASS: "+count+" Sprite Maker UI checks.");return 0;}
                 if(Array.IndexOf(args,"--update-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();UpdateNotesWindows();Console.WriteLine("PASS: "+count+" update description UI checks.");return 0;}
                 if(Array.IndexOf(args,"--public-release-test")>=0)

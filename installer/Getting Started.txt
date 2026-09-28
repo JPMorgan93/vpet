@@ -40,6 +40,9 @@ Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
 Hold Ctrl and turn the mouse wheel to zoom around the pointer.
 Magic Tweak aligns each pose's lowest visible pixels to a shared ground point.
 Save .vpetproject files for editing; export .vpetsprite files for use in Vpet.
+Load Last Project reopens the most recently opened or saved project, even after
+restarting Vpet. Open or save a project once to enable it. Save changes before
+closing to resume them later. Use Load Project to locate a moved file again.
 Close Sprite Maker to preview your export, then choose Use this pet.
 Existing five-column, ten-row PNG sheets are still supported.
 

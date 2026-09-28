@@ -14,7 +14,7 @@ namespace Vpet
             "Step 3 — Review your selected frames\r\n"+
             "Check each saved slot and resolve the missing-frame or invalid-selection messages below the preview. Use the zoom controls, Fit, or Ctrl + mouse wheel for accuracy. Scroll around larger sheets. Select only the desired sprite and leave the background transparent.\r\n\r\n"+
             "Step 4 — Save the project\r\n"+
-            "Save Project creates a .vpetproject containing the original sheet, selected frames, sizes, facing, and tweaks. Save Project As makes another copy. Load Project lets you return and edit later. Incomplete projects can also be saved.\r\n\r\n"+
+            "Save Project creates a .vpetproject containing the original sheet, selected frames, sizes, facing, and tweaks. Save Project As makes another copy. Load Project lets you return and edit later. Load Last Project reopens the most recently opened or saved project, even after restarting Vpet. It becomes available after you first open or save a project. Incomplete projects can also be saved; save your changes to resume them later.\r\n\r\n"+
             "Step 5 — Tweak, complete, and use your pet\r\n"+
             "Open Tweak and Complete once the required animations are ready. Preview each cycle, adjust its frames, and use Magic Tweak for bottom-center alignment. Anything moved outside a frame is cut off in the exported animation. Complete saves the project and exports a .vpetsprite file. Close Sprite Maker, review the result in Sprite settings, and choose Use this pet. You can also load that .vpetsprite later with Upload Custom Sprite.\r\n";
         internal const string TweakGuide=

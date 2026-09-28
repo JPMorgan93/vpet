@@ -1,4 +1,9 @@
-# Vpet 1.5.1
+# Vpet 1.5.2
+
+- Add Load Last Project beside Load Project in Sprite Maker. Reopen the most recently opened or saved .vpetproject, including after restarting Vpet.
+- Remember successful project opens and saves, including Save Project As. The button becomes available after opening or saving a project. Switching projects retains the unsaved-changes prompt; missing or unreadable files leave current work intact and show recovery guidance.
+
+## Vpet 1.5.1
 
 - Keep Help Messages at the bottom of the toy chest menu, directly above Close Toy Chest and below all toy options.
 - Show the pause emote only while Vpet settings are open. Toy interactions, the toy chest menu, and the pet's right-click menu no longer trigger it. Try It Out previews still temporarily replace the settings pause symbol.

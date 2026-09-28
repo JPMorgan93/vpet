@@ -24,7 +24,7 @@ Check each slot and resolve any missing-frame or invalid-selection messages. Use
 
 ## Step 4 — Save the project
 
-**Save Project** stores a `.vpetproject` with the original PNG, all selections, dimensions, sheet facing, enabled options and alignment offsets. Incomplete projects can be saved. **Save Project As** makes another copy. **Load Project** resumes editing without needing the original PNG on disk.
+**Save Project** stores a `.vpetproject` with the original PNG, all selections, dimensions, sheet facing, enabled options and alignment offsets. Incomplete projects can be saved. **Save Project As** makes another copy. **Load Project** resumes editing without needing the original PNG on disk. **Load Last Project**, beside it, reopens the most recently opened or saved project, even after restarting Vpet. It starts disabled until you open or save a project. The last file path updates after successful loads, saves, and Save Project As. Save your edits before closing to resume them later; this button loads the saved file. A missing or unreadable file leaves current work intact and shows a message; use Load Project to find a moved file again.
 
 ## Step 5 — Tweak, complete, and use your pet
 
