@@ -29,7 +29,7 @@ namespace Vpet
                 {StartupRegistry();Console.WriteLine("PASS: "+count+" startup registration assertions using a temporary registry key.");return 0;}
                 if(Array.IndexOf(args,"--window-tests")>=0)
                 {
-                    Native.EnableDpi();Application.EnableVisualStyles();WindowLayers();MenuClicks();
+                    Native.EnableDpi();Application.EnableVisualStyles();WindowLayers();MenuClicks();Application.ExitThread();
                     Console.WriteLine("PASS: "+count+" native window-layer assertions.");return 0;
                 }
                 artifacts=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-artifacts");Directory.CreateDirectory(artifacts);
