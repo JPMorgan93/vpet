@@ -48,7 +48,7 @@ namespace Vpet
         readonly string smokeOutput;
         int smokeStep;
         double nextUpdateCheck=10;
-        bool checkingUpdate,installingUpdate,updateNotesOpen;
+        bool checkingUpdate,installingUpdate,updateNotesOpen,manualCheckPending;
         bool startupUpdatePending=true;
         internal Func<AvailableUpdate> ReadUpdate=Updates.Check;
         internal Action<AvailableUpdate> InstallAvailable;
@@ -278,19 +278,21 @@ namespace Vpet
         internal async Task CheckForUpdatesAsync(bool manual)
         {
             if(closing||installingUpdate||updateNotesOpen)return;
-            if(checkingUpdate){if(manual&&updateCheckWindow!=null)updateCheckWindow.Activate();return;}
-            checkingUpdate=true;nextUpdateCheck=Now+6*60*60;
-            bool installImmediately=!manual&&startupUpdatePending&&Model.Settings.AutoUpdate;startupUpdatePending=false;
-            UpdateCheckWindow checkWindow=null;
             if(manual)
             {
+                manualCheckPending=true;
                 if(updateCheckWindow==null)
                 {
                     updateCheckWindow=new UpdateCheckWindow(update=>InstallAvailable(update)){Icon=Icon};
                     updateCheckWindow.FormClosed+=delegate{updateCheckWindow=null;};
                 }
-                checkWindow=updateCheckWindow;checkWindow.ShowChecking();checkWindow.Show();checkWindow.Activate();
+                updateCheckWindow.ShowChecking();updateCheckWindow.Show();updateCheckWindow.Activate();
             }
+            // A manual request can join a startup/periodic check already in flight.
+            // It still shows a result window and waits for Update before installing.
+            if(checkingUpdate)return;
+            checkingUpdate=true;nextUpdateCheck=Now+6*60*60;
+            bool installImmediately=!manual&&startupUpdatePending&&Model.Settings.AutoUpdate;startupUpdatePending=false;
             try
             {
                 availableUpdate=await Task.Factory.StartNew<AvailableUpdate>(ReadUpdate);
@@ -299,17 +301,17 @@ namespace Vpet
                 if(availableUpdate!=null)
                 {
                     installUpdate.Text="Install Vpet "+availableUpdate.Version+"…";
-                    if(installImmediately)InstallAvailable(availableUpdate);
-                    else if(!manual&&notifiedVersion!=availableUpdate.Version){notifiedVersion=availableUpdate.Version;Notify("Vpet update available","Version "+availableUpdate.Version+" is ready. Click here or use the pet menu to install it.");}
+                    if(installImmediately&&!manualCheckPending)InstallAvailable(availableUpdate);
+                    else if(!manualCheckPending&&notifiedVersion!=availableUpdate.Version){notifiedVersion=availableUpdate.Version;Notify("Vpet update available","Version "+availableUpdate.Version+" is ready. Click here or use the pet menu to install it.");}
                 }
-                if(checkWindow!=null&&!checkWindow.IsDisposed)checkWindow.ShowResult(availableUpdate);
+                if(updateCheckWindow!=null)updateCheckWindow.ShowResult(availableUpdate);
             }
             catch(Exception ex)
             {
                 nextUpdateCheck=Now+30*60;
-                if(checkWindow!=null&&!checkWindow.IsDisposed&&!closing)checkWindow.ShowError(ex.Message);
+                if(updateCheckWindow!=null&&!closing)updateCheckWindow.ShowError(ex.Message);
             }
-            finally{checkingUpdate=false;}
+            finally{checkingUpdate=false;manualCheckPending=false;}
         }
         async void InstallUpdate(AvailableUpdate update)
         {

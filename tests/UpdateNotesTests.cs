@@ -100,6 +100,11 @@ namespace Vpet
                     Check(check.Visible&&!FindButton(check,"Update").Enabled,"Manual check shows progress immediately and cannot install before a result");
                     check.Close();gate.Set();AwaitUpdate(pending);
                     Check(MakerField<UpdateCheckWindow>(pet,"updateCheckWindow")==null&&installs==(auto?2:1),"Closing during a check never reopens status or installs later");
+                    gate.Reset();typeof(PetWindow).GetField("startupUpdatePending",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(pet,true);
+                    var background=pet.CheckForUpdatesAsync(false);AwaitUpdate(pet.CheckForUpdatesAsync(true));
+                    check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");Check(check!=null&&check.Visible,"Manual check opens a status window even during an automatic startup check");
+                    gate.Set();AwaitUpdate(background);
+                    Check(FindButton(check,"Update").Enabled&&installs==(auto?2:1),"Joined startup check shows the available version and waits for the user's Update click");check.Close();
                 }
                 using(var settings=new SettingsWindow(pet))
                 {
