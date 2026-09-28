@@ -365,8 +365,8 @@ namespace Vpet
         {
             var display=Model.Current;Size size=display.PetSize(Sprites.Cell);
             animationFacing=Sprites.ResolveFacing(Model.Facing,Model.Walking?Model.LastMotion:PointF.Empty,animationFacing);
-            // Hover and pickup retain their down-idle behavior. Explicit previews work while settings pause movement.
-            var emoteFrame=!ShowPause&&!Model.Hovered&&!buttonDown&&!Model.Dragging&&Now<bubbleUntil?Sprites.EmoteFrame(reaction,(int)((Now-reactionStarted)*6)):null;
+            // Optional reaction poses apply to greetings, clicks and pickup too; missing rows retain normal animation.
+            var emoteFrame=!ShowPause&&Now<bubbleUntil?Sprites.EmoteFrame(reaction,(int)((Now-reactionStarted)*6)):null;
             var frame=emoteFrame??Sprites.Frame(Model.Walking,animationFacing,(int)phase);
             float offset=Model.Shaking(Now)?(float)(Math.Sin(Now*65)*3*display.Scale):0;
             PointF anchor=Geometry.Clamp(new PointF(Model.Position.X+offset,Model.Position.Y),display.Allowed(Sprites.Cell,false));

@@ -139,8 +139,20 @@ namespace Vpet
                 pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Paused=true;
                 Check(pet.ShowPause,"Paused pet shows the reserved pause symbol");pet.PreviewReaction(1);Check(!pet.ShowPause&&pet.ActiveReaction==1,"Try a reaction temporarily replaces pause indicator");
                 typeof(PetWindow).GetField("explicitPreviewUntil",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(pet,0d);
-                Check(pet.ShowPause,"Pause symbol returns after explicit preview");pet.Model.Paused=false;Check(!pet.ShowPause,"Pause clears when pet resumes");pet.Close();
+                Check(pet.ShowPause,"Pause symbol returns after explicit preview");pet.Model.Paused=false;Check(!pet.ShowPause,"Pause clears when pet resumes");
+                using(var project=MakerFixture())
+                {
+                    project.Data.EmoteAnimations=true;project.Data.Frames[11][0]=new SpriteFrame();project.Source.SetPixel(2,2,Color.Lime);pet.UseCustom(project.Build());
+                    pet.PreviewReaction(1);pet.Model.Hovered=true;pet.Model.FaceDownIdle();
+                    var render=typeof(PetWindow).GetMethod("Render",BindingFlags.NonPublic|BindingFlags.Instance);
+                    render.Invoke(pet,null);Check(HasLime(MakerField<Bitmap>(pet,"rendered")),"Live pet uses optional Love animation while hovered");
+                    pet.Model.Dragging=true;render.Invoke(pet,null);Check(HasLime(MakerField<Bitmap>(pet,"rendered")),"Live pickup can display its matching optional reaction animation");
+                    pet.Model.Dragging=false;pet.PreviewReaction(7);render.Invoke(pet,null);Check(!HasLime(MakerField<Bitmap>(pet,"rendered")),"Missing optional reaction keeps normal down-idle rendering");
+                }
+                pet.Close();
             }
         }
+        static bool HasLime(Bitmap image)
+        {for(int y=0;y<image.Height;y++)for(int x=0;x<image.Width;x++){var c=image.GetPixel(x,y);if(c.A>0&&c.G==255&&c.R==0&&c.B==0)return true;}return false;}
     }
 }

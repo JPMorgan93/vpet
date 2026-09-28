@@ -16,7 +16,7 @@ Choose a numbered slot. Click the sheet to place the red frame, drag its border 
 
 Turn **Diagonal animations** off if your sheet has no diagonal poses. Saved diagonal selections remain in the project and can be enabled again.
 
-Turn **Emote Animations (optional)** on to add Music, Love, Question, Anger, Sad, Fear, Disgust, and Proud buttons. Create any reactions you want; empty rows never block export and use normal pet behavior. Selected frames must still be valid. Turning this option off preserves its selections in the project but excludes them from export. At runtime, matching default reactions (including replaced reaction images) use these animations at six frames per second; extra custom emotes and the pause indicator use normal behavior. Hover and pickup keep the pet's down-idle animation.
+Turn **Emote Animations (optional)** on to add Music, Love, Question, Anger, Sad, Fear, Disgust, and Proud buttons. Create any reactions you want; empty rows never block export and use normal pet behavior. Selected frames must still be valid. Turning this option off preserves its selections in the project but excludes them from export. At runtime, matching default reactions (including replaced reaction images) use these animations at six frames per second, including greetings, clicks, and pickup. Extra custom emotes and the pause indicator use normal behavior. Hover and pickup use down-idle when no matching reaction animation exists.
 
 ## Step 3 — Review your selections
 
