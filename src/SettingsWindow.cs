@@ -184,7 +184,7 @@ namespace Vpet
             };
             LabelAt(page,"Runtime sheet preview",24,421,290,28,true);
             sheetPreview=new PictureBox{Location=new Point(24,458),Size=new Size(200,300),SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.FromArgb(233,228,242)};page.Controls.Add(sheetPreview);UpdateSheetPreview();
-            LabelAt(page,"Rows, from top to bottom\n\nIdle: up, down, side, up-diagonal, down-diagonal\n\nWalk: up, down, side, up-diagonal, down-diagonal\n\nRight-facing poses are mirrored automatically.",247,458,310,190,false);
+            LabelAt(page,"Rows, from top to bottom\n\nIdle: up, down, side, up-diagonal, down-diagonal\n\nWalk: up, down, side, up-diagonal, down-diagonal\n\nOptional emotes: Music, Love, Question, Anger, Sad, Fear, Disgust, Proud.\nDownloaded directional artwork faces left.",247,458,310,200,false);
             ButtonAt(page,"Save default template…",247,660,285,delegate
             {
                 using(var dialog=new SaveFileDialog{Filter="PNG image|*.png",FileName="vpet-template.png"})if(dialog.ShowDialog(this)==DialogResult.OK)

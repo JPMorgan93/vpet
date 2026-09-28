@@ -147,6 +147,13 @@ namespace Vpet
                         }
                     }
                     pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();
+                    int taps=0;toys.ChimePlayed+=delegate{taps++;};var instrument=Point.Round(toys.Triangle);
+                    ToyMouse(windows.Triangle,0x201,instrument);ToyMouse(windows.Triangle,0x202,instrument);
+                    ToyMouse(windows.Triangle,0x201,instrument);ToyMouse(windows.Triangle,0x202,instrument);
+                    Check(taps==2&&toys.RememberedNotes==2&&toys.Target==PlayTarget.Triangle,"Native triangle taps chime individually and queue exact playback count");
+                    ToyMouse(windows.Triangle,0x201,instrument);ToyMouse(windows.Triangle,0x200,new Point(instrument.X+25,instrument.Y+15));ToyMouse(windows.Triangle,0x202,Cursor.Position);
+                    Check(taps==2&&toys.Triangle!=instrument&&ToyModel.ContainsInclusive(toys.TriangleBounds,toys.Triangle),"Triangle drag moves inside the fence without counting as a tap");
+                    toys.CancelFetchForPetDrag(pet.Now);
                     var chest=toys.Chest;ToyMouse(windows.Chest,0x201,Point.Round(chest));ToyMouse(windows.Chest,0x200,new Point((int)chest.X+45,(int)chest.Y+25));ToyMouse(windows.Chest,0x202,Cursor.Position);
                     Check(toys.Chest!=chest&&toys.Zone.Contains(toys.Chest),"Native chest drag moves inside zone");
                     var zone=toys.Zone;var center=Point.Round(toys.Center);ToyMouse(windows.Fence,0x201,center);ToyMouse(windows.Fence,0x200,new Point(center.X-30,center.Y-30));ToyMouse(windows.Fence,0x202,Cursor.Position);

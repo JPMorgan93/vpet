@@ -1,4 +1,15 @@
-# Vpet 1.4.0
+# Vpet 1.5.0
+
+- Add Close Toy Chest to the chest menu, putting away the chest, fence, ball, and triangle together.
+- Add a triangle instrument. Tap it for a short chime; after a brief pause, your pet walks over and repeats the number and rhythm of your taps. Drag the triangle to reposition it inside the play zone.
+- Pets occasionally visit available toys on a random 60–120-second schedule. Settings, menus, hovering, and dragging pause their actions. Toy visits preserve movement settings and return restricted pets to their circle.
+- Add a pause-symbol speech bubble while controls pause movement, including when settings are open. Explicit reaction previews temporarily replace it. Pause is not a customizable reaction.
+- Add How to Guide in Sprite Maker and Tweak and Complete, covering sheet upload, frame selection, review, project saving, alignment, clipping, export, and applying the finished pet.
+- Add a Left/Right sheet-facing choice so either source direction exports with correct travel animations.
+- Add optional Emote Animations for Music, Love, Question, Anger, Sad, Fear, Disgust, and Proud. Missing rows use normal pet behavior. Existing projects and sprites remain supported.
+- Replace Download blank sprite sheet with Download current sprite sheet, beneath Save default template. It exports the active pet's transparent PNG for editing and reuse in Sprite Maker.
+
+## Vpet 1.4.0
 
 - Add Auto-update on app startup beneath the startup setting in Sprite. Choose Yes to install the newest public release when Vpet opens; No remains the default.
 - Check for updates installs available releases directly, without a continue/install prompt. Release notes appear only after a successful update; up-to-date checks show a simple status message.
