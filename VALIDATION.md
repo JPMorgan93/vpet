@@ -1,5 +1,15 @@
 # Prototype validation
 
+## Version 1.5.0
+
+3,032 automated assertions passed. New checks cover left/right source normalization, optional reaction frame counts and fallback, version 1/2 project migration, preserved selections when optional rows are disabled, clipping and runtime package round-trips. Toy checks cover exact triangle tap counts and rhythm in all movement modes, rapid taps, settings pauses, interruption, returning to the restricted circle, instrument containment and display recovery, preserved crossings on additional taps, remaining-note playback after relocation, randomized visits, and generated PCM audio bounds.
+
+89 native Sprite Maker checks and 59 native toy checks passed, including the guides, optional controls, reaction-row Undo, pause indicator/preview priority, triangle clicks versus dragging, Close Toy Chest, and toy layering in every window mode. The existing 35 updater/settings UI checks passed. Both Sprite Maker windows and the pause/triangle artwork were inspected. Audio generation and dispatch were verified; loudspeaker quality was not assessed.
+
+The EXE installer built successfully. The isolated update test passed fresh installation, progress-only upgrades, preserved shortcuts/destination, icon checks, completion markers, compatibility with older update entry points, installed-app smoke testing, and cleanup. The personal installed Vpet and its settings were unchanged.
+
+The separate legacy `--window-tests` harness completed all 42 assertions but its process then exited with Windows native callback error 0xC000041D (inner exception 0xC0020001). Event logs contain the same shutdown failure from earlier runs before this update. This is recorded as a failed process-level check, not a clean pass. The feature-specific native suites and normal installed-app smoke run exited successfully.
+
 ## Version 1.4.0
 
 2,955 automated assertions passed. New checks cover independent animation sizes, shared sizes within a type, odd/even bottom-center padding, exact cropping on both axes, fully clipped blank frames through project save/export/runtime import, and version 1 project/sprite migration. Toy checks verify exactly three bounce peaks with successive half heights, varied pet return strengths, persisted help preferences, a red-only arrow, and a plus-shaped center icon.
