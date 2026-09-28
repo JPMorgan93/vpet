@@ -146,6 +146,7 @@ namespace Vpet
                         Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Toys.Sound==sound,"Sound selection is saved immediately: "+sound);
                     }
                     Check(toys.RememberedNotes==0,"Choosing sounds does not add taps to the remembered phrase");
+                    windows.TriangleMenu.Show(windows.Triangle,new Point(10,10));Application.DoEvents();
                     MakerField<MenuDismissal>(windows,"triangleDismissal").MouseDownAt(new Point(windows.TriangleMenu.Right+50,windows.TriangleMenu.Bottom+50));Application.DoEvents();
                     Check(!windows.TriangleMenu.Visible,"Clicking away dismisses the instrument sound menu");
                     foreach(LayerMode mode in Enum.GetValues(typeof(LayerMode)))
