@@ -1,5 +1,13 @@
 # Prototype validation
 
+## Version 1.5.4
+
+3,075 automated assertions passed. New coverage verifies skipped-release notes, numeric version ordering, previous/future release exclusion, four-part installed version normalization, missing-version fallbacks, embedded offline history, acknowledgement cleanup, last-run persistence, and a nearly transparent clickable triangle interior.
+
+119 native Sprite Maker/settings checks, 72 toy checks, and 65 update-window checks passed. They verify the bottom-right editor footer, removal of the Back button, actual Windows input routing through the triangle's hollow center, right-click menu opening, transparent outside corners, and simplified sound labels. Manual update checks show current/available versions, wait for Update, remain safe when closed during a check, display network errors, and join an in-flight startup check without installing automatically. Enabled startup auto-updates and quiet periodic checks remain covered. Dialog text wrapping and button visibility were verified; the changed windows were visually inspected.
+
+The EXE installer built successfully. The isolated installer test simulated an older 1.5.1 binary and verified capture before replacement, preservation of unseen notes across consecutive installs, preference for the last version actually run, progress-only updates, unchanged shortcuts/destination, completion relaunch, and cleanup. Tests used a separate installation identity and preferences; the personal Vpet installation was unchanged.
+
 ## Version 1.5.3
 
 3,063 automated assertions passed. New checks cover saved sound choices and default migration, distinct valid PCM waves with headroom and smooth endpoints, honk/chime pitch separation and snare rattle, and both user/pet tap playback. Sheet checks cover exact preservation of all mappings and options, revised pixels through preview/save/reload/export, DPI-independent image replacement, smaller sheets with repairable mapping errors, and rejected corrupt/opaque/oversized files leaving work intact.
