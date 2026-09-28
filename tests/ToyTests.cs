@@ -136,6 +136,18 @@ namespace Vpet
                     Check(windows.Menu.Items.Count==6&&windows.Menu.Items[2].Text=="Triangle"&&windows.Menu.Items[3] is ToolStripSeparator&&windows.Menu.Items[4].Text=="Help Messages"&&windows.Menu.Items[5].Text=="Close Toy Chest","Chest menu keeps toys above its footer, with Help Messages directly above Close Toy Chest");
                     windows.Menu.Items[1].PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");
                     windows.Menu.Items[2].PerformClick();Check(windows.Triangle.Visible&&toys.HasTriangle,"Triangle toggle creates the instrument");
+                    Check(windows.Triangle.ContextMenuStrip==windows.TriangleMenu&&windows.TriangleMenu.Items.Cast<ToolStripItem>().Select(i=>i.Text).SequenceEqual(new[]{"Chime (Default)","Honk","Drum (Snare)"}),"Triangle right-click menu offers the three sound choices");
+                    windows.TriangleMenu.Show(windows.Triangle,new Point(10,10));Application.DoEvents();
+                    Check(windows.Busy&&!pet.ShowPause&&((ToolStripMenuItem)windows.TriangleMenu.Items[0]).Checked,"Triangle menu pauses actions without a pause emote and starts with Chime selected");
+                    foreach(TriangleSound sound in Enum.GetValues(typeof(TriangleSound)))
+                    {
+                        windows.TriangleMenu.Items[(int)sound].PerformClick();
+                        Check(toys.Settings.Sound==sound&&windows.TriangleMenu.Items.Cast<ToolStripMenuItem>().Count(i=>i.Checked)==1&&((ToolStripMenuItem)windows.TriangleMenu.Items[(int)sound]).Checked,"Sound menu selects exactly one sound: "+sound);
+                        Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Toys.Sound==sound,"Sound selection is saved immediately: "+sound);
+                    }
+                    Check(toys.RememberedNotes==0,"Choosing sounds does not add taps to the remembered phrase");
+                    MakerField<MenuDismissal>(windows,"triangleDismissal").MouseDownAt(new Point(windows.TriangleMenu.Right+50,windows.TriangleMenu.Bottom+50));Application.DoEvents();
+                    Check(!windows.TriangleMenu.Visible,"Clicking away dismisses the instrument sound menu");
                     foreach(LayerMode mode in Enum.GetValues(typeof(LayerMode)))
                     {
                         pet.Model.Settings.Layer=mode;pet.ApplyLayer();windows.Update();Application.DoEvents();
@@ -187,7 +199,8 @@ namespace Vpet
                     Check(helpBounds.Bottom<=chestBounds.Top,"Help message is positioned above the chest (help bottom "+helpBounds.Bottom+", chest top "+chestBounds.Top+")");
                     Cursor.Position=new Point((int)toys.Zone.Left+50,(int)toys.Zone.Top+50);windows.Update();Check(!windows.Help.Visible,"Moving away hides the message");
                     windows.Menu.Items[4].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
-                    windows.Menu.Items[5].PerformClick();Check(windows.Windows.All(w=>!w.Visible)&&!toys.Settings.DisplayChest&&!toys.HasTriangle,"Close Toy Chest hides every toy window and removes the instrument");
+                    windows.TriangleMenu.Show(windows.Triangle,new Point(10,10));Application.DoEvents();
+                    windows.Menu.Items[5].PerformClick();Check(windows.Windows.All(w=>!w.Visible)&&!windows.TriangleMenu.Visible&&!toys.Settings.DisplayChest&&!toys.HasTriangle,"Close Toy Chest hides every toy window, closes sound menu and removes the instrument");
                     Check(!pet.Model.Playing,"Turning chest off cancels pending fetch");
                     pet.Close();application.Close();
                 }
