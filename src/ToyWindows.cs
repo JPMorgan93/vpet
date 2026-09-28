@@ -21,9 +21,10 @@ namespace Vpet
         internal readonly LayeredWindow Arrow=new LayeredWindow(true){Text="Ball launch direction"};
         internal readonly LayeredWindow Help=new LayeredWindow(true){Text="Toy help"};
         internal readonly ContextMenuStrip Menu=new ContextMenuStrip();
-        readonly MenuDismissal dismissal;
+        internal readonly ContextMenuStrip TriangleMenu=new ContextMenuStrip();
+        readonly MenuDismissal dismissal,triangleDismissal;
         readonly Bitmap chestImage,ballImage,triangleImage;
-        readonly ToyChime chime=new ToyChime();
+        readonly ToyChime chime;
         Point? chestLocation,ballLocation,triangleLocation;
         Bitmap helpImage;
         string helpText;
@@ -36,13 +37,14 @@ namespace Vpet
         ZoneEdge resizeEdges;
         bool moveZone,dragged,disposed;
         LayerMode? layer;
-        internal bool Busy {get{return captured!=null||Menu.Visible;}}
+        internal bool Busy {get{return captured!=null||Menu.Visible||TriangleMenu.Visible;}}
         internal IEnumerable<LayeredWindow> Windows {get{yield return Help;yield return Ball;yield return Triangle;yield return Arrow;yield return Fence;yield return Chest;}}
 
         public ToyWindows(PetModel pet,LayeredWindow petWindow,LayeredWindow crossingWindow,Action save,Func<double> now,Random random)
         {
             this.pet=pet;this.petWindow=petWindow;this.crossingWindow=crossingWindow;this.save=save;this.now=now;
-            Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);ballImage=ToyArtwork.Ball(Model.Scale);triangleImage=ToyArtwork.Triangle(Model.Scale);Model.ChimePlayed+=chime.Play;
+            Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);ballImage=ToyArtwork.Ball(Model.Scale);triangleImage=ToyArtwork.Triangle(Model.Scale);
+            chime=new ToyChime(()=>Model.Settings.Sound);Model.ChimePlayed+=chime.Play;
             foreach(var window in Windows)
             {
                 IntPtr handle=window.Handle;Native.BackgroundAdornments.Add(handle);
@@ -56,18 +58,28 @@ namespace Vpet
             var ball=new ToolStripMenuItem("Ball"){CheckOnClick=true};
             ball.Click+=delegate{if(ball.Checked)Model.SpawnBall(now());else{EndGesture(false);Model.RemoveBall(now());}Update();};Menu.Items.Add(ball);
             var triangle=new ToolStripMenuItem("Triangle"){CheckOnClick=true};
-            triangle.Click+=delegate{if(triangle.Checked)Model.SpawnTriangle();else{EndGesture(false);Model.RemoveTriangle(now());}Update();};Menu.Items.Add(triangle);
+            triangle.Click+=delegate{if(triangle.Checked)Model.SpawnTriangle();else{TriangleMenu.Close();EndGesture(false);Model.RemoveTriangle(now());}Update();};Menu.Items.Add(triangle);
             // Keep toy entries above this footer; Help Messages stays directly above Close Toy Chest.
             Menu.Items.Add(new ToolStripSeparator());
             var help=new ToolStripMenuItem("Help Messages"){CheckOnClick=true,Checked=Model.Settings.HelpMessages};
             help.Click+=delegate{Model.Settings.HelpMessages=help.Checked;Update();save();};Menu.Items.Add(help);
             Menu.Items.Add("Close Toy Chest",null,delegate{SetVisible(false);});
-            Menu.Opening+=delegate{display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
+            Menu.Opening+=delegate{TriangleMenu.Close();display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
             Chest.ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
+            string[] soundNames={"Chime (Default)","Honk","Drum (Snare)"};
+            for(int i=0;i<soundNames.Length;i++)
+            {
+                var sound=(TriangleSound)i;var item=new ToolStripMenuItem(soundNames[i]){Tag=sound};
+                item.Click+=delegate{Model.Settings.Sound=sound;SyncSounds();save();};TriangleMenu.Items.Add(item);
+            }
+            TriangleMenu.Opening+=delegate(object sender,System.ComponentModel.CancelEventArgs e)
+            {if(!Model.HasTriangle||!Model.Settings.DisplayChest){e.Cancel=true;return;}Menu.Close();SyncSounds();Help.Hide();};
+            Triangle.ContextMenuStrip=TriangleMenu;triangleDismissal=new MenuDismissal(TriangleMenu);SyncSounds();
         }
+        void SyncSounds(){foreach(ToolStripMenuItem item in TriangleMenu.Items)item.Checked=(TriangleSound)item.Tag==Model.Settings.Sound;}
         public void SetVisible(bool visible)
-        {EndGesture(false);Menu.Close();Model.SetVisible(visible,now());fenceKey="";Update();save();}
-        public void RecoverDisplays(){EndGesture(false);Model.RecoverDisplays();fenceKey="";}
+        {EndGesture(false);Menu.Close();TriangleMenu.Close();Model.SetVisible(visible,now());fenceKey="";Update();save();}
+        public void RecoverDisplays(){EndGesture(false);TriangleMenu.Close();Model.RecoverDisplays();fenceKey="";}
         ZoneEdge HitEdge(Point p)
         {
             var zone=Model.Zone;float tolerance=8*Model.Scale;ZoneEdge result=ZoneEdge.None;
@@ -174,12 +186,12 @@ namespace Vpet
         }
         internal string HelpAt(Point point,IntPtr hitWindow)
         {
-            if(!Model.Settings.HelpMessages||!Model.Settings.DisplayChest||Menu.Visible)return null;
+            if(!Model.Settings.HelpMessages||!Model.Settings.DisplayChest||Menu.Visible||TriangleMenu.Visible)return null;
             if(Model.HasTriangle&&Triangle.Visible&&(hitWindow==Triangle.Handle||hitWindow==Help.Handle))
             {
                 Point local=Triangle.PointToClient(point);
                 if(local.X>=0&&local.Y>=0&&local.X<triangleImage.Width&&local.Y<triangleImage.Height&&triangleImage.GetPixel(local.X,local.Y).A>0)
-                    return "Tap the triangle to chime. Pause briefly after your last tap; your pet walks over and repeats your taps. Drag to move the triangle.";
+                    return "Tap to play; your pet repeats your taps after a brief pause. Right-click for Chime, Honk, or Drum. Drag to move the triangle.";
             }
             if(Model.HasBall&&Ball.Visible&&(hitWindow==Ball.Handle||hitWindow==Help.Handle))
             {
@@ -238,7 +250,7 @@ namespace Vpet
         }
         public void Dispose()
         {
-            if(disposed)return;EndGesture(false);disposed=true;dismissal.Dispose();Menu.Dispose();
+            if(disposed)return;EndGesture(false);disposed=true;dismissal.Dispose();triangleDismissal.Dispose();Menu.Dispose();TriangleMenu.Dispose();
             Model.ChimePlayed-=chime.Play;chime.Dispose();
             foreach(var window in Windows)window.Close();chestImage.Dispose();ballImage.Dispose();triangleImage.Dispose();if(helpImage!=null)helpImage.Dispose();
         }

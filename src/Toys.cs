@@ -5,21 +5,24 @@ using System.Runtime.Serialization;
 
 namespace Vpet
 {
+    public enum TriangleSound { Chime, Honk, SnareDrum }
     [DataContract]
     public sealed class ToyPreferences
     {
         [DataMember] public bool DisplayChest;
         [DataMember] public bool DisplayZone=true;
         [DataMember] public bool HelpMessages=true;
+        [DataMember] public TriangleSound Sound=TriangleSound.Chime;
         [DataMember] public float X=float.NaN,Y=float.NaN,Width=480,Height=320;
         [DataMember] public float ChestX=float.NaN,ChestY=float.NaN;
         [OnDeserializing] void Defaults(StreamingContext context)
-        {DisplayZone=true;HelpMessages=true;X=Y=ChestX=ChestY=float.NaN;Width=480;Height=320;}
+        {DisplayZone=true;HelpMessages=true;Sound=TriangleSound.Chime;X=Y=ChestX=ChestY=float.NaN;Width=480;Height=320;}
         internal static bool Finite(float value){return !float.IsNaN(value)&&!float.IsInfinity(value);}
         public void Validate()
         {
             Width=Finite(Width)?Math.Max(160,Math.Min(8000,Width)):480;
             Height=Finite(Height)?Math.Max(140,Math.Min(8000,Height)):320;
+            if(!Enum.IsDefined(typeof(TriangleSound),Sound))Sound=TriangleSound.Chime;
         }
     }
 

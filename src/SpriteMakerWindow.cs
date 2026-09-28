@@ -44,7 +44,7 @@ namespace Vpet
         readonly TextBox status=new TextBox{ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,Dock=DockStyle.Fill,BorderStyle=BorderStyle.None,BackColor=Color.FromArgb(248,247,252)};
         readonly Label selectionHelp=MakerUi.Label("Upload a transparent PNG to begin.");
         readonly SpriteSheetView sheet=new SpriteSheetView();
-        readonly Button complete,loadLast;
+        readonly Button complete,loadLast,updateSheet;
         bool syncing;
         public string ExportedPath {get;private set;}
         public SpriteMakerWindow(Preferences preferences=null,Action savePreferences=null)
@@ -56,6 +56,7 @@ namespace Vpet
             for(int i=0;i<5;i++)root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,100));Controls.Add(root);
             var commands=MakerUi.Flow();root.Controls.Add(commands,0,0);
             commands.Controls.Add(MakerUi.Button("Upload Sprite Sheet",Upload));
+            updateSheet=MakerUi.Button("Update Sprite Sheet",UpdateSheet);commands.Controls.Add(updateSheet);
             commands.Controls.Add(MakerUi.Button("Save Project",delegate{SaveProject(false);}));
             commands.Controls.Add(MakerUi.Button("Save Project As…",delegate{SaveProject(true);}));
             commands.Controls.Add(MakerUi.Button("Load Project",LoadProject));
@@ -102,6 +103,30 @@ namespace Vpet
         {
             using(var dialog=new OpenFileDialog{Filter="Vpet project|*.vpetproject"})if(dialog.ShowDialog(this)==DialogResult.OK)
                 OpenProject(dialog.FileName);
+        }
+        void UpdateSheet(object sender,EventArgs e)
+        {
+            if(Project==null)return;
+            using(var dialog=new OpenFileDialog{Filter="Transparent PNG sheet|*.png",Title="Update sprite sheet (keep animation frames)"})
+                if(dialog.ShowDialog(this)==DialogResult.OK)UpdateSpriteSheet(dialog.FileName);
+        }
+        internal bool UpdateSpriteSheet(string path)
+        {
+            if(Project==null)return false;
+            var sourceScroll=new PointF(-viewport.AutoScrollPosition.X/sheet.Zoom,-viewport.AutoScrollPosition.Y/sheet.Zoom);
+            try
+            {
+                Project.ReplaceSource(path);Dirty=true;ExportedPath=null;
+                zoom.MaximumPercent=Math.Min(1600,3000000/Math.Max(Project.Source.Width,Project.Source.Height));
+                sheet.RefreshSize();zoom.SetPercent(zoom.Percent,null);RefreshState();
+                viewport.AutoScrollPosition=new Point((int)Math.Round(sourceScroll.X*sheet.Zoom),(int)Math.Round(sourceScroll.Y*sheet.Zoom));
+                status.Text="Sprite sheet updated. Frame mappings and tweaks were kept. Save Project to keep the new sheet."+Environment.NewLine+status.Text;
+                return true;
+            }
+            catch(Exception ex)
+            {
+                status.ForeColor=Color.Firebrick;status.Text="Could not update the sprite sheet. "+ex.Message;return false;
+            }
         }
         void RememberProject(string path)
         {
@@ -158,6 +183,7 @@ namespace Vpet
         internal void RefreshState()
         {
             loadLast.Enabled=!string.IsNullOrWhiteSpace(preferences.LastSpriteProject);
+            updateSheet.Enabled=Project!=null;
             for(int i=0;i<cycles.Length;i++){cycles[i].Visible=Project==null?i<10&&i%5<3:Project.Enabled(i);cycles[i].BackColor=i==Cycle?Color.FromArgb(221,211,241):Color.White;}
             diagonal.Enabled=emotes.Enabled=facing.Enabled=Project!=null;
             for(int i=0;i<5;i++){bool saved=Project!=null&&Project.Data.Frames[Cycle][i]!=null;slots[i].Text=(i+1)+(saved?" ✓":"");slots[i].ForeColor=saved?Color.DarkGreen:Color.Black;slots[i].BackColor=i==Slot?Color.FromArgb(221,211,241):Color.White;}

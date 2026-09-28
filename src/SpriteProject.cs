@@ -80,12 +80,18 @@ namespace Vpet
             }
             finally{image.UnlockBits(bits);}
         }
-        public static SpriteProject FromPng(string path)
+        static Bitmap ReadSheet(string path)
         {
             if(!string.Equals(Path.GetExtension(path),".png",StringComparison.OrdinalIgnoreCase)||new FileInfo(path).Length>SpritePackage.Limit)throw new InvalidDataException("Choose a PNG up to 4096 × 4096 pixels and 64 MiB.");
             var image=SpritePackage.ReadPng(File.ReadAllBytes(path),4096,4096);
-            if(!HasTransparency(image)){image.Dispose();throw new InvalidDataException("The sprite sheet needs a transparent background.");}
-            return new SpriteProject(image);
+            try{if(!HasTransparency(image))throw new InvalidDataException("The sprite sheet needs a transparent background.");return image;}
+            catch{image.Dispose();throw;}
+        }
+        public static SpriteProject FromPng(string path){return new SpriteProject(ReadSheet(path));}
+        public void ReplaceSource(string path)
+        {
+            // Validate and decode before replacing anything. Coordinates remain in original source pixels.
+            var replacement=ReadSheet(path);var previous=Source;Source=replacement;previous.Dispose();
         }
         public string FrameProblem(int row,SpriteFrame frame,bool offsets)
         {
