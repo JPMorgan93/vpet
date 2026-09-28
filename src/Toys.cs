@@ -163,16 +163,23 @@ namespace Vpet
         }
         public void RemoveTriangle(double now)
         {HasTriangle=false;tune.Clear();if(Target==PlayTarget.Triangle)FinishFetch(now);}
-        public void DragTriangle(PointF point){if(HasTriangle)Triangle=Geometry.Clamp(point,TriangleBounds);}
+        public void DragTriangle(PointF point)
+        {
+            if(!HasTriangle)return;Triangle=Geometry.Clamp(point,TriangleBounds);
+            if(Target==PlayTarget.Triangle&&Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning)
+            {Fetch=FetchPhase.Approaching;phaseTime=0;pet.ShakeUntil=0;pet.CancelRoute();}
+        }
         void Chime(){if(ChimePlayed!=null)ChimePlayed();}
         public void PressTriangle(double now)
         {
             if(!HasTriangle||!Settings.DisplayChest)return;
             // Presses before playback form one phrase. A new press during playback starts a new phrase.
             if(Target!=PlayTarget.Triangle||Fetch==FetchPhase.None||Fetch==FetchPhase.Returning||Fetch==FetchPhase.Repeating)
-            {tune.Clear();firstPress=now;}
+            {tune.Clear();playedNotes=0;firstPress=now;}
             double offset=tune.Count==0?0:Math.Max(now-firstPress,tune[tune.Count-1]+.10);
-            tune.Add(offset);lastPress=now;Chime();BeginTriangle();
+            tune.Add(offset);lastPress=now;Chime();
+            // Additional taps must not cancel an in-progress display crossing to this same instrument.
+            if(Target!=PlayTarget.Triangle||Fetch!=FetchPhase.Approaching)BeginTriangle();
         }
         void BeginTriangle()
         {Target=PlayTarget.Triangle;pet.BeginPlay();Fetch=FetchPhase.Approaching;phaseTime=0;RouteTo(Triangle);}
@@ -183,7 +190,7 @@ namespace Vpet
             if(now<NextPlayAt||!Settings.DisplayChest||(!HasBall&&!HasTriangle)||Fetch!=FetchPhase.None||pet.Paused||pet.Hovered||pet.Dragging||Aiming||Editing)return;
             if(HasTriangle&&(!HasBall||Rolling||random.Next(2)==0))
             {
-                tune.Clear();int notes=random.Next(1,4);for(int i=0;i<notes;i++)tune.Add(i*.3);
+                tune.Clear();playedNotes=0;int notes=random.Next(1,4);for(int i=0;i<notes;i++)tune.Add(i*.3);
                 lastPress=now-1;BeginTriangle();
             }
             else if(!Rolling){Target=PlayTarget.Ball;pet.BeginPlay();Fetch=FetchPhase.Approaching;phaseTime=0;RouteToBall();}
@@ -289,7 +296,7 @@ namespace Vpet
             phaseTime+=Math.Max(0,Math.Min(.1f,dt));
             if(Fetch==FetchPhase.Pausing&&phaseTime>=.25f)
             {
-                if(Target==PlayTarget.Triangle){Fetch=FetchPhase.Repeating;playedNotes=0;repeatStarted=now;}
+                if(Target==PlayTarget.Triangle){Fetch=FetchPhase.Repeating;repeatStarted=now-(playedNotes<tune.Count?tune[playedNotes]:0);}
                 else{Fetch=FetchPhase.Shaking;phaseTime=0;pet.ShakeUntil=now+.5;}
             }
             else if(Fetch==FetchPhase.Shaking&&phaseTime>=.5f)
