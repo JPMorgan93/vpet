@@ -1,10 +1,10 @@
-# Vpet 1.5.2
+# Vpet 1.5.3
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.5.2-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.5.3-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -130,7 +130,7 @@ Chest visibility, fence visibility, play-zone geometry and chest position are sa
 
 `bin/Vpet.Tests.exe --toy-window-tests` exercises real desktop controls with isolated preferences, including dragging, resizing, aiming, outside-menu dismissal and all three stacking modes.
 
-The **Triangle** toggle adds or removes a small instrument. Tap it repeatedly for a chime on each press. After a brief pause (0.75 seconds), the pet walks to the instrument and repeats the same number and rhythm of taps. Very fast taps are spaced at least 0.1 seconds apart during playback so each is audible. Drag the triangle to move it inside the fence. A new tap during playback starts a new phrase; launching the ball or picking up the pet interrupts the phrase.
+The **Triangle** toggle adds or removes a small instrument. Right-click the triangle to choose **Chime (Default)**, **Honk**, or **Drum (Snare)**. The choice is saved and used for both your clicks and the pet's replies. Selecting a sound does not count as a tap. Tap the instrument repeatedly to play the selected sound on each press. After a brief pause (0.75 seconds), the pet walks to the instrument and repeats the same number and rhythm of taps. Very fast taps are spaced at least 0.1 seconds apart during playback so each is audible. Drag the triangle to move it inside the fence. A new tap during playback starts a new phrase; launching the ball or picking up the pet interrupts the phrase.
 
 Available toys also attract a spontaneous visit every **60–120 seconds**, chosen randomly after the previous action. The pet may return a ball or play a short triangle phrase. Toy visits temporarily override Static, speed 0, and restricted roaming just like user-triggered fetching; saved movement rules resume afterwards. Menus, settings, hovering and dragging pause the pet's actions.
 
@@ -163,3 +163,5 @@ The detailed behavior and source artwork mapping are in [Vpet Development Specif
 Open **Settings → Sprite → Open Sprite Maker** to select frames from any transparent PNG sheet, save editing projects, preview animations, and export a custom pet. Drag the red border to move a selection or a corner to resize it. Magic Tweak aligns poses by their lowest visible pixels to a shared ground point without stretching. Each animation supports 1–5 frames, with optional diagonals. See the [Sprite Maker guide](SPRITE-MAKER.md) for the full workflow.
 
 **Load Last Project**, next to Load Project in Sprite Maker, reopens the most recently opened or saved .vpetproject. The path is remembered across Vpet restarts. Open or save a project once to enable the button; save edits before closing to resume them later. If the file moves, use Load Project to locate it again. Missing or unreadable projects leave current work intact.
+
+**Update Sprite Sheet** replaces the PNG in an open project while keeping all frame mappings, sizes, tweak offsets, and animation options. Keep the revised artwork in the same sheet positions for the mappings to line up. Save Project to keep the new image, then use Tweak and Complete. Empty or out-of-bounds selections are flagged for repair; invalid replacement files leave existing work intact.

@@ -1,4 +1,10 @@
-# Vpet 1.5.2
+# Vpet 1.5.3
+
+- Right-click the triangle to choose Chime (Default), Honk, or Drum (Snare). The saved sound is used for both your taps and the pet's replies, while preserving tap counts and rhythm.
+- Add Update Sprite Sheet to Sprite Maker. Replace an open project's PNG while retaining all frame coordinates, frame sizes, alignment tweaks, facing, diagonal settings, and optional emote mappings.
+- Updated artwork appears immediately in the existing selections and is embedded when saving the project. Keep the sheet layout consistent; mappings outside a smaller sheet or over empty cells are listed for repair before completion. Invalid replacement files leave the existing sheet intact.
+
+## Vpet 1.5.2
 
 - Add Load Last Project beside Load Project in Sprite Maker. Reopen the most recently opened or saved .vpetproject, including after restarting Vpet.
 - Remember successful project opens and saves, including Save Project As. The button becomes available after opening or saving a project. Switching projects retains the unsaved-changes prompt; missing or unreadable files leave current work intact and show recovery guidance.

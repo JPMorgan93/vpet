@@ -8,6 +8,12 @@ Choose **Upload Sprite Sheet** and select a transparent PNG up to 4096 × 4096 p
 
 Set **Sheet faces** to **Left** or **Right**, matching the side-facing and diagonal artwork. Export normalizes the directional rows, then the app mirrors them for the opposite travel direction. Up/down and reaction artwork are kept as drawn. Downloaded runtime sheets face left.
 
+To revise artwork in an existing project, open it and choose **Update Sprite Sheet**. Select the new transparent PNG. All existing frame coordinates, dimensions, alignment offsets, facing, diagonal settings, and optional emote selections stay intact. The current animation, slot, and preview zoom are retained. **Upload Sprite Sheet** continues to start a new project.
+
+Keep the same sheet layout for the existing mappings to line up. Coordinates are kept in pixels, without automatic scaling or detection of moved sprites. A larger or smaller replacement is allowed; empty or out-of-bounds enabled frames are flagged and must be repaired before Tweak and Complete. You can still save an incomplete project. Invalid PNG files leave current artwork and mappings unchanged.
+
+Use **Save Project** to embed the revised sheet and retained mappings, then **Tweak and Complete** to adjust and export the updated pet. The new sheet is an unsaved project edit until you save it.
+
 ## Step 2 — Set frames for all animations
 
 Choose an animation type and set its frame width and height, up to 100 × 150 pixels. Every frame of that type shares its dimensions; other types can have different sizes.

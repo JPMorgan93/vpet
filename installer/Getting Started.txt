@@ -33,6 +33,10 @@ SPRITE MAKER
 Settings > Sprite > Open Sprite Maker lets you select animation frames from a
 transparent PNG sheet. Set 1-5 frames per animation, then Tweak and Complete.
 Each animation type has its own frame size, shared by all frames of that type.
+Update Sprite Sheet replaces the PNG in an open project, keeping all mappings,
+sizes, tweaks, and animation options. Keep the same sheet layout for mappings to
+line up. Save Project to keep the revised image, then Tweak and Complete. Empty
+or out-of-bounds selections are flagged for repair before exporting.
 Drag the red border to move a selection or a corner to resize that animation.
 In Tweak and Complete, artwork outside the frame is cut off in the preview
 and final sprite. Projects retain the source art and your crop offsets.
@@ -71,7 +75,9 @@ instructions. Sheet faces can be Left or Right. Optional Emote Animations adds
 reaction rows; missing reactions keep their normal behavior. Download current
 sprite sheet in Sprite settings exports your active pet's PNG for editing.
 
-Toggle Triangle in the chest menu to add the instrument. Each tap chimes. Pause
+Toggle Triangle in the chest menu to add the instrument. Right-click the triangle
+for Chime (Default), Honk, or Drum (Snare). The saved sound applies to your taps
+and the pet's replies. Each tap plays the selected sound. Pause
 briefly after your last tap; your pet walks over and repeats the count and rhythm.
 Drag the triangle to reposition it. A new tap during playback starts a new phrase.
 Pets also visit available toys on a randomized 60-120 second schedule. Toy visits

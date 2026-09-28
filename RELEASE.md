@@ -1,8 +1,8 @@
-# Vpet 1.5.2
+# Vpet 1.5.3
 
 ## Files to distribute
 
-- `dist/Vpet-Setup-1.5.2-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
+- `dist/Vpet-Setup-1.5.3-Windows-x64.exe` — standalone Windows EXE installer, approximately 2.1 MB.
 - `dist/SHA256SUMS.txt` — SHA-256 checksum for that exact installer.
 
 The installer contains only the application, the reference sprite sheet, icon files, and the getting-started guide. The supplied Vpet Pixel icon is retained unchanged as the project's `Vpet.ico`; the installed `Vpet-Pixel.ico` copy gives shortcuts a new icon path so they do not reuse the old artwork's cache entry. Source code, tests, development settings, logs, and compiler tools are excluded. GitHub Actions attaches the installer and checksum to a public release after a successful main-branch build. See `GITHUB.md`.
