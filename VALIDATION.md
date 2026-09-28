@@ -1,5 +1,11 @@
 # Prototype validation
 
+## Version 1.5.3
+
+3,063 automated assertions passed. New checks cover saved sound choices and default migration, distinct valid PCM waves with headroom and smooth endpoints, honk/chime pitch separation and snare rattle, and both user/pet tap playback. Sheet checks cover exact preservation of all mappings and options, revised pixels through preview/save/reload/export, DPI-independent image replacement, smaller sheets with repairable mapping errors, and rejected corrupt/opaque/oversized files leaving work intact.
+
+117 native Sprite Maker/settings checks and 69 native toy checks passed. They cover the Update Sprite Sheet button, retained selection and zoom, unsaved/save behavior, error reporting, triangle menu attachment, mutually exclusive sound choices, immediate persistence, outside-click dismissal, closing the sound menu with the chest, and absence of a pause emote for toy menus. The updated editor layout was visually inspected. Audio generation and dispatch were verified; loudspeaker quality was not assessed. The EXE installer built successfully; tests used isolated files and preferences.
+
 ## Version 1.5.2
 
 3,032 automated assertions and 109 native Sprite Maker/settings checks passed. Last-project checks cover older/null preference migration, initially disabled state, immediate persistence after opening, restoring dimensions and tweaks after a preferences reload, switching the remembered project, preserving history/current work after missing or corrupt file errors, and reopening through the new button. The button layout and missing-file guidance were visually inspected. The EXE installer built successfully; tests used isolated files and preferences.
