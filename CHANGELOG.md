@@ -1,4 +1,9 @@
-# Vpet 1.6.1
+# Vpet 1.6.2
+
+- Have the pet stand beside the coin using the same spacing as the card. Keep the full sprite clear of the toy and inside the screen, including custom sprites, screen edges, and repositioned coins.
+- Return the D20 to its original size, with matching fence clearance, rolling rotation, and launch arrow. Make its numbers smaller and fit them inside the central face so double-digit values do not overlap the die's lines.
+
+## Vpet 1.6.1
 
 - Give the coin a plain gold face with no Heads/Tails artwork or values. Flip it around the horizontal X axis, compressing its height as it turns. The pet still announces Heads or Tails after landing.
 - Have the pet stand beside the card to play High/Low, leaving both halves clickable. Choose a clear adjacent position that fits the full sprite near display edges, including for custom sprites and relocated cards.

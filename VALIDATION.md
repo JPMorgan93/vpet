@@ -1,5 +1,11 @@
 # Vpet validation
 
+## Version 1.6.2
+
+4,429 automated assertions passed. Coin and card spacing checks cover screen centers and corners with small, default, and maximum-size sprite frames at 100%, 150%, and 200% scaling. Original-size D20 containment and rolling remain covered. Pixel comparisons verify every die value from 1–20 is visible and does not paint over face lines at multiple scales and rotation angles; contact sheets were inspected at normal and enlarged scale.
+
+110 native settings/game UI checks passed, including the rendered pet standing clear of the coin, both card halves remaining clickable, the restored 46 × 46 D20 window at 100% scale, and pulling/launching the die.
+
 ## Version 1.6.1
 
 4,333 automated assertions passed. New checks cover clear card-playing positions at the center and all four screen corners for 16 × 16, 32 × 36, and 100 × 150 source frames at 100%, 150%, and 200% scaling. They also verify that the enlarged D20 fits the minimum fence and remains fully contained through ricochets after moving from a 200% display to a 100% display. Existing coin outcomes and timing, card relocation/interruption, and die-watching behavior remain covered.
