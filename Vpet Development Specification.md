@@ -1,6 +1,19 @@
 # Virtual Pet Development Specification
 
-Status: consolidated design, incorporating the approved review recommendations and subsequent clarifications. Implementation defaults identified below are starting values for the prototype, not additional user requirements.
+Status: original prototype design with a current release addendum. The 1.6.0 rules below supersede earlier baseline details where they differ. See README.md and SPRITE-MAKER.md for the complete current application and editor instructions.
+
+## Version 1.6.0 additions and revised rules
+
+- Restricted movement uses a fixed rectangular fence with a draggable plus control and resizable edges/corners. Remove radius controls. The full pet stays inside; excluding it by editing the fence moves it to the center. Fences stay below the pet and remain active while hidden.
+- Add Advanced > Sync Play Zone with Restricted Area, default true. Restricted movement uses the play-zone fence, including when the chest is hidden, and Display restricted area controls the same visibility as Display Play Zone. False restores the independent saved fence. Existing radius data initializes its rectangular dimensions.
+- Triangle > Sound Setting opens a 0–100% volume slider with Test sound, Save, and Cancel. Testing does not commit the change or add a remembered tap; saved volume applies to user and pet notes.
+- Tweak and Complete offers per-animation speed from 0.25× to 3×, default 1×, with immediate live preview. Speeds persist in version 4 projects and exported sprites. Older formats retain their original playback speed.
+- Random reactions: Often 15–30 seconds, Sometimes 30–60 seconds, Rarely 90–120 seconds. Spontaneous toy play remains a separate 60–120-second schedule.
+- Settings wrap text and controls, resize to the work area, and scroll when necessary. Sprite settings accept custom .vpetsprite packages; PNG sheets go through Sprite Maker. Remove the Legacy 5 x 10 option/text from that page. Previously installed legacy pets still load.
+- Coin: visit, pause ¼ second, shake ½ second, flip in the air, then announce Heads or Tails using the supplied PNGs.
+- Card: announce one of 52 cards on arrival and retain its bubble until choosing High (top half) or Low (bottom half). Flip another exact card, excluding the announced one. Compare ranks 1–10, J, Q, K: correct means Love, incorrect means Sad, equal means Question. Reset all 52 cards each round. Autonomous play chooses High/Low randomly, then resumes normal behavior after its outcome.
+- D20: pull and release to spin/roll and ricochet inside the zone. The pet stops and faces it without chasing, then announces 1–20 when it stops. Coin, Card, and D20 join the randomized toy choices.
+- Card values, Heads, Tails, and die numbers are special announcements, excluded from random and customizable reactions like the pause indicator. Pause appears only while Vpet settings are open.
 
 ## Purpose and launch
 

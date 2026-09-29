@@ -6,6 +6,8 @@
 
 119 native Sprite Maker checks, 72 toy chest checks, 106 expanded settings/game checks, and 65 updater-window checks passed. New native checks exercise actual Coin/Card/D20 clicks and pull gestures, independent/shared fence movement and resizing, the hidden-chest shared fence, volume Test/Save/Cancel, immediate per-animation speed preview, and all four settings tabs at narrow and wide widths without horizontal scrolling or clipped descriptions. Settings text measurements use the production text renderer. New windows and game artwork were visually inspected. Audio generation and playback dispatch were checked; loudspeaker quality was not assessed.
 
+The 1.6.0 EXE installer built successfully. The isolated installation/update test verified that both Heads and Tails PNGs exactly match the supplied reference artwork, shortcuts retain the supplied icon, updates preserve shortcut choices and destination, skipped-release notes survive consecutive installations, legacy updater entry points skip the setup wizard, and completion relaunches the installed app. The installed app rendered and captured all four settings tabs and exercised window layers on two connected displays. Cleanup removed the separate test installation and its shortcuts; the personal Vpet installation and preferences were unchanged.
+
 ## Version 1.5.4
 
 3,075 automated assertions passed. New coverage verifies skipped-release notes, numeric version ordering, previous/future release exclusion, four-part installed version normalization, missing-version fallbacks, embedded offline history, acknowledgement cleanup, last-run persistence, and a nearly transparent clickable triangle interior.
