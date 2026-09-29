@@ -13,7 +13,7 @@ namespace Vpet
     }
     internal sealed partial class ToyModel
     {
-        internal const float DieSizeMultiplier=2;
+        internal const float DieSizeMultiplier=1;
         public PointF Coin {get;private set;}
         public PointF Card {get;private set;}
         public PointF Die {get;private set;}
@@ -36,8 +36,8 @@ namespace Vpet
         public RectangleF CoinBounds {get{return RectangleF.Inflate(Zone,-25*Scale,-25*Scale);}}
         public RectangleF CardBounds {get{return RectangleF.Inflate(Zone,-25*Scale,-35*Scale);}}
         public float DieRadius {get{return 23*Scale*DieSizeMultiplier;}}
-        float ToyMinimumSpan {get{return (DieRadius+2*Scale)*2;}}
-        public RectangleF DieBounds {get{return RectangleF.Inflate(Zone,-DieRadius-2*Scale,-DieRadius-2*Scale);}}
+        float ToyMinimumSpan {get{return (DieRadius+Scale)*2;}}
+        public RectangleF DieBounds {get{return RectangleF.Inflate(Zone,-DieRadius-Scale,-DieRadius-Scale);}}
         public float CoinFlip {get{return Target==PlayTarget.Coin&&Fetch==FetchPhase.Flipping?Math.Min(1,phaseTime/1.1f):0;}}
         public float CardFlip {get{return Target==PlayTarget.Card&&Fetch==FetchPhase.Flipping?Math.Min(1,phaseTime/.65f):0;}}
         public bool WaitingForCardChoice {get{return HasCard&&Target==PlayTarget.Card&&Fetch==FetchPhase.Waiting;}}
@@ -77,29 +77,31 @@ namespace Vpet
         void BeginGame(PlayTarget target,PointF point)
         {ClearAnnouncement();tune.Clear();Target=target;pet.BeginPlay();Fetch=FetchPhase.Approaching;phaseTime=0;RouteTo(point);}
         public void PressCoin(double now)
-        {if(!HasCoin||!Settings.DisplayChest)return;BeginGame(PlayTarget.Coin,Coin);}
+        {if(!HasCoin||!Settings.DisplayChest)return;BeginGame(PlayTarget.Coin,CoinApproach());}
         public void PressCard(double now,bool autonomous=false)
         {
             if(!HasCard||!Settings.DisplayChest)return;
             automaticCard=autonomous;CalledCard=DrawnCard=-1;CardRevealed=false;ChoiceHigh=null;BeginGame(PlayTarget.Card,CardApproach());
         }
-        PointF CardApproach()
+        PointF CoinApproach(){return BesideToy(Coin,23*Scale,23*Scale);}
+        PointF CardApproach(){return BesideToy(Card,23*Scale,32*Scale);}
+        PointF BesideToy(PointF center,float halfWidth,float halfHeight)
         {
-            var display=pet.Displays.Find(d=>d.Id==DisplayId)??Nearest(Card);
+            var display=pet.Displays.Find(d=>d.Id==DisplayId)??Nearest(center);
             var size=display.PetSize(pet.FrameSize);var allowed=display.Allowed(pet.FrameSize);
-            float gap=8*Scale,halfWidth=23*Scale,halfHeight=32*Scale;
-            var card=new RectangleF(Card.X-halfWidth,Card.Y-halfHeight,halfWidth*2,halfHeight*2);
-            float side=halfWidth+gap+size.Width/2f,bottom=Card.Y+halfHeight;
-            var candidates=new[]{new PointF(Card.X-side,bottom),new PointF(Card.X+side,bottom),
-                new PointF(Card.X,card.Top-gap-display.NameFootroom),new PointF(Card.X,card.Bottom+gap+size.Height)};
+            float gap=8*Scale;
+            var toy=new RectangleF(center.X-halfWidth,center.Y-halfHeight,halfWidth*2,halfHeight*2);
+            float side=halfWidth+gap+size.Width/2f,bottom=center.Y+halfHeight;
+            var candidates=new[]{new PointF(center.X-side,bottom),new PointF(center.X+side,bottom),
+                new PointF(center.X,toy.Top-gap-display.NameFootroom),new PointF(center.X,toy.Bottom+gap+size.Height)};
             PointF best=Geometry.Clamp(candidates[0],allowed);float distance=float.MaxValue;
             for(int i=0;i<candidates.Length;i++)
             {
-                // Prefer standing beside the card; use above/below only if neither side fits.
+                // Prefer standing beside the toy; use above/below only if neither side fits.
                 if(i==2&&distance<float.MaxValue)break;
                 var point=Geometry.Clamp(candidates[i],allowed);
                 var body=new RectangleF(point.X-size.Width/2f,point.Y-size.Height,size.Width,size.Height+display.NameFootroom);
-                var clearance=RectangleF.Inflate(card,gap/2,gap/2);
+                var clearance=RectangleF.Inflate(toy,gap/2,gap/2);
                 if(body.IntersectsWith(clearance))continue;
                 float travel=Geometry.Distance(pet.Position,point);
                 if(travel<distance){best=point;distance=travel;}

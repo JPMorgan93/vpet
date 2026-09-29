@@ -260,7 +260,7 @@ namespace Vpet
             AdvanceDie(dt);
             ConsiderPlay(now);
             if(Fetch==FetchPhase.None||Aiming||DieAiming||Editing||pet.Dragging)return;
-            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(Coin);else if(Target==PlayTarget.Card)RouteTo(CardApproach());else RouteToBall();}
+            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(CoinApproach());else if(Target==PlayTarget.Card)RouteTo(CardApproach());else RouteToBall();}
             else if(Fetch==FetchPhase.Returning)
             {
                 if(pet.Settings.Movement!=MovementMode.Restricted||pet.InsideRestriction(pet.Position))

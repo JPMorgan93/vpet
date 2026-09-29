@@ -75,8 +75,14 @@ namespace Vpet
                 var points=new PointF[6];for(int i=0;i<6;i++){double a=(i*60-90)*Math.PI/180;points[i]=new PointF((float)Math.Cos(a)*21,(float)Math.Sin(a)*21);}
                 g.FillPolygon(fill,points);g.DrawPolygon(edge,points);var a1=new PointF(0,-11);var a2=new PointF(-11,9);var a3=new PointF(11,9);
                 g.DrawPolygon(edge,new[]{a1,a2,a3});g.DrawLine(edge,points[0],a1);g.DrawLine(edge,points[1],a1);g.DrawLine(edge,points[1],a3);g.DrawLine(edge,points[2],a3);g.DrawLine(edge,points[3],a3);g.DrawLine(edge,points[3],a2);g.DrawLine(edge,points[4],a2);g.DrawLine(edge,points[5],a2);g.DrawLine(edge,points[5],a1);
-                if(!rolling)using(var font=new Font("Segoe UI",10,FontStyle.Bold,GraphicsUnit.Pixel))using(var format=new StringFormat{Alignment=StringAlignment.Center,LineAlignment=StringAlignment.Center})
-                    g.DrawString(number.ToString(),font,Brushes.DarkSlateBlue,new RectangleF(-10,-8,20,17),format);
+                if(!rolling)using(var font=new FontFamily("Segoe UI"))using(var label=new GraphicsPath())using(var format=StringFormat.GenericTypographic)
+                {
+                    label.AddString(number.ToString(),font,(int)FontStyle.Bold,7,PointF.Empty,format);
+                    var ink=label.GetBounds();float fit=Math.Min(1,Math.Min(9/ink.Width,6/ink.Height));
+                    // Keep the ink inside the wider lower portion of the central triangular face.
+                    using(var placement=new Matrix(fit,0,0,fit,-(ink.X+ink.Width/2)*fit,3-(ink.Y+ink.Height/2)*fit))label.Transform(placement);
+                    g.FillPath(Brushes.DarkSlateBlue,label);
+                }
             }
             return image;
         }
