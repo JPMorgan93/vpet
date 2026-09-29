@@ -47,7 +47,9 @@ namespace Vpet
                 {
                     pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
                     using(var marker=new Bitmap(20,20)){using(var graphics=Graphics.FromImage(marker))graphics.Clear(Color.Purple);pet.Present(marker,new Point(pet.Model.Current.Work.Left+5,pet.Model.Current.Work.Top+5));}
-                    var windows=pet.Toys;var toys=windows.Model;windows.SetVisible(true);
+                    var windows=pet.Toys;var toys=windows.Model;
+                    var work=pet.Model.Current.Work;var center=new PointF(work.Left+work.Width/2,work.Top+work.Height/2);
+                    pet.Model.MoveRestrictedArea(center);toys.MoveZone(center);windows.SetVisible(true);
                     foreach(string toy in new[]{"Coin","Card","D20","Triangle"})Item(windows.Menu,toy).PerformClick();windows.Update();Application.DoEvents();
                     Check(windows.Coin.Visible&&windows.Card.Visible&&windows.Die.Visible,"Chest toggles show all three new native toy windows");
                     Check(windows.Die.Width==(int)Math.Ceiling(46*toys.Scale)&&windows.Die.Height==(int)Math.Ceiling(46*toys.Scale),"Native D20 window returns to its original width and height");
