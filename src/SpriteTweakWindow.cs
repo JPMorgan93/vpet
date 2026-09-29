@@ -27,6 +27,9 @@ namespace Vpet
         int cycle;
         int[] slots;
         bool tweaking;
+        bool syncingSpeed;
+        readonly TrackBar animationSpeed=new TrackBar{Name="AnimationSpeed",Minimum=25,Maximum=300,Value=100,TickFrequency=25,Width=260,SmallChange=5,LargeChange=25};
+        readonly Label speedLabel=MakerUi.Label("Animation speed: 1x");
         public string ExportedPath {get;private set;}
         public SpriteTweakWindow(SpriteMakerWindow maker)
         {
@@ -37,7 +40,14 @@ namespace Vpet
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,0);
             for(int i=0;i<cycles.Length;i++)if(project.Enabled(i)&&project.Slots(i).Length>0){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});choices.Controls.Add(cycles[i]);}
-            root.Controls.Add(zoom,0,1);
+            var previewControls=new TableLayoutPanel{Dock=DockStyle.Fill,AutoSize=true,ColumnCount=1};previewControls.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            previewControls.Controls.Add(zoom,0,0);var speedControls=MakerUi.Flow();speedControls.Controls.Add(speedLabel);speedControls.Controls.Add(animationSpeed);
+            speedControls.Controls.Add(MakerUi.Button("Reset to 1x",delegate{animationSpeed.Value=100;}));previewControls.Controls.Add(speedControls,0,1);root.Controls.Add(previewControls,0,1);
+            animationSpeed.ValueChanged+=delegate
+            {
+                if(syncingSpeed)return;project.SetSpeed(cycle,animationSpeed.Value/100f);maker.Dirty=true;
+                if(tweaking)ToggleTweak();clock.Restart();speedLabel.Text="Animation speed: "+project.Speed(cycle).ToString("0.##")+"x";RefreshPreview();
+            };
             preview=new TweakPreview(project);preview.BeforeNudge+=Remember;preview.Changed+=delegate{maker.Dirty=true;RefreshPreview();};viewport.Controls.Add(preview);root.Controls.Add(viewport,0,2);
             viewport.Resize+=delegate{preview.RefreshSize(viewport.ClientSize);};
             zoom.ZoomChanged+=delegate(int value,Point? anchor){viewport.ChangeZoom(preview,preview.Zoom,value/100f,preview.ImageOrigin,delegate{preview.Zoom=value/100f;preview.RefreshSize(viewport.ClientSize);},delegate{return preview.ImageOrigin;},anchor);};
@@ -64,6 +74,7 @@ namespace Vpet
         void SelectCycle(int row)
         {
             cycle=row;slots=project.Slots(row);slider.Value=0;slider.Maximum=Math.Max(0,slots.Length-1);slider.Enabled=tweaking&&slots.Length>1;clock.Restart();
+            syncingSpeed=true;animationSpeed.Value=(int)Math.Round(project.Speed(row)*100);syncingSpeed=false;speedLabel.Text="Animation speed: "+project.Speed(row).ToString("0.##")+"x";
             for(int i=0;i<cycles.Length;i++)if(cycles[i]!=null)cycles[i].BackColor=i==row?Color.FromArgb(221,211,241):Color.White;RefreshPreview();
         }
         void ToggleTweak()
@@ -77,7 +88,7 @@ namespace Vpet
         void RefreshPreview()
         {
             if(slots==null||slots.Length==0)return;
-            int index=tweaking?Math.Min(slider.Value,slots.Length-1):(int)(clock.Elapsed.TotalSeconds*(cycle>=10?6:cycle<5?4:8))%slots.Length;
+            int index=tweaking?Math.Min(slider.Value,slots.Length-1):(int)(clock.Elapsed.TotalSeconds*(cycle>=10?6:cycle<5?4:8)*project.Speed(cycle))%slots.Length;
             bool differentCycle=preview.Cycle!=cycle;preview.Cycle=cycle;preview.Slot=slots[index];if(differentCycle)preview.RefreshSize(viewport.ClientSize);preview.Invalidate();
             var frame=project.Data.Frames[cycle][slots[index]];frameLabel.Text="Frame "+(index+1)+" / "+slots.Length+" · slot "+(slots[index]+1)+(tweaking?" · offset "+frame.OffsetX+", "+frame.OffsetY:"");
             string problem=project.FrameProblem(cycle,frame,true);status.ForeColor=problem==null?Color.DarkGreen:Color.Firebrick;

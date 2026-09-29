@@ -27,6 +27,7 @@ namespace Vpet
         [DataMember] public SpriteFrame[][] Frames;
         [DataMember] public int[] Counts;
         [DataMember(EmitDefaultValue=false)] public bool FacesRight,EmoteAnimations;
+        [DataMember(EmitDefaultValue=false)] public float[] CycleSpeeds;
     }
     public sealed class SpriteProject : IDisposable
     {
@@ -43,11 +44,18 @@ namespace Vpet
         public int[] Slots(int row){return Enumerable.Range(0,5).Where(i=>Data.Frames[row][i]!=null).ToArray();}
         public int Width(int row){return Data.CycleWidths==null?Data.Width:Data.CycleWidths[row];}
         public int Height(int row){return Data.CycleHeights==null?Data.Height:Data.CycleHeights[row];}
+        public float Speed(int row){return Data.CycleSpeeds==null?1:Data.CycleSpeeds[row];}
+        public void SetSpeed(int row,float speed)
+        {
+            if(float.IsNaN(speed)||float.IsInfinity(speed)||speed<.25f||speed>3)throw new ArgumentOutOfRangeException("speed");
+            InitializeSizes();if(Data.CycleSpeeds==null)Data.CycleSpeeds=Enumerable.Repeat(1f,TotalCycles).ToArray();
+            Data.CycleSpeeds[row]=speed;Data.Version=4;
+        }
         void InitializeSizes()
         {
             if(Data.CycleWidths==null)Data.CycleWidths=Enumerable.Repeat(Data.Width,TotalCycles).ToArray();
             if(Data.CycleHeights==null)Data.CycleHeights=Enumerable.Repeat(Data.Height,TotalCycles).ToArray();
-            Data.Version=3;
+            Data.Version=Math.Max(3,Data.Version);
         }
         public void SetSize(int row,int width,int height)
         {InitializeSizes();Data.CycleWidths[row]=Math.Max(1,Math.Min(100,width));Data.CycleHeights[row]=Math.Max(1,Math.Min(150,height));}
@@ -171,7 +179,7 @@ namespace Vpet
                     }
                     counts[row]=column;
                 }
-                return new SpriteSet(atlas,Data.Diagonals,counts);
+                return new SpriteSet(atlas,Data.Diagonals,counts,Data.CycleSpeeds==null?null:Data.CycleSpeeds.Take(rows).ToArray());
             }
             catch{atlas.Dispose();throw;}
         }
@@ -232,8 +240,13 @@ namespace Vpet
         }
         internal static void Validate(SpriteManifest data,string kind)
         {
-            if(data==null||data.Version<1||data.Version>3||data.Kind!=kind)throw new InvalidDataException("Unsupported sprite file format or version.");
-            int rows=data.Version>=3?SpriteProject.TotalCycles:SpriteProject.MovementCycles;
+            if(data==null||data.Version<1||data.Version>4||data.Kind!=kind)throw new InvalidDataException("Unsupported sprite file format or version.");
+            int rows=data.Version==4&&kind=="sprite"?(data.Counts==null?0:data.Counts.Length):data.Version>=3?SpriteProject.TotalCycles:SpriteProject.MovementCycles;
+            if(rows!=10&&rows!=18)throw new InvalidDataException("Invalid animation list.");
+            if(data.CycleSpeeds!=null)
+            {
+                if(data.Version<4||data.CycleSpeeds.Length!=rows||data.CycleSpeeds.Any(s=>float.IsNaN(s)||float.IsInfinity(s)||s<.25f||s>3))throw new InvalidDataException("Animation speeds must be between 0.25x and 3x.");
+            }
             if(data.Width<1||data.Width>100||data.Height<1||data.Height>150)throw new InvalidDataException("Frame size must be 1–100 pixels wide and 1–150 pixels tall.");
             if(kind=="project")
             {

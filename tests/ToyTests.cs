@@ -26,7 +26,7 @@ namespace Vpet
             toys.MoveZone(new PointF(950,150));Check(toys.Chest==toys.Center,"Moving fence away relocates chest to center");
             Check(pet.Current.Work.Contains(Rectangle.Ceiling(toys.Zone)),"Zone cannot enter taskbar or leave connected work area");
             toys.ResizeZone(toys.Zone,ZoneEdge.Left|ZoneEdge.Top,new PointF(10000,10000));
-            Near(toys.Zone.Width,160,.01f,"Zone minimum width");Near(toys.Zone.Height,140,.01f,"Zone minimum height");
+            Near(toys.Zone.Width,160,.01f,"Zone minimum width");Near(toys.Zone.Height,160,.01f,"Zone minimum height fits the pet");
             Check(ToyModel.ContainsInclusive(toys.BallBounds,toys.Ball),"Shrinking the zone recovers the entire ball");
             toys.ResizeZone(toys.Zone,ZoneEdge.Left|ZoneEdge.Bottom,new PointF(-10000,10000));
             Check(pet.Current.Work.Contains(Rectangle.Ceiling(toys.Zone)),"Corner resize stops at working-area edges");
@@ -77,10 +77,10 @@ namespace Vpet
                 Check(paused&&shook&&kick>0,"Pet reaches settled ball, pauses, shakes and returns it for "+mode);
                 Near((float)(shakeStart-pauseStart),.25f,.011f,"Pause lasts a quarter second");
                 Near((float)(kick-shakeStart),.5f,.011f,"Return shake lasts half a second");
-                Check(pet.Settings.Movement==mode&&pet.Settings.Speed==0&&pet.Anchor==anchor,"Fetching preserves saved mode, speed and circle");
+                Check(pet.Settings.Movement==mode&&pet.Settings.Speed==0&&pet.Anchor==anchor,"Fetching preserves saved mode, speed and fence");
                 for(int i=0;i<18000&&pet.Playing;i++)ToyStep(toys,pet,kick+i*.01,.01f);
                 Check(!pet.Playing&&toys.Fetch==FetchPhase.None,"Pet returns to ordinary movement after kicking "+mode);
-                if(mode==MovementMode.Restricted)Check(Geometry.Distance(pet.Position,anchor)<=30,"Restricted pet walks back inside its unchanged circle");
+                if(mode==MovementMode.Restricted)Check(pet.InsideRestriction(pet.Position),"Restricted pet walks back inside its unchanged fence");
                 for(int i=0;i<300;i++)ToyStep(toys,pet,kick+30+i*.01,.01f);
                 Check(!pet.Playing&&toys.Launcher==BallLauncher.Pet,"Pet launch does not immediately trigger another chase before spontaneous play is due");
             }
@@ -133,16 +133,16 @@ namespace Vpet
                     Check(toggle!=null&&!toys.Settings.DisplayChest,"Pet menu provides Display Toy Chest, default off");toggle.PerformClick();Application.DoEvents();
                     Check(windows.Chest.Visible&&windows.Fence.Visible,"Toggling chest shows chest and fence");
                     Check(windows.Menu.Items[0].Text=="Display Play Zone"&&windows.Menu.Items[1].Text=="Ball","Chest menu begins with fence toggle followed by Ball");
-                    Check(windows.Menu.Items.Count==6&&windows.Menu.Items[2].Text=="Triangle"&&windows.Menu.Items[3] is ToolStripSeparator&&windows.Menu.Items[4].Text=="Help Messages"&&windows.Menu.Items[5].Text=="Close Toy Chest","Chest menu keeps toys above its footer, with Help Messages directly above Close Toy Chest");
+                    Check(windows.Menu.Items.Count==9&&windows.Menu.Items[2].Text=="Triangle"&&windows.Menu.Items[6] is ToolStripSeparator&&windows.Menu.Items[7].Text=="Help Messages"&&windows.Menu.Items[8].Text=="Close Toy Chest","Chest menu keeps toys above its footer, with Help Messages directly above Close Toy Chest");
                     windows.Menu.Items[1].PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");
                     windows.Menu.Items[2].PerformClick();Check(windows.Triangle.Visible&&toys.HasTriangle,"Triangle toggle creates the instrument");
-                    Check(windows.Triangle.ContextMenuStrip==windows.TriangleMenu&&windows.TriangleMenu.Items.Cast<ToolStripItem>().Select(i=>i.Text).SequenceEqual(new[]{"Chime","Honk","Drum"}),"Triangle right-click menu offers the three sound choices");
+                    Check(windows.Triangle.ContextMenuStrip==windows.TriangleMenu&&windows.TriangleMenu.Items.Cast<ToolStripItem>().Select(i=>i.Text).SequenceEqual(new[]{"Sound Setting","Chime","Honk","Drum"}),"Triangle right-click menu offers the three sound choices");
                     windows.TriangleMenu.Show(windows.Triangle,new Point(10,10));Application.DoEvents();
-                    Check(windows.Busy&&!pet.ShowPause&&((ToolStripMenuItem)windows.TriangleMenu.Items[0]).Checked,"Triangle menu pauses actions without a pause emote and starts with Chime selected");
+                    Check(windows.Busy&&!pet.ShowPause&&((ToolStripMenuItem)windows.TriangleMenu.Items[1]).Checked,"Triangle menu pauses actions without a pause emote and starts with Chime selected");
                     foreach(TriangleSound sound in Enum.GetValues(typeof(TriangleSound)))
                     {
-                        windows.TriangleMenu.Items[(int)sound].PerformClick();
-                        Check(toys.Settings.Sound==sound&&windows.TriangleMenu.Items.Cast<ToolStripMenuItem>().Count(i=>i.Checked)==1&&((ToolStripMenuItem)windows.TriangleMenu.Items[(int)sound]).Checked,"Sound menu selects exactly one sound: "+sound);
+                        windows.TriangleMenu.Items[(int)sound+1].PerformClick();
+                        Check(toys.Settings.Sound==sound&&windows.TriangleMenu.Items.Cast<ToolStripMenuItem>().Count(i=>i.Checked)==1&&((ToolStripMenuItem)windows.TriangleMenu.Items[(int)sound+1]).Checked,"Sound menu selects exactly one sound: "+sound);
                         Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Toys.Sound==sound,"Sound selection is saved immediately: "+sound);
                     }
                     Check(toys.RememberedNotes==0,"Choosing sounds does not add taps to the remembered phrase");
@@ -206,9 +206,9 @@ namespace Vpet
                     Native.RECT helpBounds,chestBounds;Native.GetWindowRect(windows.Help.Handle,out helpBounds);Native.GetWindowRect(windows.Chest.Handle,out chestBounds);
                     Check(helpBounds.Bottom<=chestBounds.Top,"Help message is positioned above the chest (help bottom "+helpBounds.Bottom+", chest top "+chestBounds.Top+")");
                     Cursor.Position=new Point((int)toys.Zone.Left+50,(int)toys.Zone.Top+50);windows.Update();Check(!windows.Help.Visible,"Moving away hides the message");
-                    windows.Menu.Items[4].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
+                    windows.Menu.Items[7].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
                     windows.TriangleMenu.Show(windows.Triangle,new Point(10,10));Application.DoEvents();
-                    windows.Menu.Items[5].PerformClick();Check(windows.Windows.All(w=>!w.Visible)&&!windows.TriangleMenu.Visible&&!toys.Settings.DisplayChest&&!toys.HasTriangle,"Close Toy Chest hides every toy window, closes sound menu and removes the instrument");
+                    windows.Menu.Items[8].PerformClick();Check(windows.Windows.All(w=>!w.Visible)&&!windows.TriangleMenu.Visible&&!toys.Settings.DisplayChest&&!toys.HasTriangle,"Close Toy Chest hides every toy window, closes sound menu and removes the instrument");
                     Check(!pet.Model.Playing,"Turning chest off cancels pending fetch");
                     pet.Close();application.Close();
                 }

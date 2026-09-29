@@ -13,26 +13,28 @@ namespace Vpet
         [DataMember] public bool DisplayZone=true;
         [DataMember] public bool HelpMessages=true;
         [DataMember] public TriangleSound Sound=TriangleSound.Chime;
+        [DataMember] public float Volume=1;
         [DataMember] public float X=float.NaN,Y=float.NaN,Width=480,Height=320;
         [DataMember] public float ChestX=float.NaN,ChestY=float.NaN;
         [OnDeserializing] void Defaults(StreamingContext context)
-        {DisplayZone=true;HelpMessages=true;Sound=TriangleSound.Chime;X=Y=ChestX=ChestY=float.NaN;Width=480;Height=320;}
+        {DisplayZone=true;HelpMessages=true;Sound=TriangleSound.Chime;Volume=1;X=Y=ChestX=ChestY=float.NaN;Width=480;Height=320;}
         internal static bool Finite(float value){return !float.IsNaN(value)&&!float.IsInfinity(value);}
         public void Validate()
         {
             Width=Finite(Width)?Math.Max(160,Math.Min(8000,Width)):480;
             Height=Finite(Height)?Math.Max(140,Math.Min(8000,Height)):320;
             if(!Enum.IsDefined(typeof(TriangleSound),Sound))Sound=TriangleSound.Chime;
+            Volume=Finite(Volume)?Math.Max(0,Math.Min(1,Volume)):1;
         }
     }
 
     internal enum BallLauncher { None, User, Pet }
-    internal enum FetchPhase { None, Approaching, Pausing, Shaking, Returning, Repeating }
-    internal enum PlayTarget { Ball, Triangle }
+    internal enum FetchPhase { None, Approaching, Pausing, Shaking, Returning, Repeating, Waiting, Flipping, Watching, Result }
+    internal enum PlayTarget { Ball, Triangle, Coin, Card, D20 }
     [Flags] internal enum ZoneEdge { None=0, Left=1, Top=2, Right=4, Bottom=8 }
 
     // Ground-plane physics is independent of the bounce drawing and of the fence's visibility.
-    internal sealed class ToyModel
+    internal sealed partial class ToyModel
     {
         readonly PetModel pet;
         readonly Random random;
@@ -101,26 +103,19 @@ namespace Vpet
             {float score=Geometry.Distance(point,Geometry.Clamp(point,d.Work));if(score<distance){best=d;distance=score;}}
             return best;
         }
-        RectangleF Fit(RectangleF requested,DisplayArea display)
-        {
-            // A rectangular table lives on one connected work area, never over taskbars or monitor gaps.
-            var work=display.Work;
-            float width=Math.Min(work.Width,Math.Max(160*Scale,requested.Width));
-            float height=Math.Min(work.Height,Math.Max(140*Scale,requested.Height));
-            return new RectangleF(Math.Max(work.Left,Math.Min(work.Right-width,requested.X)),
-                Math.Max(work.Top,Math.Min(work.Bottom-height,requested.Y)),width,height);
-        }
+        RectangleF Fit(RectangleF requested,DisplayArea display) {return FenceGeometry.Fit(requested,display,pet.FrameSize);}
         public void RecoverDisplays()
         {
             var display=Nearest(Center);DisplayId=display.Id;
-            Zone=Fit(Zone,display);ContainObjects();Store();
-            if(Fetch!=FetchPhase.None){pet.CancelRoute();phaseTime=0;if(Fetch!=FetchPhase.Returning)Fetch=FetchPhase.Approaching;}
+            Zone=Fit(Zone,display);ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
+            if(Fetch!=FetchPhase.None){pet.CancelRoute();if(Target!=PlayTarget.D20){phaseTime=0;if(Fetch!=FetchPhase.Returning)Fetch=FetchPhase.Approaching;}}
         }
         void ContainObjects()
         {
             if(!ToyPreferences.Finite(Chest.X)||!ToyPreferences.Finite(Chest.Y)||!ContainsInclusive(ChestBounds,Chest))Chest=Center;
             if(HasBall&&!ContainsInclusive(BallBounds,Ball)){Ball=BesideChest();Velocity=PointF.Empty;}
             if(HasTriangle&&!ContainsInclusive(TriangleBounds,Triangle))Triangle=Geometry.Clamp(Center,TriangleBounds);
+            ContainGames();
         }
         internal static bool ContainsInclusive(RectangleF r,PointF p)
         {return p.X>=r.Left&&p.X<=r.Right&&p.Y>=r.Top&&p.Y<=r.Bottom;}
@@ -131,25 +126,18 @@ namespace Vpet
         }
         public void ResizeZone(RectangleF original,ZoneEdge edges,PointF delta)
         {
-            var work=pet.Displays.Find(d=>d.Id==DisplayId).Work;
-            float left=original.Left,top=original.Top,right=original.Right,bottom=original.Bottom;
-            float minWidth=Math.Min(work.Width,160*Scale),minHeight=Math.Min(work.Height,140*Scale);
-            if((edges&ZoneEdge.Left)!=0)left=Math.Max(work.Left,Math.Min(right-minWidth,left+delta.X));
-            if((edges&ZoneEdge.Right)!=0)right=Math.Min(work.Right,Math.Max(left+minWidth,right+delta.X));
-            if((edges&ZoneEdge.Top)!=0)top=Math.Max(work.Top,Math.Min(bottom-minHeight,top+delta.Y));
-            if((edges&ZoneEdge.Bottom)!=0)bottom=Math.Min(work.Bottom,Math.Max(top+minHeight,bottom+delta.Y));
-            ChangeZone(RectangleF.FromLTRB(left,top,right,bottom));
+            ChangeZone(FenceGeometry.Resize(original,edges,delta,pet.Displays.Find(d=>d.Id==DisplayId),pet.FrameSize));
         }
         void ChangeZone(RectangleF zone)
         {
-            Zone=zone;ContainObjects();Store();
-            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning){phaseTime=0;pet.ShakeUntil=0;Fetch=FetchPhase.Approaching;pet.CancelRoute();}
+            Zone=zone;ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
+            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&Target!=PlayTarget.D20){phaseTime=0;pet.ShakeUntil=0;Fetch=FetchPhase.Approaching;pet.CancelRoute();}
         }
         public void DragChest(PointF point){Chest=Geometry.Clamp(point,ChestBounds);Store();}
         public void SetVisible(bool visible,double now)
         {
             Settings.DisplayChest=visible;Aiming=false;Editing=false;
-            if(!visible){RemoveBall(now);RemoveTriangle(now);}
+            if(!visible){RemoveBall(now);RemoveTriangle(now);RemoveCoin(now);RemoveCard(now);RemoveDie(now);}
         }
         public void RemoveBall(double now)
         {HasBall=false;Aiming=false;Velocity=PointF.Empty;Launcher=BallLauncher.None;bounceTime=1;if(Target==PlayTarget.Ball)FinishFetch(now);}
@@ -185,13 +173,16 @@ namespace Vpet
             if(Target!=PlayTarget.Triangle||Fetch!=FetchPhase.Approaching)BeginTriangle();
         }
         void BeginTriangle()
-        {Target=PlayTarget.Triangle;pet.BeginPlay();Fetch=FetchPhase.Approaching;phaseTime=0;RouteTo(Triangle);}
+        {ClearAnnouncement();Target=PlayTarget.Triangle;pet.BeginPlay();Fetch=FetchPhase.Approaching;phaseTime=0;RouteTo(Triangle);}
         void SchedulePlay(double now){NextPlayAt=now+60+random.NextDouble()*60;}
         void ConsiderPlay(double now)
         {
             if(double.IsNaN(NextPlayAt))SchedulePlay(now);
-            if(now<NextPlayAt||!Settings.DisplayChest||(!HasBall&&!HasTriangle)||Fetch!=FetchPhase.None||pet.Paused||pet.Hovered||pet.Dragging||Aiming||Editing)return;
-            if(HasTriangle&&(!HasBall||Rolling||random.Next(2)==0))
+            if(now<NextPlayAt||!Settings.DisplayChest||Fetch!=FetchPhase.None||pet.Paused||pet.Hovered||pet.Dragging||Aiming||DieAiming||Editing)return;
+            var choices=new List<PlayTarget>();if(HasBall&&!Rolling)choices.Add(PlayTarget.Ball);if(HasTriangle)choices.Add(PlayTarget.Triangle);
+            if(HasCoin)choices.Add(PlayTarget.Coin);if(HasCard)choices.Add(PlayTarget.Card);if(HasDie&&!DieRolling)choices.Add(PlayTarget.D20);
+            if(choices.Count==0)return;var selected=choices[random.Next(choices.Count)];if(ConsiderGame(now,selected))return;
+            if(selected==PlayTarget.Triangle)
             {
                 tune.Clear();playedNotes=0;int notes=random.Next(1,4);for(int i=0;i<notes;i++)tune.Add(i*.3);
                 lastPress=now-1;BeginTriangle();
@@ -220,7 +211,7 @@ namespace Vpet
             if(!HasBall||!Settings.DisplayChest)return;
             Aiming=false;bounceTime=1;Velocity=velocity;Launcher=launcher;
             if(launcher==BallLauncher.User)
-            {tune.Clear();Target=PlayTarget.Ball;pet.BeginPlay();Fetch=FetchPhase.Approaching;phaseTime=0;RouteToBall();}
+            {ClearAnnouncement();tune.Clear();Target=PlayTarget.Ball;pet.BeginPlay();Fetch=FetchPhase.Approaching;phaseTime=0;RouteToBall();}
         }
         static float Reflect(float position,float delta,float low,float high,ref float velocity)
         {
@@ -266,14 +257,15 @@ namespace Vpet
         public void BeforePetTick(double now,float dt)
         {
             AdvanceBall(dt);
+            AdvanceDie(dt);
             ConsiderPlay(now);
-            if(Fetch==FetchPhase.None||Aiming||Editing||pet.Dragging)return;
-            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else RouteToBall();}
+            if(Fetch==FetchPhase.None||Aiming||DieAiming||Editing||pet.Dragging)return;
+            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(Coin);else if(Target==PlayTarget.Card)RouteTo(Card);else RouteToBall();}
             else if(Fetch==FetchPhase.Returning)
             {
-                if(pet.Settings.Movement!=MovementMode.Restricted||Geometry.Distance(pet.Position,pet.Anchor)<=pet.Settings.Radius)
+                if(pet.Settings.Movement!=MovementMode.Restricted||pet.InsideRestriction(pet.Position))
                 {pet.EndPlay(now);Fetch=FetchPhase.None;return;}
-                var display=Nearest(pet.Anchor);approach=Geometry.Clamp(pet.Anchor,display.Allowed(pet.FrameSize));approachDisplay=display.Id;
+                var display=Nearest(pet.RestrictedCenter);approach=Geometry.Clamp(pet.RestrictedCenter,display.Allowed(pet.FrameSize));approachDisplay=display.Id;
                 if(!pet.Destination.HasValue){pet.IdleUntil=0;pet.SetDestination(approach,approachDisplay);}
             }
             if(Fetch==FetchPhase.Shaking)pet.ShakeUntil=now+Math.Max(.001f,.5f-phaseTime);
@@ -281,7 +273,8 @@ namespace Vpet
         public void AfterPetTick(double now,float dt)
         {
             if(Fetch==FetchPhase.None)return;
-            if(Aiming||Editing||pet.Dragging||pet.Paused||pet.Hovered){if(Fetch==FetchPhase.Repeating)repeatStarted+=Math.Max(0,dt);return;}
+            if(Aiming||DieAiming||Editing||pet.Dragging||pet.Paused||pet.Hovered){if(Fetch==FetchPhase.Repeating)repeatStarted+=Math.Max(0,dt);return;}
+            if(GameTick(now,dt))return;
             if(Fetch==FetchPhase.Repeating)
             {
                 // Play at most one note per tick; keep rapid taps audible after a delayed UI tick.
@@ -310,15 +303,16 @@ namespace Vpet
         }
         void FinishFetch(double now)
         {
+            ClearAnnouncement();
             SchedulePlay(now);
             if(Fetch==FetchPhase.None)return;
             pet.CancelRoute();pet.ShakeUntil=0;phaseTime=0;
-            if(pet.Settings.Movement==MovementMode.Restricted&&Geometry.Distance(pet.Position,pet.Anchor)>pet.Settings.Radius)
+            if(pet.Settings.Movement==MovementMode.Restricted&&!pet.InsideRestriction(pet.Position))
             {Fetch=FetchPhase.Returning;pet.IdleUntil=0;}
             else{Fetch=FetchPhase.None;pet.EndPlay(now);}
         }
         public void CancelFetchForPetDrag(double now)
-        {if(Fetch==FetchPhase.None)return;Fetch=FetchPhase.None;tune.Clear();pet.EndPlay(now);SchedulePlay(now);}
+        {ClearAnnouncement();if(Fetch==FetchPhase.None)return;Fetch=FetchPhase.None;tune.Clear();pet.EndPlay(now);SchedulePlay(now);}
         public void Store()
         {Settings.X=Zone.X;Settings.Y=Zone.Y;Settings.Width=Zone.Width;Settings.Height=Zone.Height;Settings.ChestX=Chest.X;Settings.ChestY=Chest.Y;}
     }

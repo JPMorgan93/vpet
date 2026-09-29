@@ -10,8 +10,11 @@ namespace Vpet
         readonly MemoryStream[] waves=new MemoryStream[3];
         readonly SoundPlayer[] players=new SoundPlayer[3];
         readonly Func<TriangleSound> selectedSound;
-        internal static byte[] CreateWave(TriangleSound sound=TriangleSound.Chime)
+        readonly Func<float> selectedVolume;
+        readonly float[] volumes={1,1,1};
+        internal static byte[] CreateWave(TriangleSound sound=TriangleSound.Chime,float volume=1)
         {
+            volume=ToyPreferences.Finite(volume)?Math.Max(0,Math.Min(1,volume)):1;
             const int rate=22050,samples=11025;
             using(var output=new MemoryStream())using(var writer=new BinaryWriter(output))
             {
@@ -38,20 +41,26 @@ namespace Vpet
                         double phase=2*Math.PI*(160*t+28*(1-Math.Exp(-40*t))/40);
                         value=Math.Min(1,t/.001)*(1-t/.5)*(.34*high*Math.Exp(-22*t)+.20*Math.Sin(phase)*Math.Exp(-35*t));
                     }
-                    writer.Write((short)(Math.Max(-1,Math.Min(1,value))*short.MaxValue));
+                    writer.Write((short)(Math.Max(-1,Math.Min(1,value))*volume*short.MaxValue));
                 }
                 return output.ToArray();
             }
         }
-        public ToyChime(Func<TriangleSound> selectedSound=null)
+        public ToyChime(Func<TriangleSound> selectedSound=null,Func<float> selectedVolume=null)
         {
             this.selectedSound=selectedSound??(()=>TriangleSound.Chime);
+            this.selectedVolume=selectedVolume??(()=>1);
             for(int i=0;i<players.Length;i++){waves[i]=new MemoryStream(CreateWave((TriangleSound)i));players[i]=new SoundPlayer(waves[i]);}
         }
         public void Play()
+        {Play(selectedSound(),selectedVolume());}
+        public void Play(TriangleSound sound,float volume)
         {
             // SoundPlayer plays asynchronously, so rapid clicks never block the desktop UI.
-            int index=(int)selectedSound();if(index<0||index>=players.Length)index=0;
+            int index=(int)sound;if(index<0||index>=players.Length)index=0;
+            volume=ToyPreferences.Finite(volume)?Math.Max(0,Math.Min(1,volume)):1;
+            if(volumes[index]!=volume)
+            {players[index].Stop();players[index].Dispose();waves[index].Dispose();waves[index]=new MemoryStream(CreateWave((TriangleSound)index,volume));players[index]=new SoundPlayer(waves[index]);volumes[index]=volume;}
             try{players[index].Play();}catch(InvalidOperationException){}catch(TimeoutException){}
         }
         public void Dispose(){for(int i=0;i<players.Length;i++){players[i].Stop();players[i].Dispose();waves[i].Dispose();}}

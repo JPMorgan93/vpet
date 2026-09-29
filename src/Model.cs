@@ -23,6 +23,8 @@ namespace Vpet
         [DataMember] public Frequency Frequency = Frequency.Sometimes;
         [DataMember] public int Speed = 50;
         [DataMember] public int Radius = 250;
+        [DataMember] public float RestrictedWidth=float.NaN,RestrictedHeight=float.NaN;
+        [DataMember] public bool SyncPlayZone=true;
         [DataMember] public bool DisplayRestrictedArea = true;
         [DataMember] public bool RestrictedAreaCreated;
         [DataMember] public float X = float.NaN;
@@ -42,6 +44,7 @@ namespace Vpet
         void InitializeDefaults(StreamingContext context)
         {
             Speed=50;Radius=250;DisplayRestrictedArea=true;Facing=2;
+            RestrictedWidth=RestrictedHeight=float.NaN;SyncPlayZone=true;
             X=Y=AnchorX=AnchorY=float.NaN;Frequency=Frequency.Sometimes;
             PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;AutoUpdate=false;LastSpriteProject="";
             Toys=new ToyPreferences();
@@ -50,6 +53,8 @@ namespace Vpet
         public void Validate()
         {
             Speed = Math.Max(0, Math.Min(100, Speed)); Radius = Math.Max(30, Math.Min(1000, Radius));
+            RestrictedWidth=ToyPreferences.Finite(RestrictedWidth)?Math.Max(160,Math.Min(8000,RestrictedWidth)):Radius*2;
+            RestrictedHeight=ToyPreferences.Finite(RestrictedHeight)?Math.Max(140,Math.Min(8000,RestrictedHeight)):Radius*2;
             Facing = ((Facing % 8) + 8) % 8;
             if (!Enum.IsDefined(typeof(MovementMode), Movement)) Movement = MovementMode.FreeRoam;
             if (!Enum.IsDefined(typeof(LayerMode), Layer)) Layer = LayerMode.OverEverything;
@@ -142,10 +147,28 @@ namespace Vpet
         public DisplayCrossing Crossing { get; private set; }
         bool settlingDrag;
         float settleTarget;
+        RectangleF? sharedRestrictedArea;
+        public RectangleF OwnRestrictedArea {get{return new RectangleF(Anchor.X-Settings.RestrictedWidth/2,Anchor.Y-Settings.RestrictedHeight/2,Settings.RestrictedWidth,Settings.RestrictedHeight);}}
+        public RectangleF RestrictedArea {get{return Settings.SyncPlayZone&&sharedRestrictedArea.HasValue?sharedRestrictedArea.Value:OwnRestrictedArea;}}
+        public RectangleF RestrictedAllowed
+        {
+            get
+            {
+                var zone=RestrictedArea;var display=FenceGeometry.Nearest(Displays,FenceGeometry.Center(zone));var size=display.PetSize(FrameSize);float pad=4*display.Scale;
+                var inside=RectangleF.FromLTRB(zone.Left+size.Width/2f+pad,zone.Top+size.Height+pad,zone.Right-size.Width/2f-pad,zone.Bottom-display.NameFootroom-pad);
+                if(inside.Width<0||inside.Height<0)return new RectangleF(Geometry.Clamp(FenceGeometry.Center(zone),display.Allowed(FrameSize)),SizeF.Empty);
+                return RectangleF.Intersect(inside,display.Allowed(FrameSize));
+            }
+        }
+        public PointF RestrictedCenter {get{return Geometry.Clamp(FenceGeometry.Center(RestrictedArea),RestrictedAllowed);}}
+        public bool InsideRestriction(PointF point){return ToyModel.ContainsInclusive(RestrictedAllowed,point);}
+        public bool RestrictedAreaVisible {get{return Settings.SyncPlayZone?Settings.Toys.DisplayZone:Settings.DisplayRestrictedArea;}}
+        public void SetRestrictedAreaVisible(bool value){if(Settings.SyncPlayZone)Settings.Toys.DisplayZone=value;else Settings.DisplayRestrictedArea=value;}
+        public void SetSharedRestrictedArea(RectangleF zone){bool changed=sharedRestrictedArea!=zone;sharedRestrictedArea=zone;if(changed&&Settings.SyncPlayZone){CancelRoute();EnsureInsideRestrictedArea();}}
 
         public PetModel(Preferences settings, Random rng)
         {
-            Settings = settings; random = rng; Position = new PointF(settings.X, settings.Y);
+            settings.Validate();Settings = settings; random = rng; Position = new PointF(settings.X, settings.Y);
             Anchor = new PointF(settings.AnchorX, settings.AnchorY); Facing = settings.Facing;
             if(settings.Movement==MovementMode.Restricted&&!float.IsNaN(Anchor.X)&&!float.IsNaN(Anchor.Y))settings.RestrictedAreaCreated=true;
         }
@@ -160,6 +183,7 @@ namespace Vpet
                 Position = new PointF(displays[0].Work.Left + displays[0].Work.Width * .6f, displays[0].Work.Top + displays[0].Work.Height * .7f);
             Place(Position);
             if (float.IsNaN(Anchor.X) || float.IsNaN(Anchor.Y) || !displays.Exists(d => d.Allowed(FrameSize).Contains(Anchor))) Anchor = Position;
+            FitRestrictedArea();
             CancelRoute();EnsureInsideRestrictedArea();
         }
         public void Place(PointF requested)
@@ -230,7 +254,7 @@ namespace Vpet
         public void Release(double now)
         {
             Dragging=false;
-            if(Crossing!=null&&(Settings.Movement!=MovementMode.Restricted||Geometry.Distance(Position,Anchor)<=Settings.Radius))
+            if(Crossing!=null&&(Settings.Movement!=MovementMode.Restricted||InsideRestriction(Position)))
             {settlingDrag=true;settleTarget=Crossing.Progress>=.5f?1:0;Destination=null;TargetDisplay=null;plannedCrossing=null;}
             else {Place(Position);CancelRoute();EnsureInsideRestrictedArea();}
             FaceDownIdle();
@@ -243,38 +267,43 @@ namespace Vpet
         }
         public void MoveRestrictedArea(PointF center)
         {
-            PointF nearest=center;float distance=float.MaxValue;
-            foreach(var display in Displays)
-            {var candidate=Geometry.Clamp(center,display.Allowed(FrameSize));float d=Geometry.Distance(center,candidate);if(d<distance){distance=d;nearest=candidate;}}
-            Anchor=nearest;Settings.RestrictedAreaCreated=true;CancelRoute();EnsureInsideRestrictedArea();
+            Anchor=center;FitRestrictedArea();Settings.RestrictedAreaCreated=true;CancelRoute();EnsureInsideRestrictedArea();
+        }
+        void FitRestrictedArea()
+        {var zone=FenceGeometry.Fit(OwnRestrictedArea,FenceGeometry.Nearest(Displays,Anchor),FrameSize);Anchor=FenceGeometry.Center(zone);Settings.RestrictedWidth=zone.Width;Settings.RestrictedHeight=zone.Height;}
+        internal void ResizeRestrictedArea(RectangleF original,ZoneEdge edges,PointF delta)
+        {
+            var zone=FenceGeometry.Resize(original,edges,delta,FenceGeometry.Nearest(Displays,Anchor),FrameSize);
+            Anchor=FenceGeometry.Center(zone);Settings.RestrictedWidth=zone.Width;Settings.RestrictedHeight=zone.Height;CancelRoute();EnsureInsideRestrictedArea();
         }
         public void SetRadius(int radius)
         {
-            Settings.Radius=Math.Max(30,Math.Min(1000,radius));CancelRoute();EnsureInsideRestrictedArea();
+            // Retain legacy migration/API support; the UI now resizes the fence directly.
+            Settings.Radius=Math.Max(30,Math.Min(1000,radius));Settings.RestrictedWidth=Settings.RestrictedHeight=Settings.Radius*2;FitRestrictedArea();CancelRoute();EnsureInsideRestrictedArea();
         }
         public void EnsureInsideRestrictedArea()
         {
-            if(!Playing&&Settings.Movement==MovementMode.Restricted&&Geometry.Distance(Position,Anchor)>Settings.Radius)Place(Anchor);
+            if(Displays.Count>0&&!Playing&&Settings.Movement==MovementMode.Restricted&&!InsideRestriction(Position))Place(RestrictedCenter);
         }
         public void ChangeMode(MovementMode mode, double now)
         {
             bool entering=mode==MovementMode.Restricted&&Settings.Movement!=mode;
-            if(entering&&!Settings.RestrictedAreaCreated){Anchor=Position;Settings.RestrictedAreaCreated=true;}
-            Settings.Movement=mode;if(entering)Settings.DisplayRestrictedArea=true;
+            if(entering&&!Settings.RestrictedAreaCreated){Anchor=Position;FitRestrictedArea();Settings.RestrictedAreaCreated=true;}
+            Settings.Movement=mode;if(entering){Settings.DisplayRestrictedArea=true;SetRestrictedAreaVisible(true);}
             CancelRoute();EnsureInsideRestrictedArea();IdleUntil=Math.Max(IdleUntil,now+1);
         }
         public bool SetDestination(PointF target, string displayId)
         {
             var targetArea = Displays.Find(d => d.Id == displayId); if (targetArea == null) return false;
             target = Geometry.Clamp(target, targetArea.Allowed(FrameSize));
-            if (!Playing && Settings.Movement == MovementMode.Restricted && Geometry.Distance(target, Anchor) > Settings.Radius) return false;
+            if (!Playing && Settings.Movement == MovementMode.Restricted && !InsideRestriction(target)) return false;
             Destination=target;TargetDisplay=displayId;plannedCrossing=null;Crossing=null;
             if (displayId != CurrentDisplay)
             {
                 var nextDisplay=DisplayCrossing.NextDisplay(Current,targetArea,Displays,FrameSize);
                 plannedCrossing=DisplayCrossing.Plan(Current,nextDisplay,FrameSize,target);
                 if (!Playing && Settings.Movement == MovementMode.Restricted &&
-                    !plannedCrossing.FitsCircle(Anchor,Settings.Radius))
+                    (!InsideRestriction(plannedCrossing.Exit)||!InsideRestriction(plannedCrossing.Entry)))
                 { CancelRoute(); return false; }
             }
             return true;
@@ -287,8 +316,8 @@ namespace Vpet
                 PointF p;
                 if (Settings.Movement == MovementMode.Restricted)
                 {
-                    double angle = random.NextDouble()*Math.PI*2, radius = Math.Sqrt(random.NextDouble())*Settings.Radius;
-                    p = new PointF(Anchor.X+(float)(Math.Cos(angle)*radius), Anchor.Y+(float)(Math.Sin(angle)*radius));
+                    var allowed=RestrictedAllowed;
+                    p = new PointF(allowed.Left+(float)random.NextDouble()*allowed.Width,allowed.Top+(float)random.NextDouble()*allowed.Height);
                     if (!r.Contains(p)) continue;
                 }
                 else p = new PointF(r.Left+(float)random.NextDouble()*r.Width, r.Top+(float)random.NextDouble()*r.Height);
@@ -367,7 +396,7 @@ namespace Vpet
         public static double Interval(Frequency f, Random rng)
         {
             if(f==Frequency.Off)return double.PositiveInfinity;
-            return f==Frequency.Rarely?180+rng.NextDouble()*120:f==Frequency.Sometimes?60+rng.NextDouble()*60:30+rng.NextDouble()*30;
+            return f==Frequency.Rarely?90+rng.NextDouble()*30:f==Frequency.Sometimes?30+rng.NextDouble()*30:15+rng.NextDouble()*15;
         }
     }
 }

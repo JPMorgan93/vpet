@@ -35,6 +35,7 @@ namespace Vpet
         Bitmap rendered,crossingRendered,customReaction;
         Bitmap reactionPreview;
         float reactionPreviewScale;
+        Bitmap gameReactionPreview;string gameReactionKey;
         bool reactionPreviewBelow;
         Form dragWindow;
         double previousTime,phase,lastHover=-10,bubbleUntil,nextRandom,nextDisplayCheck,nextAssetCheck,nextSave;
@@ -79,7 +80,8 @@ namespace Vpet
             Model=new PetModel(prefs,random);Model.FrameSize=Sprites.Cell;
             RefreshDisplays();Model.IdleUntil=Now+2;
             restrictedOverlay=new RestrictedAreaOverlay(Model,Save,this,crossingWindow);
-            Toys=new ToyWindows(Model,this,crossingWindow,Save,()=>Now,random);
+            Toys=new ToyWindows(Model,this,crossingWindow,delegate{Save();if(SettingsOpen)settingsWindow.SyncRestrictedAreaVisibility();},()=>Now,random);
+            Toys.Model.ReactionPlayed+=ShowReaction;
             Text="Vpet";bubble.Text="Vpet reaction";bubble.Owner=this;
             BuildMenu();ContextMenuStrip=menu;
             menuDismissal=new MenuDismissal(menu);
@@ -115,11 +117,11 @@ namespace Vpet
                 var captured=value;var item=new ToolStripMenuItem(Names.Movement(value)){Tag=value};
                 item.Click+=delegate{Model.ChangeMode(captured,Now);Save();};type.DropDownItems.Add(item);
             }
-            movement.DropDownItems.Add(type);movement.DropDownItems.Add("Speed and radius…",null,delegate{OpenSettings(0);});
+            movement.DropDownItems.Add(type);movement.DropDownItems.Add("Movement settings…",null,delegate{OpenSettings(0);});
             var displayArea=new ToolStripMenuItem("Display restricted area"){CheckOnClick=true};
             displayArea.Click+=delegate
             {
-                Model.Settings.DisplayRestrictedArea=displayArea.Checked;
+                Model.SetRestrictedAreaVisible(displayArea.Checked);
                 if(SettingsOpen)settingsWindow.SyncRestrictedAreaVisibility();
                 SettingsChanged(false);
             };
@@ -144,7 +146,7 @@ namespace Vpet
             {
                 menuOpen=true;
                 toyChest.Checked=Model.Settings.Toys.DisplayChest;
-                displayArea.Checked=Model.Settings.DisplayRestrictedArea;
+                displayArea.Checked=Model.RestrictedAreaVisible;
                 displayArea.Enabled=Model.Settings.Movement==MovementMode.Restricted;
                 foreach(ToolStripMenuItem item in type.DropDownItems)item.Checked=(MovementMode)item.Tag==Model.Settings.Movement;
                 foreach(ToolStripMenuItem item in layer.DropDownItems)item.Checked=(LayerMode)item.Tag==Model.Settings.Layer;
@@ -172,7 +174,7 @@ namespace Vpet
         }
         public void SettingsChanged(bool resetReaction)
         {
-            if(resetReaction)ResetReactionTimer();restrictedOverlay.Update();Save();
+            if(resetReaction)ResetReactionTimer();restrictedOverlay.Update();Toys.Update();Save();
         }
         public void NameChanged()
         {
@@ -209,6 +211,14 @@ namespace Vpet
         Bitmap ReactionImage(float scale,bool below)
         {
             if(ShowPause)return Artwork.Bubble(-1,null,scale,below);
+            var announcement=Now<explicitPreviewUntil?null:Toys.Model.Announcement;
+            if(announcement!=null)
+            {
+                string key=announcement.Key+":"+scale+":"+below;
+                if(gameReactionPreview==null||key!=gameReactionKey)
+                {if(gameReactionPreview!=null)gameReactionPreview.Dispose();gameReactionPreview=Artwork.Bubble(-1,Toys.Games.Emote(announcement),scale,below);gameReactionKey=key;}
+                return (Bitmap)gameReactionPreview.Clone();
+            }
             // Resample a high-resolution emote once, not on every animation tick.
             if(reactionPreview==null||reactionPreviewScale!=scale||reactionPreviewBelow!=below)
             {
@@ -259,7 +269,7 @@ namespace Vpet
             if(now>=nextDisplayCheck){RefreshDisplays();nextDisplayCheck=now+2;}
             if(now>=nextAssetCheck){RefreshEmotes();nextAssetCheck=now+3;}
             bool hovering=IsHovered();
-            if(hovering&&!Model.Hovered&&!buttonDown&&!menuOpen&&!SettingsOpen&&now-lastHover>=5)
+            if(hovering&&!Model.Hovered&&!buttonDown&&!menuOpen&&!SettingsOpen&&!Model.Playing&&now-lastHover>=5)
             {ShowReaction(Reactions.Hover(Model.Settings.Personality));lastHover=now;}
             Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging||Toys.Busy;
             Toys.Model.BeforePetTick(now,dt);
@@ -267,7 +277,7 @@ namespace Vpet
             Toys.Model.AfterPetTick(now,dt);
             if(Model.Walking!=lastWalk){phase=0;lastWalk=Model.Walking;}
             else phase+=dt*(Model.Walking?8*Model.ActualSpeed/(100*Model.Current.Scale):4);
-            if(now>=nextRandom&&!Model.Dragging&&!Model.Shaking(now)&&!Model.Paused&&now>=bubbleUntil)
+            if(now>=nextRandom&&!Model.Dragging&&!Model.Shaking(now)&&!Model.Paused&&!Model.Playing&&now>=bubbleUntil)
                 ShowReaction(Reactions.Choose(Model.Settings.Personality,8+CustomEmotes.Count,random));
             Render();restrictedOverlay.Update();Toys.Update();
             if(now>=nextSave){Save();nextSave=now+15;}
@@ -382,8 +392,8 @@ namespace Vpet
             var display=Model.Current;Size size=display.PetSize(Sprites.Cell);
             animationFacing=Sprites.ResolveFacing(Model.Facing,Model.Walking?Model.LastMotion:PointF.Empty,animationFacing);
             // Optional reaction poses apply to greetings, clicks and pickup too; missing rows retain normal animation.
-            var emoteFrame=!ShowPause&&Now<bubbleUntil?Sprites.EmoteFrame(reaction,(int)((Now-reactionStarted)*6)):null;
-            var frame=emoteFrame??Sprites.Frame(Model.Walking,animationFacing,(int)phase);
+            var emoteFrame=!ShowPause&&Toys.Model.Announcement==null&&Now<bubbleUntil?Sprites.EmoteAtPhase(reaction,(Now-reactionStarted)*6):null;
+            var frame=emoteFrame??Sprites.FrameAtPhase(Model.Walking,animationFacing,phase);
             float offset=Model.Shaking(Now)?(float)(Math.Sin(Now*65)*3*display.Scale):0;
             PointF anchor=Geometry.Clamp(new PointF(Model.Position.X+offset,Model.Position.Y),display.Allowed(Sprites.Cell,false));
             var location=new Point((int)Math.Round(anchor.X-size.Width/2f),(int)Math.Round(anchor.Y-size.Height));
@@ -404,7 +414,7 @@ namespace Vpet
                 if(crossingWindow.Visible)crossingWindow.Hide();
             }
             bool showName=Model.Settings.ShowName(Model.Hovered||buttonDown);
-            bool showReaction=ShowPause||(reaction>=0&&Now<bubbleUntil);
+            bool showReaction=ShowPause||Toys.Model.Announcement!=null||(reaction>=0&&Now<bubbleUntil);
             if(showName)
             {
                 bool below=location.Y-(int)Math.Ceiling(62*display.Scale)<display.Work.Top;
@@ -482,6 +492,7 @@ namespace Vpet
             if(SettingsOpen)settingsWindow.Close();Toys.Dispose();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
             if(rendered!=null)rendered.Dispose();if(crossingRendered!=null)crossingRendered.Dispose();if(customReaction!=null)customReaction.Dispose();Replacements.Dispose();
             if(reactionPreview!=null)reactionPreview.Dispose();
+            if(gameReactionPreview!=null)gameReactionPreview.Dispose();
             foreach(var item in CustomEmotes)item.Dispose();Sprites.Dispose();timer.Dispose();
         }
     }
@@ -491,7 +502,7 @@ namespace Vpet
         public static string Movement(MovementMode mode){return mode==MovementMode.FreeRoam?"Free Roam":mode.ToString();}
         public static string MovementDescription(MovementMode mode)
         {
-            if(mode==MovementMode.Restricted)return "Your pet wanders inside a fixed circular fence. Set its position and radius using the controls below.";
+            if(mode==MovementMode.Restricted)return "Your pet wanders inside a fixed rectangular fence. Display the fence, drag its + to move it, and drag its edges or corners to resize it.";
             if(mode==MovementMode.Static)return "Your pet stays where you place it and plays its idle animation. You can still drag it, interact with it, and show reactions.";
             return "Your pet wanders freely across connected displays, choosing random destinations and resting between walks. It stays clear of taskbars.";
         }

@@ -13,10 +13,12 @@ namespace Vpet
         public Size Cell { get; private set; }
         public bool HasDiagonals {get;private set;}
         public int[] Counts {get;private set;}
+        public float[] Speeds {get;private set;}
         readonly Bitmap[][] frames,mirrors;
         public SpriteSet(Bitmap sheet) : this(sheet,true,new[]{4,4,4,4,4,5,5,5,5,5}) {}
-        public SpriteSet(Bitmap sheet,bool diagonals,int[] counts)
+        public SpriteSet(Bitmap sheet,bool diagonals,int[] counts,float[] speeds=null)
         {
+            Speeds=speeds==null?null:(float[])speeds.Clone();
             Sheet=sheet;Cell=new Size(sheet.Width/5,sheet.Height/counts.Length);HasDiagonals=diagonals;Counts=(int[])counts.Clone();
             frames=new Bitmap[counts.Length][];mirrors=new Bitmap[counts.Length][];
             for(int row=0;row<counts.Length;row++)
@@ -36,6 +38,14 @@ namespace Vpet
             int[] rowMap={2,4,1,4,2,3,0,3};int row=rowMap[facing]+(walk?5:0);
             return (facing==0||facing==1||facing==7?mirrors:frames)[row][Math.Max(0,index)%Counts[row]];
         }
+        public float Speed(bool walk,int facing)
+        {
+            if(!HasDiagonals&&facing%2==1)facing=facing==1||facing==7?0:4;
+            int[] rows={2,4,1,4,2,3,0,3};return Speeds==null?1:Speeds[rows[facing]+(walk?5:0)];
+        }
+        public Bitmap FrameAtPhase(bool walk,int facing,double phase){return Frame(walk,facing,(int)(phase*Speed(walk,facing)));}
+        public Bitmap EmoteAtPhase(int reaction,double phase)
+        {int row=SpriteProject.MovementCycles+reaction;return EmoteFrame(reaction,(int)(phase*(Speeds!=null&&row>=10&&row<Speeds.Length?Speeds[row]:1)));}
         public int ResolveFacing(int facing,PointF movement,int previous)
         {
             if(HasDiagonals)return facing;
@@ -46,7 +56,7 @@ namespace Vpet
             return (((int)Math.Floor(angle/90+.5))%4+4)%4*2;
         }
         public void SavePackage(string path)
-        {SpritePackage.Write(path,new SpriteManifest{Version=Counts.Length>10?3:2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts},Sheet);}
+        {SpritePackage.Write(path,new SpriteManifest{Version=Speeds!=null?4:Counts.Length>10?3:2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts,CycleSpeeds=Speeds},Sheet);}
         public Bitmap EmoteFrame(int reaction,int index)
         {
             int row=SpriteProject.MovementCycles+reaction;
@@ -138,7 +148,7 @@ namespace Vpet
         public static SpriteSet Import(string path)
         {
             if(string.Equals(Path.GetExtension(path),".vpetsprite",StringComparison.OrdinalIgnoreCase))
-            {SpriteManifest data;var atlas=SpritePackage.Read(path,"sprite",out data);return new SpriteSet(atlas,data.Diagonals,data.Counts);}
+            {SpriteManifest data;var atlas=SpritePackage.Read(path,"sprite",out data);return new SpriteSet(atlas,data.Diagonals,data.Counts,data.CycleSpeeds);}
             var bitmap=ReadPng(path,500,1500);
             try
             {

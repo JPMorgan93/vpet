@@ -70,7 +70,7 @@ namespace Vpet
                 Near((float)(played[4]-played[3]),.22f,.021f,"Playback remembers the first tap interval");
                 Near((float)(played[5]-played[4]),.37f,.021f,"Playback remembers the second tap interval");
                 Check(toys.NextPlayAt-clock>=59&&toys.NextPlayAt-clock<=120,"Completed toy action schedules a randomized later visit");
-                if(mode==MovementMode.Restricted)Check(Geometry.Distance(pet.Position,pet.Anchor)<=30,"Instrument visit returns pet to its unchanged restricted circle");
+                if(mode==MovementMode.Restricted)Check(pet.InsideRestriction(pet.Position),"Instrument visit returns pet to its unchanged restricted fence");
             }
             var p=Pet(MovementMode.Static);var t=Toys(p);t.RemoveBall(0);t.SpawnTriangle();int chimes=0;t.ChimePlayed+=delegate{chimes++;};
             p.Place(t.Triangle);t.PressTriangle(0);t.PressTriangle(.001);t.PressTriangle(.002);

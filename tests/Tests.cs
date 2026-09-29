@@ -17,7 +17,7 @@ namespace Vpet
         {bool rejected=false;try{action();}catch(InvalidDataException){rejected=true;}Check(rejected,message);}
         static PetModel Pet(MovementMode mode)
         {
-            var pet=new PetModel(new Preferences{Movement=mode,X=400,Y=400},new Random(7));
+            var pet=new PetModel(new Preferences{Movement=mode,X=400,Y=400,SyncPlayZone=false},new Random(7));
             pet.SetDisplays(new List<DisplayArea>{new DisplayArea("primary",new Rectangle(0,0,1000,760),1)});return pet;
         }
         [STAThread]
@@ -46,7 +46,7 @@ namespace Vpet
                     Check(Updates.Hash(download)==hash,"Published installer download matches the public checksum");
                     Console.WriteLine("PASS: public GitHub release "+update.Version+" discovered and installer downloaded/verified. No installer was executed.");return 0;
                 }
-                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();UpdateDescriptions();StartupSettings();MakerProjects();ToyBehavior();OptionalAnimations();TrianglePlay();InstrumentSounds();SheetReplacement();
+                DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();UpdateDescriptions();StartupSettings();MakerProjects();ToyBehavior();OptionalAnimations();TrianglePlay();InstrumentSounds();SheetReplacement();ExpandedFeatures();
                 Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
             }
             catch(Exception ex){Console.Error.WriteLine(ex);return 1;}
@@ -294,7 +294,7 @@ namespace Vpet
             var stationary=Pet(MovementMode.Static);stationary.Release(0);stationary.Tick(40,.1f);Check(!stationary.Walking&&!stationary.Destination.HasValue,"Static stays still after release");
             var restricted=Pet(MovementMode.Restricted);var fixedAnchor=restricted.Anchor;restricted.Place(new PointF(700,500));restricted.Release(1);Check(restricted.Anchor==fixedAnchor&&restricted.Position==fixedAnchor,"Pet drag never moves the fence; outside release returns to center");
             Check(!restricted.SetDestination(new PointF(100,100),"primary"),"Restricted destination excludes outside radius");
-            restricted.Tick(33,.1f);Check(restricted.Destination.HasValue&&Geometry.Distance(restricted.Destination.Value,restricted.Anchor)<=restricted.Settings.Radius,"Restricted random selection stays in circle");
+            restricted.Tick(33,.1f);Check(restricted.Destination.HasValue&&restricted.InsideRestriction(restricted.Destination.Value),"Restricted random selection stays in the rectangular fence");
             restricted.MoveRestrictedArea(new PointF(800,600));Check(restricted.Position==restricted.Anchor,"Moving fence beyond pet relocates pet to center");
             var standing=restricted.Position;restricted.MoveRestrictedArea(new PointF(750,600));Check(restricted.Position==standing,"Moving fence while pet remains inside does not move pet");
             restricted.SetRadius(30);Check(restricted.Position==restricted.Anchor,"Shrinking fence beyond pet relocates pet to center");
@@ -441,7 +441,7 @@ namespace Vpet
         static void ReactionsAndSettings()
         {
             var random=new Random(3);
-            for(int i=0;i<100;i++){double t=Reactions.Interval(Frequency.Sometimes,random);Check(t>=60&&t<=120,"Sometimes interval is 60–120 seconds");}
+            for(int i=0;i<100;i++){double t=Reactions.Interval(Frequency.Sometimes,random);Check(t>=30&&t<=60,"Sometimes interval is 30–60 seconds");}
             Check(double.IsPositiveInfinity(Reactions.Interval(Frequency.Off,random)),"Off disables random scheduler");
             Check(Reactions.Weight(Personality.Sweet,0)==6&&Reactions.Weight(Personality.Sweet,4)==3&&Reactions.Weight(Personality.Sweet,3)==1,"Personality priorities have 6:3:1 weights");
             Check(Reactions.Weight(Personality.Sassy,8)==3,"Custom emotes have priority two");

@@ -17,6 +17,10 @@ namespace Vpet
         internal readonly LayeredWindow Chest=new LayeredWindow(false){Text="Vpet toy chest",Cursor=Cursors.SizeAll};
         internal readonly LayeredWindow Ball=new LayeredWindow(false){Text="Vpet ball",Cursor=Cursors.Hand};
         internal readonly LayeredWindow Triangle=new LayeredWindow(false){Text="Vpet triangle",Cursor=Cursors.Hand};
+        internal readonly LayeredWindow Coin=new LayeredWindow(false){Text="Vpet coin",Cursor=Cursors.Hand};
+        internal readonly LayeredWindow Card=new LayeredWindow(false){Text="Vpet high or low card",Cursor=Cursors.Hand};
+        internal readonly LayeredWindow Die=new LayeredWindow(false){Text="Vpet D20",Cursor=Cursors.Hand};
+        internal readonly GameArtwork Games;
         internal readonly LayeredWindow Fence=new LayeredWindow(false){Text="Vpet play zone"};
         internal readonly LayeredWindow Arrow=new LayeredWindow(true){Text="Ball launch direction"};
         internal readonly LayeredWindow Help=new LayeredWindow(true){Text="Toy help"};
@@ -32,19 +36,21 @@ namespace Vpet
         string fenceKey="";
         LayeredWindow captured;
         Point pointerStart;
-        PointF chestStart,triangleStart,centerStart,pull;
+        PointF chestStart,triangleStart,coinStart,cardStart,centerStart,pull;
         RectangleF zoneStart;
         ZoneEdge resizeEdges;
         bool moveZone,dragged,disposed;
         LayerMode? layer;
-        internal bool Busy {get{return captured!=null||Menu.Visible||TriangleMenu.Visible;}}
-        internal IEnumerable<LayeredWindow> Windows {get{yield return Help;yield return Ball;yield return Triangle;yield return Arrow;yield return Fence;yield return Chest;}}
+        ToySoundWindow soundWindow;
+        internal bool Busy {get{return captured!=null||Menu.Visible||TriangleMenu.Visible||soundWindow!=null;}}
+        internal IEnumerable<LayeredWindow> Windows {get{yield return Help;yield return Ball;yield return Triangle;yield return Coin;yield return Card;yield return Die;yield return Arrow;yield return Fence;yield return Chest;}}
 
         public ToyWindows(PetModel pet,LayeredWindow petWindow,LayeredWindow crossingWindow,Action save,Func<double> now,Random random)
         {
             this.pet=pet;this.petWindow=petWindow;this.crossingWindow=crossingWindow;this.save=save;this.now=now;
             Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);ballImage=ToyArtwork.Ball(Model.Scale);triangleImage=ToyArtwork.Triangle(Model.Scale);
-            chime=new ToyChime(()=>Model.Settings.Sound);Model.ChimePlayed+=chime.Play;
+            Games=new GameArtwork(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference"));
+            chime=new ToyChime(()=>Model.Settings.Sound,()=>Model.Settings.Volume);Model.ChimePlayed+=chime.Play;
             foreach(var window in Windows)
             {
                 IntPtr handle=window.Handle;Native.BackgroundAdornments.Add(handle);
@@ -58,14 +64,26 @@ namespace Vpet
             var ball=new ToolStripMenuItem("Ball"){CheckOnClick=true};
             ball.Click+=delegate{if(ball.Checked)Model.SpawnBall(now());else{EndGesture(false);Model.RemoveBall(now());}Update();};Menu.Items.Add(ball);
             var triangle=new ToolStripMenuItem("Triangle"){CheckOnClick=true};
-            triangle.Click+=delegate{if(triangle.Checked)Model.SpawnTriangle();else{TriangleMenu.Close();EndGesture(false);Model.RemoveTriangle(now());}Update();};Menu.Items.Add(triangle);
+            triangle.Click+=delegate{if(triangle.Checked)Model.SpawnTriangle();else{TriangleMenu.Close();if(soundWindow!=null)soundWindow.Close();EndGesture(false);Model.RemoveTriangle(now());}Update();};Menu.Items.Add(triangle);
+            var coin=new ToolStripMenuItem("Coin"){CheckOnClick=true};coin.Click+=delegate{EndGesture(false);if(coin.Checked)Model.SpawnCoin();else Model.RemoveCoin(now());Update();};Menu.Items.Add(coin);
+            var card=new ToolStripMenuItem("Card"){CheckOnClick=true};card.Click+=delegate{EndGesture(false);if(card.Checked)Model.SpawnCard();else Model.RemoveCard(now());Update();};Menu.Items.Add(card);
+            var die=new ToolStripMenuItem("D20"){CheckOnClick=true};die.Click+=delegate{EndGesture(false);if(die.Checked)Model.SpawnDie();else Model.RemoveDie(now());Update();};Menu.Items.Add(die);
             // Keep toy entries above this footer; Help Messages stays directly above Close Toy Chest.
             Menu.Items.Add(new ToolStripSeparator());
             var help=new ToolStripMenuItem("Help Messages"){CheckOnClick=true,Checked=Model.Settings.HelpMessages};
             help.Click+=delegate{Model.Settings.HelpMessages=help.Checked;Update();save();};Menu.Items.Add(help);
             Menu.Items.Add("Close Toy Chest",null,delegate{SetVisible(false);});
-            Menu.Opening+=delegate{TriangleMenu.Close();display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
+            Menu.Opening+=delegate{TriangleMenu.Close();display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;coin.Checked=Model.HasCoin;card.Checked=Model.HasCard;die.Checked=Model.HasDie;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
             Chest.ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
+            TriangleMenu.Items.Add("Sound Setting",null,delegate
+            {
+                if(soundWindow==null)
+                {
+                    soundWindow=new ToySoundWindow(Model.Settings.Volume,v=>chime.Play(Model.Settings.Sound,v),v=>{Model.Settings.Volume=v;save();});
+                    soundWindow.FormClosed+=delegate{soundWindow=null;};soundWindow.Show();
+                }
+                soundWindow.Activate();
+            });
             string[] soundNames={"Chime","Honk","Drum"};
             for(int i=0;i<soundNames.Length;i++)
             {
@@ -76,9 +94,9 @@ namespace Vpet
             {if(!Model.HasTriangle||!Model.Settings.DisplayChest){e.Cancel=true;return;}Menu.Close();SyncSounds();Help.Hide();};
             Triangle.ContextMenuStrip=TriangleMenu;triangleDismissal=new MenuDismissal(TriangleMenu);SyncSounds();
         }
-        void SyncSounds(){foreach(ToolStripMenuItem item in TriangleMenu.Items)item.Checked=(TriangleSound)item.Tag==Model.Settings.Sound;}
+        void SyncSounds(){foreach(ToolStripMenuItem item in TriangleMenu.Items)if(item.Tag is TriangleSound)item.Checked=(TriangleSound)item.Tag==Model.Settings.Sound;}
         public void SetVisible(bool visible)
-        {EndGesture(false);Menu.Close();TriangleMenu.Close();Model.SetVisible(visible,now());fenceKey="";Update();save();}
+        {EndGesture(false);Menu.Close();TriangleMenu.Close();if(!visible&&soundWindow!=null)soundWindow.Close();Model.SetVisible(visible,now());fenceKey="";Update();save();}
         public void RecoverDisplays(){EndGesture(false);TriangleMenu.Close();Model.RecoverDisplays();fenceKey="";}
         ZoneEdge HitEdge(Point p)
         {
@@ -97,9 +115,9 @@ namespace Vpet
         }
         void Down(object sender,MouseEventArgs e)
         {
-            if(e.Button!=MouseButtons.Left||!Model.Settings.DisplayChest)return;
-            var window=(LayeredWindow)sender;if(window==Arrow||window==Help)return;
-            triangleStart=Model.Triangle;
+            if(e.Button!=MouseButtons.Left)return;
+            var window=(LayeredWindow)sender;if(window==Arrow||window==Help||(!Model.Settings.DisplayChest&&window!=Fence))return;
+            triangleStart=Model.Triangle;coinStart=Model.Coin;cardStart=Model.Card;
             pointerStart=Cursor.Position;chestStart=Model.Chest;centerStart=Model.Center;zoneStart=Model.Zone;
             if(window==Fence)
             {
@@ -107,7 +125,7 @@ namespace Vpet
                 if(!moveZone&&resizeEdges==ZoneEdge.None)return;
             }
             captured=window;dragged=false;pull=PointF.Empty;
-            if(window==Ball)Model.BeginAim();else Model.Editing=true;
+            if(window==Ball)Model.BeginAim();else if(window==Die)Model.BeginDieAim();else Model.Editing=true;
             window.Capture=true;
             if(pet.Settings.Layer==LayerMode.Dynamic)Native.SetWindowPos(petWindow.Handle,IntPtr.Zero,0,0,0,0,0x13);
         }
@@ -128,6 +146,8 @@ namespace Vpet
             if(!dragged)return;
             if(captured==Chest)Model.DragChest(new PointF(chestStart.X+pull.X,chestStart.Y+pull.Y));
             else if(captured==Triangle)Model.DragTriangle(new PointF(triangleStart.X+pull.X,triangleStart.Y+pull.Y));
+            else if(captured==Coin)Model.DragGame(PlayTarget.Coin,new PointF(coinStart.X+pull.X,coinStart.Y+pull.Y));
+            else if(captured==Card)Model.DragGame(PlayTarget.Card,new PointF(cardStart.X+pull.X,cardStart.Y+pull.Y));
             else if(captured==Fence)
             {
                 if(moveZone)Model.MoveZone(new PointF(centerStart.X+pull.X,centerStart.Y+pull.Y));
@@ -145,12 +165,20 @@ namespace Vpet
                 else if(released)Model.Bounce();else Model.CancelAim();
             }
             else if(window==Triangle&&released&&!dragged)Model.PressTriangle(now());
+            else if(window==Coin&&released&&!dragged)Model.PressCoin(now());
+            else if(window==Card&&released&&!dragged)
+            {
+                if(Model.WaitingForCardChoice)Model.ChooseCard(pointerStart.Y<Model.Card.Y);
+                else if(Model.Target!=PlayTarget.Card||Model.Fetch==FetchPhase.None||Model.Fetch==FetchPhase.Returning||Model.CardRevealed)Model.PressCard(now());
+            }
+            else if(window==Die)
+            {if(released&&dragged)Model.LaunchDiePull(pull,now());else if(released)Model.RollDie(now());else Model.CancelDieAim();}
             Arrow.Hide();pull=PointF.Empty;save();
         }
         public void Update()
         {
             if(disposed)return;
-            if(!Model.Settings.DisplayChest){foreach(var window in Windows)window.Hide();return;}
+            if(!Model.Settings.DisplayChest){foreach(var window in Windows)if(window!=Fence)window.Hide();UpdateFence();KeepBelowPet();return;}
             KeepBelowPet();
             var chestPoint=new Point((int)Math.Round(Model.Chest.X-chestImage.Width/2f),(int)Math.Round(Model.Chest.Y-chestImage.Height/2f));
             if(chestLocation!=chestPoint||!Chest.Visible){Present(Chest,chestImage,chestPoint);chestLocation=chestPoint;}
@@ -169,7 +197,14 @@ namespace Vpet
                 if(triangleLocation!=point||!Triangle.Visible){Present(Triangle,triangleImage,point);triangleLocation=point;}
             }
             else Triangle.Hide();
-            if(Model.Settings.DisplayZone)
+            DrawGames();UpdateFence();
+            if((captured==Ball||captured==Die)&&dragged&&Geometry.Distance(pull,PointF.Empty)>=4)DrawArrow();else Arrow.Hide();
+            UpdateHelp();
+            KeepBelowPet();
+        }
+        void UpdateFence()
+        {
+            if(Model.Settings.DisplayZone&&(Model.Settings.DisplayChest||(pet.Settings.SyncPlayZone&&pet.Settings.Movement==MovementMode.Restricted)))
             {
                 string key=Model.Zone.ToString();
                 if(key!=fenceKey||!Fence.Visible)
@@ -180,13 +215,25 @@ namespace Vpet
                 }
             }
             else Fence.Hide();
-            if(captured==Ball&&dragged&&Geometry.Distance(pull,PointF.Empty)>=4)DrawArrow();else Arrow.Hide();
-            UpdateHelp();
-            KeepBelowPet();
+        }
+        void DrawGames()
+        {
+            if(Model.HasCoin)
+            {
+                float bounce=4*Model.CoinFlip*(1-Model.CoinFlip)*55*Model.Scale;
+                float direction=Model.Coin.Y-Model.CoinBounds.Top>=55*Model.Scale?-1:1;
+                var point=Geometry.Clamp(new PointF(Model.Coin.X,Model.Coin.Y+direction*bounce),Model.CoinBounds);
+                using(var image=Games.Coin(Model.Scale,Model.CoinHeads,Model.CoinFlip))Present(Coin,image,new Point((int)(point.X-image.Width/2f),(int)(point.Y-image.Height/2f)));
+            }else Coin.Hide();
+            if(Model.HasCard)using(var image=GameArtwork.Card(Model.Scale,Model.DrawnCard,Model.CardRevealed||Model.CardFlip>=.5f,Model.CardFlip))Present(Card,image,new Point((int)(Model.Card.X-image.Width/2f),(int)(Model.Card.Y-image.Height/2f)));else Card.Hide();
+            if(Model.HasDie)using(var image=GameArtwork.Die(Model.Scale,Model.DieAngle,Model.DieValue,Model.DieRolling))Present(Die,image,new Point((int)(Model.Die.X-image.Width/2f),(int)(Model.Die.Y-image.Height/2f)));else Die.Hide();
         }
         internal string HelpAt(Point point,IntPtr hitWindow)
         {
             if(!Model.Settings.HelpMessages||!Model.Settings.DisplayChest||Menu.Visible||TriangleMenu.Visible)return null;
+            if(Model.HasCoin&&hitWindow==Coin.Handle)return "Click the coin. Your pet walks over, flips it, then announces Heads or Tails. Drag to move the coin.";
+            if(Model.HasCard&&hitWindow==Card.Handle)return Model.WaitingForCardChoice?"Pick High (top arrow) or Low (bottom arrow). Equal ranks are a draw. Each round starts with a fresh deck.":"Click to start High or Low. After your pet announces a card, choose the top arrow for High or bottom arrow for Low. Drag to move the card.";
+            if(Model.HasDie&&hitWindow==Die.Handle)return "Click to roll, or pull back and release along the arrow. Your pet watches the D20 and announces its final value.";
             if(Model.HasTriangle&&Triangle.Visible&&(hitWindow==Triangle.Handle||hitWindow==Help.Handle))
             {
                 Point local=Triangle.PointToClient(point);
@@ -221,7 +268,7 @@ namespace Vpet
             var velocity=Model.PullVelocity(pull);float speed=Geometry.Distance(velocity,PointF.Empty);
             if(speed<.001f){Arrow.Hide();return;}
             float length=Math.Min(150*Model.Scale,speed/5)+Model.Radius;
-            PointF start=Model.Ball,end=new PointF(start.X+velocity.X/speed*length,start.Y+velocity.Y/speed*length);
+            PointF start=captured==Die?Model.Die:Model.Ball,end=new PointF(start.X+velocity.X/speed*length,start.Y+velocity.Y/speed*length);
             int pad=(int)Math.Ceiling(14*Model.Scale);
             var bounds=Rectangle.FromLTRB((int)Math.Floor(Math.Min(start.X,end.X))-pad,(int)Math.Floor(Math.Min(start.Y,end.Y))-pad,
                 (int)Math.Ceiling(Math.Max(start.X,end.X))+pad,(int)Math.Ceiling(Math.Max(start.Y,end.Y))+pad);
@@ -251,7 +298,9 @@ namespace Vpet
         public void Dispose()
         {
             if(disposed)return;EndGesture(false);disposed=true;dismissal.Dispose();triangleDismissal.Dispose();Menu.Dispose();TriangleMenu.Dispose();
+            if(soundWindow!=null)soundWindow.Close();
             Model.ChimePlayed-=chime.Play;chime.Dispose();
+            Games.Dispose();
             foreach(var window in Windows)window.Close();chestImage.Dispose();ballImage.Dispose();triangleImage.Dispose();if(helpImage!=null)helpImage.Dispose();
         }
     }
