@@ -42,6 +42,10 @@ or out-of-bounds selections are flagged for repair before exporting.
 Drag the red border to move a selection or a corner to resize that animation.
 In Tweak and Complete, artwork outside the frame is cut off in the preview
 and final sprite. Projects retain the source art and your crop offsets.
+Animation speed controls each selected type independently, from 0.25x to 3x.
+The default is 1x. Moving its slider resumes playback immediately. Save Tweaks
+or Complete saves these speeds in the project and exported pet. Speed-enabled
+projects and sprites require Vpet 1.6.0 or later; older files play at 1x.
 Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
 Hold Ctrl and turn the mouse wheel to zoom around the pointer.
 Magic Tweak aligns each pose's lowest visible pixels to a shared ground point.
@@ -50,7 +54,18 @@ Load Last Project reopens the most recently opened or saved project, even after
 restarting Vpet. Open or save a project once to enable it. Save changes before
 closing to resume them later. Use Load Project to locate a moved file again.
 Close Sprite Maker to preview your export, then choose Use this pet.
-Existing five-column, ten-row PNG sheets are still supported.
+Use Sprite Maker to prepare PNG sheets; Upload Custom Sprite loads .vpetsprite.
+
+MOVEMENT AND SETTINGS
+Settings can be resized; text wraps and pages scroll vertically when needed.
+Restricted movement uses a rectangular fence. Drag the plus control to move it
+or the edges and corners to resize it. Hiding it keeps the boundary active.
+Advanced > Sync Play Zone with Restricted Area is on by default: the pet uses
+the toy play-zone fence for Restricted movement. Display restricted area and
+Display Play Zone control the same fence, even when the chest is closed.
+Turn sync off to restore the separate saved restricted fence.
+Random reactions occur Often: 15-30 seconds, Sometimes: 30-60 seconds,
+or Rarely: 90-120 seconds, separately from spontaneous toy visits.
 
 TOY CHEST
 Right-click the pet > Display Toy Chest to show a chest and rectangular fence.
@@ -64,7 +79,7 @@ red arrow. The ball ricochets off the fence and slows to a stop.
 Your pet walks to its resting point, pauses for a quarter second, shakes for
 half a second, then returns it with random direction and strength without immediately chasing again.
 Fetching temporarily overrides Static mode, zero speed and restricted roaming.
-Your saved settings remain intact; a restricted pet walks back into its circle.
+Your saved settings remain intact; a restricted pet walks back inside its fence.
 Dragging the pet cancels play. Close Toy Chest in the chest menu puts away all toys.
 
 Help Messages stays directly above Close Toy Chest at the bottom of the menu.
@@ -82,6 +97,24 @@ for Chime, Honk, or Drum. The saved sound applies to your taps
 and the pet's replies. Each tap plays the selected sound. Pause
 briefly after your last tap; your pet walks over and repeats the count and rhythm.
 Drag the triangle to reposition it. A new tap during playback starts a new phrase.
+Sound Setting, at the top of the triangle menu, opens a volume slider and Test
+sound button. Test previews without saving or adding a remembered note. Save
+applies the volume to both your taps and the pet's replies; Cancel discards it.
+
+Coin, Card, and D20 are also toggles in the chest menu.
+Click Coin: the pet visits, pauses for a quarter second, shakes for half a second,
+then flips it in the air. After landing it announces Heads or Tails.
+Click Card: the pet visits and announces a card until you choose High (top half)
+or Low (bottom half). The flipped card excludes that exact announced card.
+Correct guesses show Love; incorrect guesses show Sad; equal ranks show Question.
+1 is lowest, followed by 2-10, J, Q, K. Suits do not affect rank. All 52 cards
+reset each round. Click the revealed card to play again. Drag Coin or Card
+to reposition it. The pet chooses High or Low randomly during autonomous play.
+Pull and release D20 to launch it along its red arrow, or click for a random roll.
+It spins and ricochets inside the fence. The pet watches without chasing, then
+announces a number from 1 to 20 when it stops. Game announcements are special
+emotes, excluded from the default reaction/customization list.
+
 Pets also visit available toys on a randomized 60-120 second schedule. Toy visits
 can temporarily leave Static or restricted movement, then restore normal rules.
 

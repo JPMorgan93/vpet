@@ -37,6 +37,7 @@ Check each slot and resolve any missing-frame or invalid-selection messages. Use
 When required animations are ready, choose **Tweak and Complete**. Its own **How to Guide** covers the controls:
 
 - Choose an animation to watch it play. Only populated optional reaction rows appear here.
+- **Animation speed** changes only the selected type, from **0.25× to 3×**. **1×** keeps its original speed; **Reset to 1x** restores it. Moving the slider resumes playback immediately, so you can compare speeds. Speed affects animation playback, independently of the pet's walking speed. Save Tweaks or Complete saves it with the project and export.
 - **Tweak** pauses playback and enables the frame slider. Select a frame to adjust it. A one-frame animation stays at slider position 0.
 - Drag the artwork, or click the preview and use arrow keys to move one pixel. Hold Shift for five pixels.
 - **Magic Tweak** aligns every pose's lowest nontransparent pixel row to the green ground line, centering its midpoint. A single bottom pixel is the anchor; midpoints between pixels use the left pixel. Faint alpha counts. It never stretches artwork or changes the source.
@@ -50,6 +51,6 @@ Each animation is clipped before export. Smaller frames receive transparent padd
 
 ## File compatibility
 
-Vpet 1.5.0 saves version 3 projects and continues loading version 1 and 2 projects. Older dimensions, crops and offsets are preserved, with empty optional reaction rows added. Runtime exports without emote animations use version 2 (Vpet 1.4.0 or later). Exports containing emote animations use version 3 and require Vpet 1.5.0 or later.
+Vpet 1.6.0 continues loading version 1–3 projects and sprites at their original 1× speed. Projects and exports with saved speed controls use version 4 and require Vpet 1.6.0 or later. Older dimensions, crops, offsets, and frame selections are preserved. Projects without speed metadata retain version 3; runtime exports without that metadata use version 2 for movement-only sprites (Vpet 1.4.0 or later), or version 3 with emote animations (Vpet 1.5.0 or later).
 
-The original five-column, ten-row PNG format still works with four idle and five walking frames. Runtime atlases with emotes have eight additional rows in the reaction order above. Downloaded PNGs carry artwork only: use Sprite Maker to select populated cells and restore their animation metadata before exporting a usable `.vpetsprite`.
+Previously installed legacy PNG pets remain supported. New PNG sheets go through Sprite Maker before use. Runtime atlases with emotes have eight additional rows in the reaction order above. Downloaded PNGs carry artwork only: use Sprite Maker to select populated cells and restore frame counts and animation speeds before exporting a usable `.vpetsprite`.
