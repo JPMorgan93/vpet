@@ -108,7 +108,7 @@ namespace Vpet
         {
             var display=Nearest(Center);DisplayId=display.Id;
             Zone=Fit(Zone,display);ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
-            if(Fetch!=FetchPhase.None){pet.CancelRoute();if(Target!=PlayTarget.D20){phaseTime=0;if(Fetch!=FetchPhase.Returning)Fetch=FetchPhase.Approaching;}}
+            if(Fetch!=FetchPhase.None){pet.CancelRoute();if(Target!=PlayTarget.D20&&Fetch!=FetchPhase.Returning)RestartApproach();}
         }
         void ContainObjects()
         {
@@ -131,7 +131,7 @@ namespace Vpet
         void ChangeZone(RectangleF zone)
         {
             Zone=zone;ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
-            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&Target!=PlayTarget.D20){phaseTime=0;pet.ShakeUntil=0;Fetch=FetchPhase.Approaching;pet.CancelRoute();}
+            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&Target!=PlayTarget.D20)RestartApproach();
         }
         public void DragChest(PointF point){Chest=Geometry.Clamp(point,ChestBounds);Store();}
         public void SetVisible(bool visible,double now)

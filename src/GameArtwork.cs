@@ -37,7 +37,7 @@ namespace Vpet
                 g.SmoothingMode=SmoothingMode.AntiAlias;g.InterpolationMode=InterpolationMode.HighQualityBicubic;
                 float width=flip>0?Math.Max(3*scale,(size-4*scale)*(float)Math.Abs(Math.Cos(flip*Math.PI*6))):size-4*scale;
                 var rect=new RectangleF((size-width)/2,2*scale,width,size-4*scale);g.FillEllipse(Brushes.Gold,rect);
-                bool face=flip>0?Math.Cos(flip*Math.PI*6)>0:head;
+                bool face=flip>0?(Math.Cos(flip*Math.PI*6)>0?head:!head):head;
                 var state=g.Save();using(var clip=new GraphicsPath()){clip.AddEllipse(rect);g.SetClip(clip);g.DrawImage(face?heads:tails,rect);}g.Restore(state);g.DrawEllipse(gold,rect);
             }
             return image;

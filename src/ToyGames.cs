@@ -56,7 +56,19 @@ namespace Vpet
             if(target==PlayTarget.Coin&&HasCoin)Coin=Geometry.Clamp(position,CoinBounds);
             if(target==PlayTarget.Card&&HasCard)Card=Geometry.Clamp(position,CardBounds);
             if(Target==target&&Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning)
-            {Fetch=FetchPhase.Approaching;phaseTime=0;pet.ShakeUntil=0;pet.CancelRoute();}
+                RestartApproach();
+        }
+        void RestartApproach()
+        {
+            if(Target==PlayTarget.Card)
+            {
+                if(CardRevealed)CalledCard=-1;
+                CardRevealed=false;DrawnCard=-1;ChoiceHigh=null;
+                if(CalledCard<0)ClearAnnouncement();
+                else Announcement=new ToyAnnouncement(SpecialEmoteKind.Card,CalledCard);
+            }
+            else ClearAnnouncement();
+            Fetch=FetchPhase.Approaching;phaseTime=0;pet.ShakeUntil=0;pet.CancelRoute();
         }
         void ClearAnnouncement(){Announcement=null;}
         void BeginGame(PlayTarget target,PointF point)

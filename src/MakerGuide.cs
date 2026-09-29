@@ -20,7 +20,7 @@ namespace Vpet
             "Choose Tweak and Complete at the bottom right once the required animations are ready. How to Guide is immediately to its left. Preview each cycle, adjust its frames, and use Magic Tweak for bottom-center alignment. Anything moved outside a frame is cut off in the exported animation. Complete saves the project and exports a .vpetsprite file. Close Sprite Maker, review the result in Sprite settings, and choose Use this pet. You can also load that .vpetsprite later with Upload Custom Sprite.\r\n";
         internal const string TweakGuide=
             "1 — Preview each animation\r\n"+
-            "Choose an animation button to play its saved frames. Only optional emote animations with frames appear here. Use Fit, 100%, the zoom controls, or Ctrl + mouse wheel to inspect the pixels. Zoom changes the view, not the saved artwork.\r\n\r\n"+
+            "Choose an animation button to play its saved frames. Only optional emote animations with frames appear here. Animation speed changes just this animation, from 0.25x to 3x; 1x is the original speed. Moving the speed slider resumes playback immediately. Reset to 1x restores this animation's default. Save Tweaks or Complete saves the speed in the project and exported sprite. Use Fit, 100%, the zoom controls, or Ctrl + mouse wheel to inspect the pixels. Zoom changes the view, not the saved artwork.\r\n\r\n"+
             "2 — Select a frame to adjust\r\n"+
             "Choose Tweak to pause playback. Use the slider to pick a frame; its number and offset appear above the controls. Click the preview, then drag the sprite or use arrow keys to nudge it one pixel at a time. Hold Shift with an arrow key for five pixels.\r\n\r\n"+
             "3 — Align the animation\r\n"+

@@ -366,24 +366,24 @@ namespace Vpet
                 Toys.SetVisible(true);Toys.Model.SpawnBall(now);Toys.Update();
                 ShowReaction(1);OpenSettings(0);smokeStep++;
             }
-            else if(smokeStep>=1&&smokeStep<=3&&now>smokeStep+1)
+            else if(smokeStep>=1&&smokeStep<=4&&now>smokeStep+1)
             {
                 using(var screenshot=new Bitmap(settingsWindow.Width,settingsWindow.Height))
                 {settingsWindow.DrawToBitmap(screenshot,new Rectangle(Point.Empty,screenshot.Size));screenshot.Save(Path.Combine(smokeOutput,"settings-"+(smokeStep-1)+".png"));}
-                if(smokeStep<3)settingsWindow.SelectTab(smokeStep);
+                if(smokeStep<4)settingsWindow.SelectTab(smokeStep);
                 else {settingsWindow.Close();Model.Settings.Layer=LayerMode.Dynamic;ApplyLayer();Toys.Model.LaunchPull(new PointF(-35,15),now);}
                 smokeStep++;
             }
-            else if(smokeStep==4&&now>5)
+            else if(smokeStep==5&&now>6)
             {
                 Model.Settings.Layer=LayerMode.UnderAll;ApplyLayer();smokeStep++;
                 File.WriteAllText(Path.Combine(smokeOutput,"under-all-layer.txt"),"Requested UnderAll; actual "+Model.Settings.Layer+"; no desktop parenting required.");
             }
-            else if(smokeStep==5&&now>6)
-            {Model.Settings.Layer=LayerMode.OverEverything;ApplyLayer();ShowReaction(7);smokeStep++;}
             else if(smokeStep==6&&now>7)
+            {Model.Settings.Layer=LayerMode.OverEverything;ApplyLayer();ShowReaction(7);smokeStep++;}
+            else if(smokeStep==7&&now>8)
             {
-                File.WriteAllText(Path.Combine(smokeOutput,"smoke-result.txt"),"PASS: layered pet, reaction, toy chest, play zone and ball windows rendered; ball launched with live timer; three settings tabs opened and captured; layer switches completed; "+Model.Displays.Count+" display(s); cell "+Sprites.Cell+".");
+                File.WriteAllText(Path.Combine(smokeOutput,"smoke-result.txt"),"PASS: layered pet, reaction, toy chest, play zone and ball windows rendered; ball launched with live timer; four settings tabs opened and captured; layer switches completed; "+Model.Displays.Count+" display(s); cell "+Sprites.Cell+".");
                 Close();
             }
         }
