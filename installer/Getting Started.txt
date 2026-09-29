@@ -23,7 +23,8 @@ https://github.com/JPMorgan93/vpet.
 Settings > Sprite > Auto-update on app startup appears below the PC startup
 option. Choose Yes to install the newest release automatically at app startup.
 No is the default. Periodic checks while running announce available updates.
-Check for updates in the pet menu shows your current version and either
+Check for Updates, below the last separator and above Close Vpet in the pet
+menu, shows your current version and either
 confirms it is up to date or offers an Update button for the available version.
 Choose Update to begin. Progress is shown during the update.
 Settings, artwork and shortcut choices are preserved. Release notes appear
@@ -63,7 +64,8 @@ or the edges and corners to resize it. Hiding it keeps the boundary active.
 Advanced > Sync Play Zone with Restricted Area is on by default: the pet uses
 the toy play-zone fence for Restricted movement. Display restricted area and
 Display Play Zone control the same fence, even when the chest is closed.
-Turn sync off to restore the separate saved restricted fence.
+Turn sync off to restore the separate saved red restricted fence.
+The fences are labeled Restricted Area and Play Zone above their top-left corners.
 Random reactions occur Often: 15-30 seconds, Sometimes: 30-60 seconds,
 or Rarely: 90-120 seconds, separately from spontaneous toy visits.
 
@@ -74,8 +76,11 @@ resize it. Drag the chest to place it inside. The zone fits one monitor's usable
 area; move its center onto another monitor to move the play space there.
 Right-click the chest > Display Play Zone to show or hide the fence. The fence
 still keeps toys inside when hidden. Toggle Ball to add or remove the ball.
-Click the ball for three bounces, each half as high. Pull back and release along the
-red arrow. The ball ricochets off the fence and slows to a stop.
+Clean Up Toys, directly below Display Play Zone, removes every toy and cancels
+active play while leaving the chest and fence available.
+Click the ball for three bounces, each half as high. Left-drag to move it inside
+the zone. Right-drag to aim, then release to launch along the red arrow.
+The ball ricochets off the fence and slows to a stop.
 Your pet walks to its resting point, pauses for a quarter second, shakes for
 half a second, then returns it with random direction and strength without immediately chasing again.
 Fetching temporarily overrides Static mode, zero speed and restricted roaming.
@@ -103,17 +108,22 @@ applies the volume to both your taps and the pet's replies; Cancel discards it.
 
 Coin, Card, and D20 are also toggles in the chest menu.
 Click Coin: the pet stands beside it, pauses for a quarter second, shakes for half a second,
-then flips its plain gold face around the horizontal X axis. After landing it
+then flips its plain gold face upward around the horizontal X axis, even beyond
+the fence or screen edge. After landing it
 announces Heads or Tails. The coin itself has no face values.
-Click Card: the pet stands beside it and announces a card until you choose High (top half)
-or Low (bottom half). The flipped card excludes that exact announced card.
+Click a face-down Card: the pet stands beside it and announces a card. Choose
+High (top half) or Low (bottom half) within 30 seconds, or the pet clears its
+announcement and moves away. Settings and other movement pauses suspend the timer.
+The flipped card excludes that exact announced card.
 Correct guesses show Love; incorrect guesses show Sad; equal ranks show Question.
 Ace (A) is lowest, followed by 2-10, J, Q, K. Suits do not affect rank. All 52 cards
-reset each round. Click the revealed card to play again. Drag Coin or Card
-to reposition it. The pet chooses High or Low randomly during autonomous play.
+reset each round. Click the revealed card only to flip it face down, then click
+again to start another round. Drag Coin or Card to reposition it. Autonomous play
+approaches first, turns a face-up card down, then starts and chooses High or Low.
 The D20 uses its original size, with smaller numbers inside its central face
-that stay clear of the lines. Pull and release it to launch along its red arrow,
-or click for a random roll.
+that stay clear of the lines. Left-drag to reposition it inside the zone;
+right-drag and release to launch along its red arrow, or click for a random roll.
+Hover over the stopped D20 to see its current number in the pet's speech bubble.
 It spins and ricochets inside the fence. The pet watches without chasing, then
 announces a number from 1 to 20 when it stops. Game announcements are special
 emotes, excluded from the default reaction/customization list.
