@@ -35,36 +35,34 @@ namespace Vpet
         {
             this.maker=maker;project=maker.Project;Text="Tweak and Complete";Font=new Font("Segoe UI",10);ClientSize=new Size(880,750);MinimumSize=new Size(740,640);
             BackColor=Color.FromArgb(248,247,252);StartPosition=FormStartPosition.CenterParent;AutoScaleMode=AutoScaleMode.Dpi;
-            var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=8,Padding=new Padding(16)};
-            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,52));
+            var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=9,Padding=new Padding(16)};
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,52));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,0);
             for(int i=0;i<cycles.Length;i++)if(project.Enabled(i)&&project.Slots(i).Length>0){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});choices.Controls.Add(cycles[i]);}
-            var previewControls=new TableLayoutPanel{Dock=DockStyle.Fill,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=1,RowCount=2};previewControls.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            previewControls.RowStyles.Add(new RowStyle(SizeType.AutoSize));previewControls.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            previewControls.Controls.Add(zoom,0,0);var speedControls=MakerUi.Flow();speedControls.Controls.Add(speedLabel);speedControls.Controls.Add(animationSpeed);
-            speedControls.Controls.Add(MakerUi.Button("Reset to 1x",delegate{animationSpeed.Value=100;}));previewControls.Controls.Add(speedControls,0,1);root.Controls.Add(previewControls,0,1);
+            root.Controls.Add(zoom,0,1);var speedControls=MakerUi.Flow();speedControls.Controls.Add(speedLabel);speedControls.Controls.Add(animationSpeed);
+            speedControls.Controls.Add(MakerUi.Button("Reset to 1x",delegate{animationSpeed.Value=100;}));root.Controls.Add(speedControls,0,2);
             animationSpeed.ValueChanged+=delegate
             {
                 if(syncingSpeed)return;project.SetSpeed(cycle,animationSpeed.Value/100f);maker.Dirty=true;
                 if(tweaking)ToggleTweak();clock.Restart();speedLabel.Text="Animation speed: "+project.Speed(cycle).ToString("0.##")+"x";RefreshPreview();
             };
-            preview=new TweakPreview(project);preview.BeforeNudge+=Remember;preview.Changed+=delegate{maker.Dirty=true;RefreshPreview();};viewport.Controls.Add(preview);root.Controls.Add(viewport,0,2);
+            preview=new TweakPreview(project);preview.BeforeNudge+=Remember;preview.Changed+=delegate{maker.Dirty=true;RefreshPreview();};viewport.Controls.Add(preview);root.Controls.Add(viewport,0,3);
             viewport.Resize+=delegate{preview.RefreshSize(viewport.ClientSize);};
             zoom.ZoomChanged+=delegate(int value,Point? anchor){viewport.ChangeZoom(preview,preview.Zoom,value/100f,preview.ImageOrigin,delegate{preview.Zoom=value/100f;preview.RefreshSize(viewport.ClientSize);},delegate{return preview.ImageOrigin;},anchor);};
             zoom.FitRequested+=FitPreview;Shown+=delegate{FitPreview();};
             preview.ZoomWheel+=delegate(int delta,Point point){zoom.Step(delta,viewport.PointToClient(preview.PointToScreen(point)));};
-            root.Controls.Add(slider,0,3);slider.Enabled=false;slider.ValueChanged+=delegate{RefreshPreview();};
-            var controls=MakerUi.Flow();root.Controls.Add(controls,0,4);tweak=MakerUi.Button("Tweak",delegate{ToggleTweak();});controls.Controls.Add(tweak);controls.Controls.Add(frameLabel);
+            root.Controls.Add(slider,0,4);slider.Enabled=false;slider.ValueChanged+=delegate{RefreshPreview();};
+            var controls=MakerUi.Flow();root.Controls.Add(controls,0,5);tweak=MakerUi.Button("Tweak",delegate{ToggleTweak();});controls.Controls.Add(tweak);controls.Controls.Add(frameLabel);
             // Keep the preview's ground line still when controls/offset text change.
             tweak.MinimumSize=new Size(150,34);frameLabel.AutoSize=false;frameLabel.Size=new Size(380,28);
-            root.Controls.Add(tweaks,0,5);tweaks.Enabled=false;
+            root.Controls.Add(tweaks,0,6);tweaks.Enabled=false;
             tweaks.Controls.Add(MakerUi.Button("Magic Tweak",delegate{try{Remember();project.MagicTweak(cycle);maker.Dirty=true;RefreshPreview();}catch(Exception ex){history.Pop();MakerUi.Error(this,ex);}}));
             tweaks.Controls.Add(MakerUi.Button("Save Tweaks",delegate{if(maker.SaveProject(false))status.Text="Tweaks saved to your project.";}));
             undo=MakerUi.Button("Undo",delegate{if(history.Count>0){project.Data.Frames=history.Pop();maker.Dirty=true;RefreshPreview();}});tweaks.Controls.Add(undo);
             tweaks.Controls.Add(MakerUi.Button("Reset Cycle",delegate{Remember();foreach(int slot in slots){project.Data.Frames[cycle][slot].OffsetX=0;project.Data.Frames[cycle][slot].OffsetY=0;}maker.Dirty=true;RefreshPreview();}));
-            root.Controls.Add(status,0,6);
-            var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;root.Controls.Add(bottom,0,7);
+            root.Controls.Add(status,0,7);
+            var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;root.Controls.Add(bottom,0,8);
             bottom.Controls.Add(MakerUi.Button("Complete",Complete));
             bottom.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,true);}));
             timer.Tick+=delegate{if(!tweaking)RefreshPreview();};timer.Start();

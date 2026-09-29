@@ -25,6 +25,7 @@ namespace Vpet
         {
             try
             {
+                Application.SetCompatibleTextRenderingDefault(false);
                 if(Array.IndexOf(args,"--startup-tests")>=0)
                 {StartupRegistry();Console.WriteLine("PASS: "+count+" startup registration assertions using a temporary registry key.");return 0;}
                 if(Array.IndexOf(args,"--window-tests")>=0)
