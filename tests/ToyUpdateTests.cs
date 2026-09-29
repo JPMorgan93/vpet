@@ -71,7 +71,7 @@ namespace Vpet
             var render=typeof(PetWindow).GetMethod("Render",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);render.Invoke(pet,null);
             Cursor.Position=Point.Round(toys.Die);Application.DoEvents();render.Invoke(pet,null);
             Check(windows.CurrentAnnouncement!=null&&windows.CurrentAnnouncement.Kind==SpecialEmoteKind.Number&&windows.CurrentAnnouncement.Value==toys.DieValue&&toys.Announcement==null,"Hovering the stopped D20 previews its value without changing game state");
-            Check(MakerField<LayeredWindow>(pet,"bubble").Visible&&MakerField<string>(pet,"gameReactionKey").StartsWith("Number:"+toys.DieValue+":"),"Die hover renders the number in the pet's speech bubble");
+            Check(MakerField<LayeredWindow>(pet,"bubble").Visible&&(MakerField<string>(pet,"gameReactionKey")??"").StartsWith("Number:"+toys.DieValue+":"),"Die hover renders the number in the pet's speech bubble: visible="+MakerField<LayeredWindow>(pet,"bubble").Visible+", key="+MakerField<string>(pet,"gameReactionKey")+", preview="+MakerField<double>(pet,"explicitPreviewUntil")+", now="+pet.Now+", pause="+pet.ShowPause);
             Cursor.Position=new Point(pet.Model.Current.Work.Left+1,pet.Model.Current.Work.Top+1);Check(windows.CurrentAnnouncement==null,"Moving off the die clears its transient value preview");
             double now=0;StartUserCard(toys,pet.Model,ref now);toys.ChooseCard(true);Until(toys,pet.Model,ref now,()=>toys.CardRevealed);windows.Update();var card=Point.Round(toys.Card);
             ToyMouse(windows.Card,0x201,card);ToyMouse(windows.Card,0x202,card);Check(toys.CardTurningDown&&!pet.Model.Playing&&!pet.Model.Destination.HasValue,"Native face-up click only turns the card over");
