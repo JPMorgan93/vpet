@@ -29,16 +29,16 @@ namespace Vpet
             {g.TextRenderingHint=System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;g.DrawString(announcement.Kind==SpecialEmoteKind.Card?CardText(announcement.Value):announcement.Value.ToString(),font,brush,new RectangleF(0,0,192,160),format);}
             emotes.Add(announcement.Key,image);return image;
         }
-        internal Bitmap Coin(float scale,bool head,float flip)
+        internal static Bitmap Coin(float scale,float flip)
         {
             int size=(int)Math.Ceiling(46*scale);var image=new Bitmap(size,size,PixelFormat.Format32bppArgb);
             using(var g=Graphics.FromImage(image))using(var gold=new Pen(Color.DarkGoldenrod,2*scale))
             {
-                g.SmoothingMode=SmoothingMode.AntiAlias;g.InterpolationMode=InterpolationMode.HighQualityBicubic;
-                float width=flip>0?Math.Max(3*scale,(size-4*scale)*(float)Math.Abs(Math.Cos(flip*Math.PI*6))):size-4*scale;
-                var rect=new RectangleF((size-width)/2,2*scale,width,size-4*scale);g.FillEllipse(Brushes.Gold,rect);
-                bool face=flip>0?(Math.Cos(flip*Math.PI*6)>0?head:!head):head;
-                var state=g.Save();using(var clip=new GraphicsPath()){clip.AddEllipse(rect);g.SetClip(clip);g.DrawImage(face?heads:tails,rect);}g.Restore(state);g.DrawEllipse(gold,rect);
+                g.SmoothingMode=SmoothingMode.AntiAlias;
+                // Rotation about the horizontal X axis foreshortens height, not width.
+                float height=flip>0?Math.Max(3*scale,(size-4*scale)*(float)Math.Abs(Math.Cos(flip*Math.PI*6))):size-4*scale;
+                var rect=new RectangleF(2*scale,(size-height)/2,size-4*scale,height);
+                g.FillEllipse(Brushes.Gold,rect);g.DrawEllipse(gold,rect);
             }
             return image;
         }
@@ -66,6 +66,7 @@ namespace Vpet
         }
         internal static Bitmap Die(float scale,float angle,int number,bool rolling)
         {
+            scale*=ToyModel.DieSizeMultiplier;
             int size=(int)Math.Ceiling(46*scale);var image=new Bitmap(size,size,PixelFormat.Format32bppArgb);
             using(var g=Graphics.FromImage(image))using(var edge=new Pen(Color.FromArgb(66,46,105),1.5f))
             using(var fill=new SolidBrush(Color.FromArgb(196,175,238)))

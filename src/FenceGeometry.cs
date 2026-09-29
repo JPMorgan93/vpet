@@ -12,20 +12,20 @@ namespace Vpet
             foreach(var display in displays){float d=Geometry.Distance(point,Geometry.Clamp(point,display.Work));if(d<distance){distance=d;best=display;}}
             return best;
         }
-        internal static SizeF Minimum(DisplayArea display,Size frame)
+        internal static SizeF Minimum(DisplayArea display,Size frame,float minimumContent=0)
         {
-            var size=display.PetSize(frame);return new SizeF(Math.Min(display.Work.Width,Math.Max(160*display.Scale,size.Width+16*display.Scale)),
-                Math.Min(display.Work.Height,Math.Max(140*display.Scale,2*(size.Height+8*display.Scale))));
+            var size=display.PetSize(frame);return new SizeF(Math.Min(display.Work.Width,Math.Max(minimumContent,Math.Max(160*display.Scale,size.Width+16*display.Scale))),
+                Math.Min(display.Work.Height,Math.Max(minimumContent,Math.Max(140*display.Scale,2*(size.Height+8*display.Scale)))));
         }
-        internal static RectangleF Fit(RectangleF requested,DisplayArea display,Size frame)
+        internal static RectangleF Fit(RectangleF requested,DisplayArea display,Size frame,float minimumContent=0)
         {
-            var work=display.Work;var minimum=Minimum(display,frame);
+            var work=display.Work;var minimum=Minimum(display,frame,minimumContent);
             float width=Math.Min(work.Width,Math.Max(minimum.Width,requested.Width)),height=Math.Min(work.Height,Math.Max(minimum.Height,requested.Height));
             return new RectangleF(Math.Max(work.Left,Math.Min(work.Right-width,requested.X)),Math.Max(work.Top,Math.Min(work.Bottom-height,requested.Y)),width,height);
         }
-        internal static RectangleF Resize(RectangleF original,ZoneEdge edges,PointF delta,DisplayArea display,Size frame)
+        internal static RectangleF Resize(RectangleF original,ZoneEdge edges,PointF delta,DisplayArea display,Size frame,float minimumContent=0)
         {
-            var work=display.Work;var min=Minimum(display,frame);float left=original.Left,top=original.Top,right=original.Right,bottom=original.Bottom;
+            var work=display.Work;var min=Minimum(display,frame,minimumContent);float left=original.Left,top=original.Top,right=original.Right,bottom=original.Bottom;
             if((edges&ZoneEdge.Left)!=0)left=Math.Max(work.Left,Math.Min(right-min.Width,left+delta.X));
             if((edges&ZoneEdge.Right)!=0)right=Math.Min(work.Right,Math.Max(left+min.Width,right+delta.X));
             if((edges&ZoneEdge.Top)!=0)top=Math.Max(work.Top,Math.Min(bottom-min.Height,top+delta.Y));

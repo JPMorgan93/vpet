@@ -13,6 +13,7 @@ namespace Vpet
     }
     internal sealed partial class ToyModel
     {
+        internal const float DieSizeMultiplier=2;
         public PointF Coin {get;private set;}
         public PointF Card {get;private set;}
         public PointF Die {get;private set;}
@@ -34,7 +35,9 @@ namespace Vpet
         public bool DieRolling {get{return DieVelocity!=PointF.Empty;}}
         public RectangleF CoinBounds {get{return RectangleF.Inflate(Zone,-25*Scale,-25*Scale);}}
         public RectangleF CardBounds {get{return RectangleF.Inflate(Zone,-25*Scale,-35*Scale);}}
-        public RectangleF DieBounds {get{return RectangleF.Inflate(Zone,-24*Scale,-24*Scale);}}
+        public float DieRadius {get{return 23*Scale*DieSizeMultiplier;}}
+        float ToyMinimumSpan {get{return (DieRadius+2*Scale)*2;}}
+        public RectangleF DieBounds {get{return RectangleF.Inflate(Zone,-DieRadius-2*Scale,-DieRadius-2*Scale);}}
         public float CoinFlip {get{return Target==PlayTarget.Coin&&Fetch==FetchPhase.Flipping?Math.Min(1,phaseTime/1.1f):0;}}
         public float CardFlip {get{return Target==PlayTarget.Card&&Fetch==FetchPhase.Flipping?Math.Min(1,phaseTime/.65f):0;}}
         public bool WaitingForCardChoice {get{return HasCard&&Target==PlayTarget.Card&&Fetch==FetchPhase.Waiting;}}
@@ -78,7 +81,30 @@ namespace Vpet
         public void PressCard(double now,bool autonomous=false)
         {
             if(!HasCard||!Settings.DisplayChest)return;
-            automaticCard=autonomous;CalledCard=DrawnCard=-1;CardRevealed=false;ChoiceHigh=null;BeginGame(PlayTarget.Card,Card);
+            automaticCard=autonomous;CalledCard=DrawnCard=-1;CardRevealed=false;ChoiceHigh=null;BeginGame(PlayTarget.Card,CardApproach());
+        }
+        PointF CardApproach()
+        {
+            var display=pet.Displays.Find(d=>d.Id==DisplayId)??Nearest(Card);
+            var size=display.PetSize(pet.FrameSize);var allowed=display.Allowed(pet.FrameSize);
+            float gap=8*Scale,halfWidth=23*Scale,halfHeight=32*Scale;
+            var card=new RectangleF(Card.X-halfWidth,Card.Y-halfHeight,halfWidth*2,halfHeight*2);
+            float side=halfWidth+gap+size.Width/2f,bottom=Card.Y+halfHeight;
+            var candidates=new[]{new PointF(Card.X-side,bottom),new PointF(Card.X+side,bottom),
+                new PointF(Card.X,card.Top-gap-display.NameFootroom),new PointF(Card.X,card.Bottom+gap+size.Height)};
+            PointF best=Geometry.Clamp(candidates[0],allowed);float distance=float.MaxValue;
+            for(int i=0;i<candidates.Length;i++)
+            {
+                // Prefer standing beside the card; use above/below only if neither side fits.
+                if(i==2&&distance<float.MaxValue)break;
+                var point=Geometry.Clamp(candidates[i],allowed);
+                var body=new RectangleF(point.X-size.Width/2f,point.Y-size.Height,size.Width,size.Height+display.NameFootroom);
+                var clearance=RectangleF.Inflate(card,gap/2,gap/2);
+                if(body.IntersectsWith(clearance))continue;
+                float travel=Geometry.Distance(pet.Position,point);
+                if(travel<distance){best=point;distance=travel;}
+            }
+            return best;
         }
         // Every round starts from all 52 cards. The second draw excludes the exact announced card.
         internal static int DrawOtherCard(Random random,int called)
@@ -110,7 +136,7 @@ namespace Vpet
             dt=Math.Max(0,Math.Min(.1f,dt));float speed=Geometry.Distance(PointF.Empty,DieVelocity);if(speed<.001f){DieVelocity=PointF.Empty;return;}
             float deceleration=220*Scale,time=Math.Min(dt,speed/deceleration),distance=speed*time-.5f*deceleration*time*time,vx=DieVelocity.X,vy=DieVelocity.Y;var bounds=DieBounds;
             Die=new PointF(Reflect(Die.X,vx/speed*distance,bounds.Left,bounds.Right,ref vx),Reflect(Die.Y,vy/speed*distance,bounds.Top,bounds.Bottom,ref vy));
-            DieAngle=(DieAngle+distance/(20*Scale)*180/(float)Math.PI)%360;
+            DieAngle=(DieAngle+distance/(20*Scale*DieSizeMultiplier)*180/(float)Math.PI)%360;
             float next=Math.Max(0,speed-deceleration*time);DieVelocity=next<.01f?PointF.Empty:new PointF(vx/speed*next,vy/speed*next);
         }
         bool GameTick(double now,float dt)

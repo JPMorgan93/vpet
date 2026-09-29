@@ -103,7 +103,7 @@ namespace Vpet
             {float score=Geometry.Distance(point,Geometry.Clamp(point,d.Work));if(score<distance){best=d;distance=score;}}
             return best;
         }
-        RectangleF Fit(RectangleF requested,DisplayArea display) {return FenceGeometry.Fit(requested,display,pet.FrameSize);}
+        RectangleF Fit(RectangleF requested,DisplayArea display) {return FenceGeometry.Fit(requested,display,pet.FrameSize,ToyMinimumSpan);}
         public void RecoverDisplays()
         {
             var display=Nearest(Center);DisplayId=display.Id;
@@ -126,7 +126,7 @@ namespace Vpet
         }
         public void ResizeZone(RectangleF original,ZoneEdge edges,PointF delta)
         {
-            ChangeZone(FenceGeometry.Resize(original,edges,delta,pet.Displays.Find(d=>d.Id==DisplayId),pet.FrameSize));
+            ChangeZone(FenceGeometry.Resize(original,edges,delta,pet.Displays.Find(d=>d.Id==DisplayId),pet.FrameSize,ToyMinimumSpan));
         }
         void ChangeZone(RectangleF zone)
         {
@@ -260,7 +260,7 @@ namespace Vpet
             AdvanceDie(dt);
             ConsiderPlay(now);
             if(Fetch==FetchPhase.None||Aiming||DieAiming||Editing||pet.Dragging)return;
-            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(Coin);else if(Target==PlayTarget.Card)RouteTo(Card);else RouteToBall();}
+            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(Coin);else if(Target==PlayTarget.Card)RouteTo(CardApproach());else RouteToBall();}
             else if(Fetch==FetchPhase.Returning)
             {
                 if(pet.Settings.Movement!=MovementMode.Restricted||pet.InsideRestriction(pet.Position))

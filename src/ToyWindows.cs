@@ -223,7 +223,7 @@ namespace Vpet
                 float bounce=4*Model.CoinFlip*(1-Model.CoinFlip)*55*Model.Scale;
                 float direction=Model.Coin.Y-Model.CoinBounds.Top>=55*Model.Scale?-1:1;
                 var point=Geometry.Clamp(new PointF(Model.Coin.X,Model.Coin.Y+direction*bounce),Model.CoinBounds);
-                using(var image=Games.Coin(Model.Scale,Model.CoinHeads,Model.CoinFlip))Present(Coin,image,new Point((int)(point.X-image.Width/2f),(int)(point.Y-image.Height/2f)));
+                using(var image=GameArtwork.Coin(Model.Scale,Model.CoinFlip))Present(Coin,image,new Point((int)(point.X-image.Width/2f),(int)(point.Y-image.Height/2f)));
             }else Coin.Hide();
             if(Model.HasCard)using(var image=GameArtwork.Card(Model.Scale,Model.DrawnCard,Model.CardRevealed||Model.CardFlip>=.5f,Model.CardFlip))Present(Card,image,new Point((int)(Model.Card.X-image.Width/2f),(int)(Model.Card.Y-image.Height/2f)));else Card.Hide();
             if(Model.HasDie)using(var image=GameArtwork.Die(Model.Scale,Model.DieAngle,Model.DieValue,Model.DieRolling))Present(Die,image,new Point((int)(Model.Die.X-image.Width/2f),(int)(Model.Die.Y-image.Height/2f)));else Die.Hide();
@@ -267,7 +267,7 @@ namespace Vpet
         {
             var velocity=Model.PullVelocity(pull);float speed=Geometry.Distance(velocity,PointF.Empty);
             if(speed<.001f){Arrow.Hide();return;}
-            float length=Math.Min(150*Model.Scale,speed/5)+Model.Radius;
+            float length=Math.Min(150*Model.Scale,speed/5)+(captured==Die?Model.DieRadius:Model.Radius);
             PointF start=captured==Die?Model.Die:Model.Ball,end=new PointF(start.X+velocity.X/speed*length,start.Y+velocity.Y/speed*length);
             int pad=(int)Math.Ceiling(14*Model.Scale);
             var bounds=Rectangle.FromLTRB((int)Math.Floor(Math.Min(start.X,end.X))-pad,(int)Math.Floor(Math.Min(start.Y,end.Y))-pad,

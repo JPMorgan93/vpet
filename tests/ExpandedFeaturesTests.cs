@@ -121,7 +121,7 @@ namespace Vpet
             {
                 foreach(var kind in new[]{SpecialEmoteKind.Heads,SpecialEmoteKind.Tails,SpecialEmoteKind.Card,SpecialEmoteKind.Number})
                 {var message=new ToyAnnouncement(kind,kind==SpecialEmoteKind.Card?25:20);using(var bubble=Artwork.Bubble(-1,art.Emote(message),2,false))bubble.Save(Path.Combine(artifacts,"game-emote-"+kind+".png"));}
-                using(var coin=art.Coin(2,true,0))coin.Save(Path.Combine(artifacts,"coin-toy.png"));using(var card=GameArtwork.Card(2,-1,false,0))card.Save(Path.Combine(artifacts,"card-toy.png"));using(var die=GameArtwork.Die(2,0,20,false))die.Save(Path.Combine(artifacts,"d20-toy.png"));
+                using(var coin=GameArtwork.Coin(2,0))coin.Save(Path.Combine(artifacts,"coin-toy.png"));using(var card=GameArtwork.Card(2,-1,false,0))card.Save(Path.Combine(artifacts,"card-toy.png"));using(var die=GameArtwork.Die(2,0,20,false))die.Save(Path.Combine(artifacts,"d20-toy.png"));
             }
         }
         static void GameInterruptions()
