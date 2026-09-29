@@ -1,4 +1,10 @@
-# Prototype validation
+# Vpet validation
+
+## Version 1.6.0
+
+4,241 automated assertions passed. New coverage checks default/migrated sound volume and exact PCM scaling/mute; independent animation speeds through project saving and runtime exports; rectangular fence migration, containment, resizing, synchronization, and monitor disconnection; every High/Low rank comparison, equal-rank draws, and all 51 permitted second cards; coin pause/shake/landing timing; persistent called cards and safe relocation/interruption; D20 containment, all-edge ricochets, watching without walking, and display recovery; and spontaneous play of every new toy with return to normal movement rules.
+
+119 native Sprite Maker checks, 72 toy chest checks, 106 expanded settings/game checks, and 65 updater-window checks passed. New native checks exercise actual Coin/Card/D20 clicks and pull gestures, independent/shared fence movement and resizing, the hidden-chest shared fence, volume Test/Save/Cancel, immediate per-animation speed preview, and all four settings tabs at narrow and wide widths without horizontal scrolling or clipped descriptions. Settings text measurements use the production text renderer. New windows and game artwork were visually inspected. Audio generation and playback dispatch were checked; loudspeaker quality was not assessed.
 
 ## Version 1.5.4
 

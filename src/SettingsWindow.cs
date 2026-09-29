@@ -39,6 +39,13 @@ namespace Vpet
             tabs.Dock=DockStyle.Fill;tabs.Padding=new Point(16,10);
             Controls.Add(tabs);Controls.Add(header);
             AddMovement();AddPersonality();AddArtwork();AddAdvanced();
+            Shown+=delegate
+            {
+                var work=Screen.FromControl(this).WorkingArea;
+                MinimumSize=new Size(Math.Min(MinimumSize.Width,work.Width),Math.Min(MinimumSize.Height,work.Height));
+                Size=new Size(Math.Min(Width,work.Width),Math.Min(Height,work.Height));
+                Location=new Point(work.Left+(work.Width-Width)/2,work.Top+(work.Height-Height)/2);
+            };
             previewTimer.Tick+=delegate{if(animationPreview!=null&&tabs.SelectedIndex==2)animationPreview.Invalidate();};previewTimer.Start();
             pet.AssetsChanged+=AssetsChanged;
             FormClosed+=delegate{pet.AssetsChanged-=AssetsChanged;previewTimer.Dispose();customEmoteNames.Dispose();if(pending!=null)pending.Dispose();if(sheetPreview.Image!=null)sheetPreview.Image.Dispose();if(emotePreview.Image!=null)emotePreview.Image.Dispose();};
@@ -49,20 +56,6 @@ namespace Vpet
         TabPage Page(string name)
         {
             var page=new TabPage(name){BackColor=BackColor,AutoScroll=true,Padding=new Padding(24)};tabs.TabPages.Add(page);return page;
-        }
-        static Label LabelAt(Control parent,string text,int x,int y,int width,int height,bool bold)
-        {
-            var label=new Label{Text=text,Location=new Point(x,y),Size=new Size(width,height),ForeColor=Color.FromArgb(54,45,70)};
-            if(bold)label.Font=new Font("Segoe UI",11,FontStyle.Bold);parent.Controls.Add(label);return label;
-        }
-        static Button ButtonAt(Control parent,string text,int x,int y,int width,EventHandler click)
-        {
-            var button=new Button{Text=text,Location=new Point(x,y),Size=new Size(width,36),FlatStyle=FlatStyle.Flat,BackColor=Color.White};
-            button.FlatAppearance.BorderColor=Color.FromArgb(205,194,222);button.Click+=click;parent.Controls.Add(button);return button;
-        }
-        static ComboBox ComboAt(Control parent,string[] items,int x,int y,int width,int selected)
-        {
-            var combo=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList,Location=new Point(x,y),Width=width};combo.Items.AddRange(items);combo.SelectedIndex=selected;parent.Controls.Add(combo);return combo;
         }
         void ChooseSheet(object sender,EventArgs e)
         {
