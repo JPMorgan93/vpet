@@ -65,7 +65,7 @@ namespace Vpet
                     Check(Native.WindowFromPoint(new Native.POINT(point.X,point.Y-12))==windows.Card.Handle&&Native.WindowFromPoint(new Native.POINT(point.X,point.Y+12))==windows.Card.Handle,"Both card choices remain directly clickable while the pet stands beside it");
                     var high=new Point(point.X,point.Y-12);ToyMouse(windows.Card,0x201,high);ToyMouse(windows.Card,0x202,high);Check(toys.ChoiceHigh==true&&toys.Fetch==FetchPhase.Flipping,"Top half of the native card chooses High");
                     toys.PressCard(now);Until(toys,pet.Model,ref now,()=>toys.WaitingForCardChoice);var low=new Point(point.X,point.Y+12);ToyMouse(windows.Card,0x201,low);ToyMouse(windows.Card,0x202,low);Check(toys.ChoiceHigh==false,"Bottom half of the native card chooses Low");
-                    point=Point.Round(toys.Die);ToyMouse(windows.Die,0x201,point);ToyMouse(windows.Die,0x200,new Point(point.X+50,point.Y-25));Check(windows.Arrow.Visible,"Pulling the D20 shows the red launch arrow");ToyMouse(windows.Die,0x202,Cursor.Position);
+                    point=Point.Round(toys.Die);ToyMouse(windows.Die,0x204,point);ToyMouse(windows.Die,0x200,new Point(point.X+50,point.Y-25));Check(windows.Arrow.Visible,"Right-pulling the D20 shows the red launch arrow");ToyMouse(windows.Die,0x205,Cursor.Position);
                     Check(toys.DieVelocity.X<0&&toys.DieVelocity.Y>0&&toys.Fetch==FetchPhase.Watching&&!pet.Model.Destination.HasValue,"Native die release launches opposite the pull without a chase");
                     toys.CancelFetchForPetDrag(now);windows.SetVisible(false);pet.Model.ChangeMode(MovementMode.Restricted,now);windows.Update();Application.DoEvents();
                     Check(windows.Fence.Visible&&!windows.Chest.Visible,"Synced restricted fence works with the toy chest hidden");
@@ -101,6 +101,7 @@ namespace Vpet
                     before=pet.Model.OwnRestrictedArea;point=new Point((int)before.Right-2,(int)before.Bottom-2);
                     ToyMouse(independent,0x201,point);ToyMouse(independent,0x200,new Point(point.X-40,point.Y-30));ToyMouse(independent,0x202,Cursor.Position);
                     Check(pet.Model.OwnRestrictedArea.Width<before.Width&&pet.Model.OwnRestrictedArea.Height<before.Height&&pet.Model.InsideRestriction(pet.Model.Position),"Independent fence corner resizes both dimensions and keeps the pet inside");
+                    ToyUpdateWindowChecks(pet);
                     pet.Close();
                 }
             }

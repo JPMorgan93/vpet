@@ -132,10 +132,10 @@ namespace Vpet
                     var toggle=pet.ContextMenuStrip.Items.Cast<ToolStripItem>().First(i=>i.Text=="Display Toy Chest") as ToolStripMenuItem;
                     Check(toggle!=null&&!toys.Settings.DisplayChest,"Pet menu provides Display Toy Chest, default off");toggle.PerformClick();Application.DoEvents();
                     Check(windows.Chest.Visible&&windows.Fence.Visible,"Toggling chest shows chest and fence");
-                    Check(windows.Menu.Items[0].Text=="Display Play Zone"&&windows.Menu.Items[1].Text=="Ball","Chest menu begins with fence toggle followed by Ball");
-                    Check(windows.Menu.Items.Count==9&&windows.Menu.Items[2].Text=="Triangle"&&windows.Menu.Items[6] is ToolStripSeparator&&windows.Menu.Items[7].Text=="Help Messages"&&windows.Menu.Items[8].Text=="Close Toy Chest","Chest menu keeps toys above its footer, with Help Messages directly above Close Toy Chest");
-                    windows.Menu.Items[1].PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");
-                    windows.Menu.Items[2].PerformClick();Check(windows.Triangle.Visible&&toys.HasTriangle,"Triangle toggle creates the instrument");
+                    Check(windows.Menu.Items[0].Text=="Display Play Zone"&&windows.Menu.Items[1].Text=="Clean Up Toys","Chest menu begins with fence toggle followed by cleanup");
+                    Check(windows.Menu.Items.Count==10&&windows.Menu.Items[3].Text=="Triangle"&&windows.Menu.Items[7] is ToolStripSeparator&&windows.Menu.Items[8].Text=="Help Messages"&&windows.Menu.Items[9].Text=="Close Toy Chest","Chest menu keeps toys above its footer, with Help Messages directly above Close Toy Chest");
+                    Item(windows.Menu,"Ball").PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");
+                    Item(windows.Menu,"Triangle").PerformClick();Check(windows.Triangle.Visible&&toys.HasTriangle,"Triangle toggle creates the instrument");
                     Check(windows.Triangle.ContextMenuStrip==windows.TriangleMenu&&windows.TriangleMenu.Items.Cast<ToolStripItem>().Select(i=>i.Text).SequenceEqual(new[]{"Sound Setting","Chime","Honk","Drum"}),"Triangle right-click menu offers the three sound choices");
                     windows.TriangleMenu.Show(windows.Triangle,new Point(10,10));Application.DoEvents();
                     Check(windows.Busy&&!pet.ShowPause&&((ToolStripMenuItem)windows.TriangleMenu.Items[1]).Checked,"Triangle menu pauses actions without a pause emote and starts with Chime selected");
@@ -184,15 +184,15 @@ namespace Vpet
                     Check(!windows.Fence.Visible&&windows.Chest.Visible&&toys.HasBall,"Fence can be hidden independently of active toys");
                     var ball=Point.Round(toys.Ball);ToyMouse(windows.Ball,0x201,ball);ToyMouse(windows.Ball,0x202,ball);toys.AdvanceBall(.1f);
                     Check(toys.BounceHeight>0&&toys.Launcher==BallLauncher.None,"Native click triggers bounce only");
-                    ToyMouse(windows.Ball,0x201,ball);ToyMouse(windows.Ball,0x200,new Point(ball.X+50,ball.Y-25));
-                    Check(windows.Arrow.Visible&&toys.Aiming&&!pet.ShowPause,"Pull gesture shows launch arrow without a pause emote");ToyMouse(windows.Ball,0x202,Cursor.Position);
+                    ToyMouse(windows.Ball,0x204,ball);ToyMouse(windows.Ball,0x200,new Point(ball.X+50,ball.Y-25));
+                    Check(windows.Arrow.Visible&&toys.Aiming&&!pet.ShowPause,"Right pull gesture shows launch arrow without a pause emote");ToyMouse(windows.Ball,0x205,Cursor.Position);
                     Check(!windows.Arrow.Visible&&toys.Velocity.X<0&&toys.Velocity.Y>0&&toys.Launcher==BallLauncher.User&&pet.Model.Playing,"Release launches opposite pull and triggers fetch");
-                    ToyMouse(windows.Ball,0x201,ball);ToyMouse(windows.Ball,0x200,new Point(ball.X+70,ball.Y));windows.Ball.Capture=false;Application.DoEvents();
+                    ToyMouse(windows.Ball,0x204,ball);ToyMouse(windows.Ball,0x200,new Point(ball.X+70,ball.Y));windows.Ball.Capture=false;Application.DoEvents();
                     Check(!toys.Aiming&&!windows.Arrow.Visible,"Lost capture cancels aim and removes arrow");
                     windows.Menu.Show(windows.Chest,new Point(10,10));Application.DoEvents();
                     MakerField<MenuDismissal>(windows,"dismissal").MouseDownAt(new Point(windows.Menu.Right+50,windows.Menu.Bottom+50));Application.DoEvents();Check(!windows.Menu.Visible,"Clicking away dismisses toy chest menu");
-                    windows.Menu.Items[1].PerformClick();Check(!toys.HasBall&&!windows.Ball.Visible&&!pet.Model.Playing,"Unchecked Ball removes it and cancels the pending fetch");
-                    windows.Menu.Items[1].PerformClick();Check(toys.HasBall&&windows.Ball.Visible&&toys.Launcher==BallLauncher.None,"Checking Ball again adds a fresh unlaunched ball");
+                    Item(windows.Menu,"Ball").PerformClick();Check(!toys.HasBall&&!windows.Ball.Visible&&!pet.Model.Playing,"Unchecked Ball removes it and cancels the pending fetch");
+                    Item(windows.Menu,"Ball").PerformClick();Check(toys.HasBall&&windows.Ball.Visible&&toys.Launcher==BallLauncher.None,"Checking Ball again adds a fresh unlaunched ball");
                     toys.Settings.DisplayZone=true;windows.Update();var hover=Point.Round(toys.Ball);
                     Check(windows.HelpAt(hover,windows.Ball.Handle).Contains("three bounces"),"Ball hover supplies ball instructions");
                     Check(windows.HelpAt(Point.Round(toys.Center),windows.Fence.Handle).Contains("resize"),"Center hover supplies fence instructions");
@@ -206,9 +206,9 @@ namespace Vpet
                     Native.RECT helpBounds,chestBounds;Native.GetWindowRect(windows.Help.Handle,out helpBounds);Native.GetWindowRect(windows.Chest.Handle,out chestBounds);
                     Check(helpBounds.Bottom<=chestBounds.Top,"Help message is positioned above the chest (help bottom "+helpBounds.Bottom+", chest top "+chestBounds.Top+")");
                     Cursor.Position=new Point((int)toys.Zone.Left+50,(int)toys.Zone.Top+50);windows.Update();Check(!windows.Help.Visible,"Moving away hides the message");
-                    windows.Menu.Items[7].PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
+                    Item(windows.Menu,"Help Messages").PerformClick();Check(!toys.Settings.HelpMessages&&windows.HelpAt(hover,windows.Ball.Handle)==null,"Help Messages toggle disables hover messages");
                     windows.TriangleMenu.Show(windows.Triangle,new Point(10,10));Application.DoEvents();
-                    windows.Menu.Items[8].PerformClick();Check(windows.Windows.All(w=>!w.Visible)&&!windows.TriangleMenu.Visible&&!toys.Settings.DisplayChest&&!toys.HasTriangle,"Close Toy Chest hides every toy window, closes sound menu and removes the instrument");
+                    Item(windows.Menu,"Close Toy Chest").PerformClick();Check(windows.Windows.All(w=>!w.Visible)&&!windows.TriangleMenu.Visible&&!toys.Settings.DisplayChest&&!toys.HasTriangle,"Close Toy Chest hides every toy window, closes sound menu and removes the instrument");
                     Check(!pet.Model.Playing,"Turning chest off cancels pending fetch");
                     pet.Close();application.Close();
                 }
@@ -216,6 +216,6 @@ namespace Vpet
             finally{Cursor.Position=original;if(foreground!=IntPtr.Zero)Native.SetForegroundWindow(foreground);}
         }
         static void ToyMouse(LayeredWindow window,int message,Point screen)
-        {Cursor.Position=screen;var local=window.PointToClient(screen);Native.SendMessage(window.Handle,(uint)message,new IntPtr(message==0x202?0:1),new IntPtr((local.Y<<16)|(local.X&0xffff)));}
+        {Cursor.Position=screen;var local=window.PointToClient(screen);Native.SendMessage(window.Handle,(uint)message,new IntPtr(message==0x202||message==0x205?0:message==0x204?2:1),new IntPtr((local.Y<<16)|(local.X&0xffff)));}
     }
 }
