@@ -1,10 +1,10 @@
-# Vpet 1.6.0
+# Vpet 1.6.1
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.6.0-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.6.1-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -136,11 +136,11 @@ The **Triangle** toggle adds or removes a small instrument. Right-click the tria
 
 **Sound Setting**, at the top of the triangle menu, opens a **0–100% volume** slider. **Test sound** previews the selected instrument at that level without changing saved volume or adding a remembered tap. Choose **Save** to apply it to both user and pet notes, or Cancel to retain the previous level. At 0%, the instrument is muted.
 
-Click the **Coin** to summon the pet. On arrival it pauses for ¼ second, shakes for ½ second, then flips the coin into the air. The supplied Heads or Tails artwork appears in the speech bubble only after landing. Drag the coin to reposition it inside the zone.
+Click the **Coin** to summon the pet. On arrival it pauses for ¼ second, shakes for ½ second, then flips the coin into the air around the horizontal X axis. The coin itself is plain gold, with no face values. The supplied Heads or Tails artwork appears in the speech bubble only after landing. Drag the coin to reposition it inside the zone.
 
-Click the face-down **Card** to start High/Low. The pet walks over and announces a card, keeping it visible until you choose. Click the top half (up arrow) for **High**, or the bottom half (down arrow) for **Low**. The flip excludes the exact announced card. A correct guess shows **Love**, an incorrect guess shows **Sad**, and equal ranks show **Question**. Suits do not change rank; 1 is lowest, followed by 2–10, J, Q, K. **Every round resets all 52 cards**. Click the revealed card for another round or drag it to reposition. Autonomous play chooses High or Low randomly and resumes normal actions after the result.
+Click the face-down **Card** to start High/Low. The pet walks to a clear spot beside the card and announces a card, keeping it visible until you choose. Its position accounts for the full sprite and screen edges so both card halves stay accessible. Click the top half (up arrow) for **High**, or the bottom half (down arrow) for **Low**. The flip excludes the exact announced card. A correct guess shows **Love**, an incorrect guess shows **Sad**, and equal ranks show **Question**. Suits do not change rank; 1 is lowest, followed by 2–10, J, Q, K. **Every round resets all 52 cards**. Click the revealed card for another round or drag it to reposition. Autonomous play chooses High or Low randomly and resumes normal actions after the result.
 
-Pull and release the **D20** along its red arrow to launch it, or click for a random roll. It spins, ricochets within the fence, and slows to a stop. The pet stops and faces the die without chasing, then announces its final **1–20** result. Card, coin, and die results are special announcements, excluded from random/customizable reactions just like the pause indicator.
+Pull and release the **D20** along its red arrow to launch it, or click for a random roll. It is twice its original width and height (92 × 92 pixels at 100% scaling, including transparent margins). It spins, ricochets within the fence, and slows to a stop; its enlarged footprint and aiming arrow remain usable at the smallest play-zone size. The pet stops and faces the die without chasing, then announces its final **1–20** result. Card, coin, and die results are special announcements, excluded from random/customizable reactions just like the pause indicator.
 
 Available toys attract spontaneous play every **60–120 seconds**, chosen randomly after the previous action. The pet may return a ball, play a triangle phrase, flip a coin, play High/Low, or roll the D20. Toy visits temporarily override Static, speed 0, and restricted roaming just like user-triggered fetching; saved movement rules resume afterwards. Menus, settings, hovering and dragging pause the pet's actions.
 

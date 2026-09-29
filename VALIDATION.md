@@ -1,5 +1,11 @@
 # Vpet validation
 
+## Version 1.6.1
+
+4,333 automated assertions passed. New checks cover clear card-playing positions at the center and all four screen corners for 16 × 16, 32 × 36, and 100 × 150 source frames at 100%, 150%, and 200% scaling. They also verify that the enlarged D20 fits the minimum fence and remains fully contained through ricochets after moving from a 200% display to a 100% display. Existing coin outcomes and timing, card relocation/interruption, and die-watching behavior remain covered.
+
+108 native settings/game UI checks passed, including the doubled D20 window, pulling and launching it, and actual Windows hit testing of both card choices while the rendered pet stands beside the card. The blank coin and its X-axis flip contact sheet, plus the enlarged die artwork, were visually inspected.
+
 ## Version 1.6.0
 
 4,241 automated assertions passed. New coverage checks default/migrated sound volume and exact PCM scaling/mute; independent animation speeds through project saving and runtime exports; rectangular fence migration, containment, resizing, synchronization, and monitor disconnection; every High/Low rank comparison, equal-rank draws, and all 51 permitted second cards; coin pause/shake/landing timing; persistent called cards and safe relocation/interruption; D20 containment, all-edge ricochets, watching without walking, and display recovery; and spontaneous play of every new toy with return to normal movement rules.

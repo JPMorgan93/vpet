@@ -1,4 +1,10 @@
-# Vpet 1.6.0
+# Vpet 1.6.1
+
+- Give the coin a plain gold face with no Heads/Tails artwork or values. Flip it around the horizontal X axis, compressing its height as it turns. The pet still announces Heads or Tails after landing.
+- Have the pet stand beside the card to play High/Low, leaving both halves clickable. Choose a clear adjacent position that fits the full sprite near display edges, including for custom sprites and relocated cards.
+- Double the D20's width and height. Update its fence clearance, minimum play-zone size, rolling rotation, and aiming arrow to match the larger die, including when moving the zone between displays with different scaling.
+
+## Vpet 1.6.0
 
 - Add Coin, Card, and D20 toys to the chest. Coin visits include a quarter-second pause, half-second shake, airborne flip, and Heads/Tails result using the supplied artwork. Pull and release the D20 to roll and ricochet; the pet watches without chasing and announces its final 1–20 result.
 - Play High/Low with the card: the pet announces a card, then choose High on the top half or Low on the bottom. Correct guesses show Love, incorrect guesses show Sad, and equal ranks show Question. Each round resets all 52 cards and excludes the announced exact card from the flip. Pets can also choose and play these games on their own.
