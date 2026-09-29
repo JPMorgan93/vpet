@@ -74,7 +74,9 @@ namespace Vpet
             Check(pet.Current.Work.Contains(Rectangle.Ceiling(pet.OwnRestrictedArea))&&pet.Current.Work.Contains(Rectangle.Ceiling(toys.Zone)),"Both fences recover after their display disconnects");
         }
         static void Until(ToyModel toys,PetModel pet,ref double now,Func<bool> done,double limit=45)
-        {double end=now+limit;while(!done()&&now<end){now+=.01;ToyStep(toys,pet,now,.01f);}Check(done(),"Toy action reaches the expected state before timeout");}
+        {double end=now+limit;while(!done()&&now<end){now+=.01;ToyStep(toys,pet,now,.01f);}Check(done(),"Toy action reaches the expected state before timeout ("+toys.Target+" / "+toys.Fetch+")");}
+        static void StartUserCard(ToyModel toys,PetModel pet,ref double now)
+        {if(toys.CardRevealed){toys.PressCard(now);Until(toys,pet,ref now,()=>!toys.CardTurningDown);}toys.PressCard(now);Until(toys,pet,ref now,()=>toys.WaitingForCardChoice);}
         static void NewToyGames()
         {
             var random=new Random(44);bool comparisons=true,excluded=true;
@@ -113,7 +115,7 @@ namespace Vpet
                 Check(contained&&still&&toys.DieAngle!=initialAngle&&!toys.DieRolling,"Rolling D20 stays inside the fence while the pet stays put");
                 Check(toys.DieValue>=1&&toys.DieValue<=20&&toys.Announcement.Kind==SpecialEmoteKind.Number&&toys.Announcement.Value==toys.DieValue,"Stopped die announces its final 1–20 value");
                 Until(toys,pet,ref now,()=>!pet.Playing);
-                toys.PressCard(now);Until(toys,pet,ref now,()=>toys.WaitingForCardChoice);toys.CancelFetchForPetDrag(now);Check(toys.Announcement==null&&!pet.Playing,"Picking up the pet cancels a waiting card game and clears its announcement");
+                StartUserCard(toys,pet,ref now);toys.CancelFetchForPetDrag(now);Check(toys.Announcement==null&&!pet.Playing,"Picking up the pet cancels a waiting card game and clears its announcement");
                 toys.PressCoin(now);toys.PressTriangle(now);Check(toys.Target==PlayTarget.Coin,"A missing triangle cannot interrupt a coin flip");
                 toys.SetVisible(false,now);Check(!toys.HasCoin&&!toys.HasCard&&!toys.HasDie&&toys.Announcement==null&&!pet.Playing,"Closing chest removes every new toy and cancels interactions");
             }
@@ -144,8 +146,8 @@ namespace Vpet
             Check(!cards.CardRevealed&&!cards.ChoiceHigh.HasValue&&cards.DrawnCard==-1,"Dragging a flipping card safely restores its unflipped choice");
             cards.ChooseCard(false);Until(cards,cardPet,ref time,()=>cards.CardRevealed);
             cards.DragGame(PlayTarget.Card,new PointF(cards.Card.X-25,cards.Card.Y));
-            Check(cards.CalledCard==-1&&!cards.CardRevealed&&cards.Announcement==null,"Moving a revealed card starts a fresh round");
-            Until(cards,cardPet,ref time,()=>cards.WaitingForCardChoice);cards.SpawnDie();cards.LaunchDiePull(new PointF(100,100),time);
+            Check(cards.CardRevealed&&cards.Fetch==FetchPhase.Result&&cards.Announcement==null,"Moving a revealed card preserves its face without starting another round");
+            StartUserCard(cards,cardPet,ref time);cards.SpawnDie();cards.LaunchDiePull(new PointF(100,100),time);
             Check(cards.Announcement==null&&cards.Fetch==FetchPhase.Watching&&!cardPet.Destination.HasValue,"Launching a die interrupts a persistent called-card bubble without chasing");
             cardPet.SetDisplays(new List<DisplayArea>{new DisplayArea("replacement",new Rectangle(-800,0,800,600),1)});cards.RecoverDisplays();
             Until(cards,cardPet,ref time,()=>cards.Fetch==FetchPhase.Result);

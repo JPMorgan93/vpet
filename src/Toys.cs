@@ -29,7 +29,7 @@ namespace Vpet
     }
 
     internal enum BallLauncher { None, User, Pet }
-    internal enum FetchPhase { None, Approaching, Pausing, Shaking, Returning, Repeating, Waiting, Flipping, Watching, Result }
+    internal enum FetchPhase { None, Approaching, Pausing, Shaking, Returning, Repeating, Waiting, Flipping, Watching, Result, TurningDown, Leaving }
     internal enum PlayTarget { Ball, Triangle, Coin, Card, D20 }
     [Flags] internal enum ZoneEdge { None=0, Left=1, Top=2, Right=4, Bottom=8 }
 
@@ -108,7 +108,7 @@ namespace Vpet
         {
             var display=Nearest(Center);DisplayId=display.Id;
             Zone=Fit(Zone,display);ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
-            if(Fetch!=FetchPhase.None){pet.CancelRoute();if(Fetch!=FetchPhase.Returning&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();}
+            if(Fetch!=FetchPhase.None){pet.CancelRoute();if(Fetch!=FetchPhase.Returning&&Fetch!=FetchPhase.Leaving&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();}
         }
         void ContainObjects()
         {
@@ -131,14 +131,18 @@ namespace Vpet
         void ChangeZone(RectangleF zone)
         {
             Zone=zone;ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
-            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();
+            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&Fetch!=FetchPhase.Leaving&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();
         }
         public void DragChest(PointF point){Chest=Geometry.Clamp(point,ChestBounds);Store();}
         public void SetVisible(bool visible,double now)
         {
             Settings.DisplayChest=visible;Aiming=false;Editing=false;
-            if(!visible){RemoveBall(now);RemoveTriangle(now);RemoveCoin(now);RemoveCard(now);RemoveDie(now);}
+            if(!visible)CleanUp(now);
         }
+        public void CleanUp(double now)
+        {Aiming=DieAiming=Editing=false;RemoveBall(now);RemoveTriangle(now);RemoveCoin(now);RemoveCard(now);RemoveDie(now);ClearAnnouncement();}
+        public void DragBall(PointF point,double now)
+        {if(!HasBall)return;Ball=Geometry.Clamp(point,BallBounds);Velocity=PointF.Empty;Launcher=BallLauncher.None;bounceTime=1;if(Target==PlayTarget.Ball&&Fetch!=FetchPhase.None)FinishFetch(now);}
         public void RemoveBall(double now)
         {HasBall=false;Aiming=false;Velocity=PointF.Empty;Launcher=BallLauncher.None;bounceTime=1;if(Target==PlayTarget.Ball)FinishFetch(now);}
         public void SpawnBall(double now)
@@ -180,7 +184,7 @@ namespace Vpet
             if(double.IsNaN(NextPlayAt))SchedulePlay(now);
             if(now<NextPlayAt||!Settings.DisplayChest||Fetch!=FetchPhase.None||pet.Paused||pet.Hovered||pet.Dragging||Aiming||DieAiming||Editing)return;
             var choices=new List<PlayTarget>();if(HasBall&&!Rolling)choices.Add(PlayTarget.Ball);if(HasTriangle)choices.Add(PlayTarget.Triangle);
-            if(HasCoin)choices.Add(PlayTarget.Coin);if(HasCard)choices.Add(PlayTarget.Card);if(HasDie&&!DieRolling)choices.Add(PlayTarget.D20);
+            if(HasCoin)choices.Add(PlayTarget.Coin);if(HasCard&&!CardTurningDown)choices.Add(PlayTarget.Card);if(HasDie&&!DieRolling)choices.Add(PlayTarget.D20);
             if(choices.Count==0)return;var selected=choices[random.Next(choices.Count)];if(ConsiderGame(now,selected))return;
             if(selected==PlayTarget.Triangle)
             {
@@ -258,6 +262,7 @@ namespace Vpet
         {
             AdvanceBall(dt);
             AdvanceDie(dt);
+            AdvanceCard(dt);
             ConsiderPlay(now);
             if(Fetch==FetchPhase.None||Aiming||DieAiming||Editing||pet.Dragging)return;
             if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(CoinApproach());else if(Target==PlayTarget.Card)RouteTo(CardApproach());else if(Target==PlayTarget.D20)RouteTo(DieApproach());else RouteToBall();}
@@ -274,6 +279,7 @@ namespace Vpet
         {
             if(Fetch==FetchPhase.None)return;
             if(Aiming||DieAiming||Editing||pet.Dragging||pet.Paused||pet.Hovered){if(Fetch==FetchPhase.Repeating)repeatStarted+=Math.Max(0,dt);return;}
+            if(Fetch==FetchPhase.Leaving){if(!pet.Destination.HasValue&&pet.Crossing==null)FinishFetch(now);return;}
             if(GameTick(now,dt))return;
             if(Fetch==FetchPhase.Repeating)
             {

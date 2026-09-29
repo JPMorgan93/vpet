@@ -139,9 +139,8 @@ namespace Vpet
             toyChest.Click+=delegate{Toys.SetVisible(toyChest.Checked);};menu.Items.Add(toyChest);
             menu.Items.Add("Upload Vpet…",null,delegate{OpenSettings(2);});
             menu.Items.Add("Settings…",null,delegate{OpenSettings(0);});
-            menu.Items.Add("Check for updates…",null,delegate{CheckForUpdates(true);});
             installUpdate=new ToolStripMenuItem("Install update…"){Visible=false};installUpdate.Click+=delegate{if(availableUpdate!=null)InstallAvailable(availableUpdate);};menu.Items.Add(installUpdate);
-            menu.Items.Add(new ToolStripSeparator());menu.Items.Add("Close Vpet",null,delegate{Close();});
+            menu.Items.Add(new ToolStripSeparator());menu.Items.Add("Check for Updates…",null,delegate{CheckForUpdates(true);});menu.Items.Add("Close Vpet",null,delegate{Close();});
             menu.Opening+=delegate
             {
                 menuOpen=true;
@@ -211,7 +210,7 @@ namespace Vpet
         Bitmap ReactionImage(float scale,bool below)
         {
             if(ShowPause)return Artwork.Bubble(-1,null,scale,below);
-            var announcement=Now<explicitPreviewUntil?null:Toys.Model.Announcement;
+            var announcement=Now<explicitPreviewUntil?null:Toys.CurrentAnnouncement;
             if(announcement!=null)
             {
                 string key=announcement.Key+":"+scale+":"+below;
@@ -392,7 +391,7 @@ namespace Vpet
             var display=Model.Current;Size size=display.PetSize(Sprites.Cell);
             animationFacing=Sprites.ResolveFacing(Model.Facing,Model.Walking?Model.LastMotion:PointF.Empty,animationFacing);
             // Optional reaction poses apply to greetings, clicks and pickup too; missing rows retain normal animation.
-            var emoteFrame=!ShowPause&&Toys.Model.Announcement==null&&Now<bubbleUntil?Sprites.EmoteAtPhase(reaction,(Now-reactionStarted)*6):null;
+            var emoteFrame=!ShowPause&&Toys.CurrentAnnouncement==null&&Now<bubbleUntil?Sprites.EmoteAtPhase(reaction,(Now-reactionStarted)*6):null;
             var frame=emoteFrame??Sprites.FrameAtPhase(Model.Walking,animationFacing,phase);
             float offset=Model.Shaking(Now)?(float)(Math.Sin(Now*65)*3*display.Scale):0;
             PointF anchor=Geometry.Clamp(new PointF(Model.Position.X+offset,Model.Position.Y),display.Allowed(Sprites.Cell,false));
@@ -414,7 +413,7 @@ namespace Vpet
                 if(crossingWindow.Visible)crossingWindow.Hide();
             }
             bool showName=Model.Settings.ShowName(Model.Hovered||buttonDown);
-            bool showReaction=ShowPause||Toys.Model.Announcement!=null||(reaction>=0&&Now<bubbleUntil);
+            bool showReaction=ShowPause||Toys.CurrentAnnouncement!=null||(reaction>=0&&Now<bubbleUntil);
             if(showName)
             {
                 bool below=location.Y-(int)Math.Ceiling(62*display.Scale)<display.Work.Top;

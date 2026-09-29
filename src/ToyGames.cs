@@ -26,6 +26,8 @@ namespace Vpet
         public bool CardRevealed {get;private set;}
         public bool? ChoiceHigh {get;private set;}
         bool automaticCard;
+        float cardTurnTime;
+        public bool CardTurningDown {get;private set;}
         public PointF DieVelocity {get;private set;}
         public float DieAngle {get;private set;}
         public int DieValue {get;private set;}
@@ -39,14 +41,16 @@ namespace Vpet
         float ToyMinimumSpan {get{return (DieRadius+Scale)*2;}}
         public RectangleF DieBounds {get{return RectangleF.Inflate(Zone,-DieRadius-Scale,-DieRadius-Scale);}}
         public float CoinFlip {get{return Target==PlayTarget.Coin&&Fetch==FetchPhase.Flipping?Math.Min(1,phaseTime/1.1f):0;}}
-        public float CardFlip {get{return Target==PlayTarget.Card&&Fetch==FetchPhase.Flipping?Math.Min(1,phaseTime/.65f):0;}}
+        public float CardFlip {get{return CardTurningDown?Math.Min(1,cardTurnTime/.65f):Target==PlayTarget.Card&&Fetch==FetchPhase.Flipping?Math.Min(1,phaseTime/.65f):0;}}
+        public bool CardShowsFace {get{return CardTurningDown?CardFlip<.5f:CardRevealed||(Target==PlayTarget.Card&&Fetch==FetchPhase.Flipping&&CardFlip>=.5f);}}
+        public PointF CoinDrawPosition {get{return new PointF(Coin.X,Coin.Y-4*CoinFlip*(1-CoinFlip)*55*Scale);}}
         public bool WaitingForCardChoice {get{return HasCard&&Target==PlayTarget.Card&&Fetch==FetchPhase.Waiting;}}
 
         public void SpawnCoin(){if(!Settings.DisplayChest)return;HasCoin=true;CoinHeads=true;Coin=Geometry.Clamp(new PointF(Center.X-Zone.Width/4,Center.Y-Zone.Height/4),CoinBounds);}
-        public void SpawnCard(){if(!Settings.DisplayChest)return;HasCard=true;CardRevealed=false;CalledCard=DrawnCard=-1;Card=Geometry.Clamp(new PointF(Center.X+Zone.Width/4,Center.Y+Zone.Height/4),CardBounds);}
+        public void SpawnCard(){if(!Settings.DisplayChest)return;HasCard=true;CardRevealed=CardTurningDown=false;CalledCard=DrawnCard=-1;Card=Geometry.Clamp(new PointF(Center.X+Zone.Width/4,Center.Y+Zone.Height/4),CardBounds);}
         public void SpawnDie(){if(!Settings.DisplayChest)return;HasDie=true;DieValue=20;DieAngle=0;DieVelocity=PointF.Empty;Die=Geometry.Clamp(new PointF(Center.X,Center.Y+Zone.Height/4),DieBounds);}
         public void RemoveCoin(double now){HasCoin=false;if(Target==PlayTarget.Coin)FinishFetch(now);}
-        public void RemoveCard(double now){HasCard=false;if(Target==PlayTarget.Card)FinishFetch(now);}
+        public void RemoveCard(double now){HasCard=CardTurningDown=false;if(Target==PlayTarget.Card)FinishFetch(now);}
         public void RemoveDie(double now){HasDie=false;DieAiming=false;DieVelocity=PointF.Empty;if(Target==PlayTarget.D20)FinishFetch(now);}
         void ContainGames()
         {
@@ -58,15 +62,15 @@ namespace Vpet
         {
             if(target==PlayTarget.Coin&&HasCoin)Coin=Geometry.Clamp(position,CoinBounds);
             if(target==PlayTarget.Card&&HasCard)Card=Geometry.Clamp(position,CardBounds);
-            if(Target==target&&Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning)
+            if(Target==target&&Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&Fetch!=FetchPhase.Leaving)
                 RestartApproach();
         }
         void RestartApproach()
         {
             if(Target==PlayTarget.Card)
             {
-                if(CardRevealed)CalledCard=-1;
-                CardRevealed=false;DrawnCard=-1;ChoiceHigh=null;
+                if(Fetch==FetchPhase.Result)return;
+                if(!CardRevealed&&!CardTurningDown){DrawnCard=-1;ChoiceHigh=null;}
                 if(CalledCard<0)ClearAnnouncement();
                 else Announcement=new ToyAnnouncement(SpecialEmoteKind.Card,CalledCard);
             }
@@ -81,8 +85,30 @@ namespace Vpet
         public void PressCard(double now,bool autonomous=false)
         {
             if(!HasCard||!Settings.DisplayChest)return;
-            automaticCard=autonomous;CalledCard=DrawnCard=-1;CardRevealed=false;ChoiceHigh=null;BeginGame(PlayTarget.Card,CardApproach());
+            if(!autonomous&&(CardTurningDown||CardRevealed))
+            {
+                if(CardTurningDown)return;
+                if(Target==PlayTarget.Card&&Fetch==FetchPhase.Result)FinishFetch(now);
+                TurnCardDown();SchedulePlay(now);return;
+            }
+            automaticCard=autonomous;CalledCard=-1;if(!CardRevealed&&!CardTurningDown)DrawnCard=-1;
+            ChoiceHigh=null;BeginGame(PlayTarget.Card,CardApproach());
         }
+        void TurnCardDown(){CardTurningDown=true;cardTurnTime=0;}
+        void AdvanceCard(float dt)
+        {
+            if(!CardTurningDown||Editing)return;cardTurnTime+=Math.Max(0,Math.Min(.1f,dt));
+            if(cardTurnTime<.65f)return;
+            CardTurningDown=CardRevealed=false;CalledCard=DrawnCard=-1;ChoiceHigh=null;
+        }
+        void AnnounceCard(){if(CalledCard<0)CalledCard=random.Next(52);Announcement=new ToyAnnouncement(SpecialEmoteKind.Card,CalledCard);Fetch=FetchPhase.Waiting;phaseTime=0;}
+        void AbandonCard(double now)
+        {
+            ClearAnnouncement();CalledCard=DrawnCard=-1;ChoiceHigh=null;
+            if(pet.BeginToyDeparture())Fetch=FetchPhase.Leaving;else FinishFetch(now);
+        }
+        public void DragDie(PointF point,double now)
+        {if(!HasDie)return;Die=Geometry.Clamp(point,DieBounds);DieVelocity=PointF.Empty;if(Target==PlayTarget.D20&&Fetch!=FetchPhase.None)FinishFetch(now);}
         PointF CoinApproach(){return BesideToy(Coin,23*Scale,23*Scale);}
         PointF CardApproach(){return BesideToy(Card,23*Scale,32*Scale);}
         PointF DieApproach(){return BesideToy(Die,DieRadius,DieRadius);}
@@ -157,11 +183,13 @@ namespace Vpet
                 if(Target==PlayTarget.D20){RollDie(now);return true;}
                 if(Target==PlayTarget.Coin)Fetch=FetchPhase.Pausing;
                 else
-                {if(CalledCard<0)CalledCard=random.Next(52);Announcement=new ToyAnnouncement(SpecialEmoteKind.Card,CalledCard);Fetch=FetchPhase.Waiting;}
+                {if(CardRevealed&&!CardTurningDown)TurnCardDown();if(CardTurningDown)Fetch=FetchPhase.TurningDown;else AnnounceCard();}
                 return true;
             }
+            if(Fetch==FetchPhase.TurningDown){if(!CardTurningDown)AnnounceCard();return true;}
             phaseTime+=Math.Max(0,Math.Min(.1f,dt));
             if(Fetch==FetchPhase.Waiting&&automaticCard&&phaseTime>=1.25f)ChooseCard(random.Next(2)==0);
+            else if(Fetch==FetchPhase.Waiting&&!automaticCard&&phaseTime>=30)AbandonCard(now);
             else if(Fetch==FetchPhase.Pausing&&phaseTime>=.25f){Fetch=FetchPhase.Shaking;phaseTime=0;pet.ShakeUntil=now+.5;}
             else if(Fetch==FetchPhase.Shaking&&phaseTime>=.5f){CoinHeads=random.Next(2)==0;Fetch=FetchPhase.Flipping;phaseTime=0;pet.ShakeUntil=0;}
             else if(Fetch==FetchPhase.Flipping&&phaseTime>=(Target==PlayTarget.Coin?1.1f:.65f))

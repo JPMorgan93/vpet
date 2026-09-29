@@ -308,6 +308,7 @@ namespace Vpet
             }
             return true;
         }
+        internal bool BeginToyDeparture(){BeginPlay();PickDestination();return Destination.HasValue;}
         void PickDestination()
         {
             for (int attempt=0; attempt<150; attempt++)

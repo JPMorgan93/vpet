@@ -9,6 +9,7 @@ namespace Vpet
     {
         readonly PetModel model;readonly Action changed;readonly LayeredWindow petWindow,crossingWindow;
         readonly LayeredWindow fence=new LayeredWindow(false){Text="Restricted area fence",Cursor=Cursors.SizeAll};
+        readonly LayeredWindow title=new LayeredWindow(true){Text="Restricted Area"};
         Point pointerStart;PointF centerStart;RectangleF original;ZoneEdge edges;string signature="";
         public bool Dragging {get;private set;}
         internal bool IsDisplayed {get{return fence.Visible;}}
@@ -19,6 +20,7 @@ namespace Vpet
         {
             this.model=model;this.changed=changed;this.petWindow=petWindow;this.crossingWindow=crossingWindow;
             IntPtr id=fence.Handle;Native.BackgroundAdornments.Add(id);fence.FormClosed+=delegate{Native.BackgroundAdornments.Remove(id);};
+            IntPtr titleId=title.Handle;Native.BackgroundAdornments.Add(titleId);title.FormClosed+=delegate{Native.BackgroundAdornments.Remove(titleId);};
             fence.MouseDown+=delegate(object sender,MouseEventArgs e)
             {
                 if(e.Button!=MouseButtons.Left)return;pointerStart=Cursor.Position;centerStart=model.Anchor;original=model.OwnRestrictedArea;
@@ -39,18 +41,21 @@ namespace Vpet
         public void Update()
         {
             if(model.Settings.Movement!=MovementMode.Restricted||model.Settings.SyncPlayZone||!model.Settings.DisplayRestrictedArea)
-            {fence.Hide();signature="";EndDrag();return;}
+            {fence.Hide();title.Hide();signature="";EndDrag();return;}
             var zone=model.OwnRestrictedArea;var display=FenceGeometry.Nearest(model.Displays,model.Anchor);string key=zone.ToString()+display.Scale;
             if(key!=signature||!fence.Visible)
             {
                 signature=key;var bounds=Rectangle.Ceiling(zone);
-                using(var image=ToyArtwork.Fence(bounds.Size,display.Scale)){fence.Present(image,bounds.Location);if(!fence.Visible)fence.Show();}
+                using(var image=ToyArtwork.Fence(bounds.Size,display.Scale,Color.Red)){fence.Present(image,bounds.Location);if(!fence.Visible)fence.Show();}
+                using(var image=ToyArtwork.FenceTitle("Restricted Area",display.Scale,Color.Red))
+                {title.Present(image,ToyArtwork.FenceTitlePosition(bounds,image.Size,display.Work,display.Scale));if(!title.Visible)title.Show();}
             }
             if(petWindow==null||petWindow.IsDisposed)return;
             IntPtr lowest=petWindow.Handle;
             Native.EnumWindows(delegate(IntPtr w,IntPtr unused){if(w==petWindow.Handle||(crossingWindow!=null&&crossingWindow.Visible&&w==crossingWindow.Handle))lowest=w;return true;},IntPtr.Zero);
-            fence.BehindWindow=IntPtr.Zero;fence.SetLayer(model.Settings.Layer);fence.BehindWindow=lowest;Native.SetWindowPos(fence.Handle,lowest,0,0,0,0,0x213);
+            title.BehindWindow=IntPtr.Zero;title.SetLayer(model.Settings.Layer);title.BehindWindow=lowest;Native.SetWindowPos(title.Handle,lowest,0,0,0,0,0x213);
+            fence.BehindWindow=IntPtr.Zero;fence.SetLayer(model.Settings.Layer);fence.BehindWindow=title.Handle;Native.SetWindowPos(fence.Handle,title.Handle,0,0,0,0,0x213);
         }
-        public void Dispose(){EndDrag();fence.Close();}
+        public void Dispose(){EndDrag();fence.Close();title.Close();}
     }
 }
