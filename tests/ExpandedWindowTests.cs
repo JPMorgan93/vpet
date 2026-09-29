@@ -81,7 +81,6 @@ namespace Vpet
                                     var needed=TextRenderer.MeasureText(label.Text,label.Font,new Size(Math.Max(1,label.ClientSize.Width),int.MaxValue),TextFormatFlags.WordBreak|TextFormatFlags.NoPrefix);
                                     Check(label.Height+5>=needed.Height,"Settings label has room for all text: "+label.Text.Substring(0,Math.Min(35,label.Text.Length))+" ("+label.Size+" vs "+needed+")");
                                 }
-                                if(width==550)CaptureForm(settings,"settings-responsive-"+tab);
                             }
                         }
                         settings.SelectTab(0);Check(Descendants(tabs.TabPages[0]).OfType<TrackBar>().Count()==1,"Movement settings retains walking speed and removes radius controls");
@@ -89,6 +88,13 @@ namespace Vpet
                         settings.SelectTab(3);var sync=Descendants(settings).OfType<CheckBox>().Single(c=>c.Name=="SyncPlayZone");Check(sync.Checked,"Advanced sync defaults on");sync.Checked=false;
                         Check(!pet.Model.Settings.SyncPlayZone&&pet.Model.RestrictedArea==pet.Model.OwnRestrictedArea,"Advanced switch restores the independent fence");settings.Close();
                     }
+                    var overlay=MakerField<RestrictedAreaOverlay>(pet,"restrictedOverlay");overlay.Update();Application.DoEvents();
+                    var independent=MakerField<LayeredWindow>(overlay,"fence");var before=pet.Model.OwnRestrictedArea;
+                    point=Point.Round(pet.Model.Anchor);ToyMouse(independent,0x201,point);ToyMouse(independent,0x200,new Point(point.X-20,point.Y-15));ToyMouse(independent,0x202,Cursor.Position);
+                    Check(pet.Model.OwnRestrictedArea!=before&&toys.Zone!=pet.Model.OwnRestrictedArea,"Independent fence center moves separately from the play zone");
+                    before=pet.Model.OwnRestrictedArea;point=new Point((int)before.Right-2,(int)before.Bottom-2);
+                    ToyMouse(independent,0x201,point);ToyMouse(independent,0x200,new Point(point.X-40,point.Y-30));ToyMouse(independent,0x202,Cursor.Position);
+                    Check(pet.Model.OwnRestrictedArea.Width<before.Width&&pet.Model.OwnRestrictedArea.Height<before.Height&&pet.Model.InsideRestriction(pet.Model.Position),"Independent fence corner resizes both dimensions and keeps the pet inside");
                     pet.Close();
                 }
             }

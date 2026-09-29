@@ -10,7 +10,7 @@ namespace Vpet
     internal static partial class Tests
     {
         static void ExpandedFeatures()
-        {SoundVolumes();AnimationSpeeds();RectangleFences();NewToyGames();}
+        {SoundVolumes();AnimationSpeeds();RectangleFences();NewToyGames();GameInterruptions();}
         static void SoundVolumes()
         {
             foreach(TriangleSound sound in Enum.GetValues(typeof(TriangleSound)))
@@ -122,6 +122,40 @@ namespace Vpet
                 foreach(var kind in new[]{SpecialEmoteKind.Heads,SpecialEmoteKind.Tails,SpecialEmoteKind.Card,SpecialEmoteKind.Number})
                 {var message=new ToyAnnouncement(kind,kind==SpecialEmoteKind.Card?25:20);using(var bubble=Artwork.Bubble(-1,art.Emote(message),2,false))bubble.Save(Path.Combine(artifacts,"game-emote-"+kind+".png"));}
                 using(var coin=art.Coin(2,true,0))coin.Save(Path.Combine(artifacts,"coin-toy.png"));using(var card=GameArtwork.Card(2,-1,false,0))card.Save(Path.Combine(artifacts,"card-toy.png"));using(var die=GameArtwork.Die(2,0,20,false))die.Save(Path.Combine(artifacts,"d20-toy.png"));
+            }
+        }
+        static void GameInterruptions()
+        {
+            foreach(PlayTarget target in new[]{PlayTarget.Coin,PlayTarget.Card,PlayTarget.D20})
+            {
+                var pet=Pet(MovementMode.Static);var toys=Toys(pet);toys.RemoveBall(0);
+                if(target==PlayTarget.Coin)toys.SpawnCoin();else if(target==PlayTarget.Card)toys.SpawnCard();else toys.SpawnDie();
+                double now=0;ToyStep(toys,pet,now,.01f);now=toys.NextPlayAt+.01;ToyStep(toys,pet,now,.01f);
+                Check(toys.Target==target&&pet.Playing,"Spontaneous play can select "+target);
+                Until(toys,pet,ref now,()=>toys.Fetch==FetchPhase.Result);Until(toys,pet,ref now,()=>!pet.Playing);
+                Check(toys.Announcement==null&&toys.NextPlayAt>now,"Autonomous game finishes and schedules another visit: "+target);
+            }
+            var cardPet=Pet(MovementMode.Static);var cards=Toys(cardPet);cards.SpawnCard();double time=0;cards.PressCard(time);
+            Until(cards,cardPet,ref time,()=>cards.WaitingForCardChoice);int called=cards.CalledCard;
+            cards.MoveZone(new PointF(cards.Center.X+20,cards.Center.Y));Until(cards,cardPet,ref time,()=>cards.WaitingForCardChoice);
+            Check(cards.CalledCard==called&&cards.Announcement.Value==called,"Moving a waiting game preserves the called card");
+            cards.ChooseCard(true);cards.DragGame(PlayTarget.Card,new PointF(cards.Card.X-25,cards.Card.Y));
+            Until(cards,cardPet,ref time,()=>cards.WaitingForCardChoice);
+            Check(!cards.CardRevealed&&!cards.ChoiceHigh.HasValue&&cards.DrawnCard==-1,"Dragging a flipping card safely restores its unflipped choice");
+            cards.ChooseCard(false);Until(cards,cardPet,ref time,()=>cards.CardRevealed);
+            cards.DragGame(PlayTarget.Card,new PointF(cards.Card.X-25,cards.Card.Y));
+            Check(cards.CalledCard==-1&&!cards.CardRevealed&&cards.Announcement==null,"Moving a revealed card starts a fresh round");
+            Until(cards,cardPet,ref time,()=>cards.WaitingForCardChoice);cards.SpawnDie();cards.LaunchDiePull(new PointF(100,100),time);
+            Check(cards.Announcement==null&&cards.Fetch==FetchPhase.Watching&&!cardPet.Destination.HasValue,"Launching a die interrupts a persistent called-card bubble without chasing");
+            cardPet.SetDisplays(new List<DisplayArea>{new DisplayArea("replacement",new Rectangle(-800,0,800,600),1)});cards.RecoverDisplays();
+            Until(cards,cardPet,ref time,()=>cards.Fetch==FetchPhase.Result);
+            Check(ToyModel.ContainsInclusive(cards.DieBounds,cards.Die)&&cards.Announcement.Kind==SpecialEmoteKind.Number,"A disconnected rolling-die display recovers and announces a valid result");
+            foreach(var velocity in new[]{new PointF(720,0),new PointF(-720,0),new PointF(0,720),new PointF(0,-720)})
+            {
+                var pet=Pet(MovementMode.Static);var toys=Toys(pet);toys.ResizeZone(toys.Zone,ZoneEdge.Right|ZoneEdge.Bottom,new PointF(-2000,-2000));toys.SpawnDie();
+                toys.LaunchDie(velocity,0);double now=0;bool reflected=false,inside=true;
+                for(int i=0;i<400;i++){now+=.01;ToyStep(toys,pet,now,.01f);reflected|=velocity.X*toys.DieVelocity.X+velocity.Y*toys.DieVelocity.Y<0;inside&=ToyModel.ContainsInclusive(toys.DieBounds,toys.Die);}
+                Check(reflected&&inside&&!toys.DieRolling,"D20 ricochets and stops inside each fence edge: "+velocity);
             }
         }
     }
