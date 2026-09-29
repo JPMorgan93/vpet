@@ -45,7 +45,7 @@ namespace Vpet
                 string root=AppDomain.CurrentDomain.BaseDirectory;
                 using(var pet=new PetWindow(Path.Combine(artifacts,"expanded-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"expanded-smoke")))
                 {
-                    pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
+                    pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
                     using(var marker=new Bitmap(20,20)){using(var graphics=Graphics.FromImage(marker))graphics.Clear(Color.Purple);pet.Present(marker,new Point(pet.Model.Current.Work.Left+5,pet.Model.Current.Work.Top+5));}
                     var windows=pet.Toys;var toys=windows.Model;windows.SetVisible(true);
                     foreach(string toy in new[]{"Coin","Card","D20","Triangle"})Item(windows.Menu,toy).PerformClick();windows.Update();Application.DoEvents();
