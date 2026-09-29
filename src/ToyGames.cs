@@ -85,6 +85,7 @@ namespace Vpet
         }
         PointF CoinApproach(){return BesideToy(Coin,23*Scale,23*Scale);}
         PointF CardApproach(){return BesideToy(Card,23*Scale,32*Scale);}
+        PointF DieApproach(){return BesideToy(Die,DieRadius,DieRadius);}
         PointF BesideToy(PointF center,float halfWidth,float halfHeight)
         {
             var display=pet.Displays.Find(d=>d.Id==DisplayId)??Nearest(center);
@@ -153,6 +154,7 @@ namespace Vpet
             if(Fetch==FetchPhase.Approaching)
             {
                 if(!Arrived)return true;pet.CancelRoute();pet.FaceDownIdle();phaseTime=0;
+                if(Target==PlayTarget.D20){RollDie(now);return true;}
                 if(Target==PlayTarget.Coin)Fetch=FetchPhase.Pausing;
                 else
                 {if(CalledCard<0)CalledCard=random.Next(52);Announcement=new ToyAnnouncement(SpecialEmoteKind.Card,CalledCard);Fetch=FetchPhase.Waiting;}
@@ -175,7 +177,7 @@ namespace Vpet
         {
             if(target==PlayTarget.Coin){PressCoin(now);return true;}
             if(target==PlayTarget.Card){PressCard(now,true);return true;}
-            if(target==PlayTarget.D20){RollDie(now);return true;}return false;
+            if(target==PlayTarget.D20){BeginGame(PlayTarget.D20,DieApproach());return true;}return false;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Vpet
         internal GameArtwork(string referenceDirectory)
         {heads=SpriteSet.ReadPng(Path.Combine(referenceDirectory,"Heads.png"),512,512);tails=SpriteSet.ReadPng(Path.Combine(referenceDirectory,"Tails.png"),512,512);}
         internal static string CardText(int card)
-        {string[] ranks={"1","2","3","4","5","6","7","8","9","10","J","Q","K"};return ranks[card%13]+new[]{"♠","♥","♣","♦"}[card/13];}
+        {string[] ranks={"A","2","3","4","5","6","7","8","9","10","J","Q","K"};return ranks[card%13]+new[]{"♠","♥","♣","♦"}[card/13];}
         internal static Color CardColor(int card){return card/13==1||card/13==3?Color.Firebrick:Color.FromArgb(35,30,50);}
         internal Bitmap Emote(ToyAnnouncement announcement)
         {

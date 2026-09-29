@@ -108,7 +108,7 @@ namespace Vpet
         {
             var display=Nearest(Center);DisplayId=display.Id;
             Zone=Fit(Zone,display);ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
-            if(Fetch!=FetchPhase.None){pet.CancelRoute();if(Target!=PlayTarget.D20&&Fetch!=FetchPhase.Returning)RestartApproach();}
+            if(Fetch!=FetchPhase.None){pet.CancelRoute();if(Fetch!=FetchPhase.Returning&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();}
         }
         void ContainObjects()
         {
@@ -131,7 +131,7 @@ namespace Vpet
         void ChangeZone(RectangleF zone)
         {
             Zone=zone;ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
-            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&Target!=PlayTarget.D20)RestartApproach();
+            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();
         }
         public void DragChest(PointF point){Chest=Geometry.Clamp(point,ChestBounds);Store();}
         public void SetVisible(bool visible,double now)
@@ -260,7 +260,7 @@ namespace Vpet
             AdvanceDie(dt);
             ConsiderPlay(now);
             if(Fetch==FetchPhase.None||Aiming||DieAiming||Editing||pet.Dragging)return;
-            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(CoinApproach());else if(Target==PlayTarget.Card)RouteTo(CardApproach());else RouteToBall();}
+            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(CoinApproach());else if(Target==PlayTarget.Card)RouteTo(CardApproach());else if(Target==PlayTarget.D20)RouteTo(DieApproach());else RouteToBall();}
             else if(Fetch==FetchPhase.Returning)
             {
                 if(pet.Settings.Movement!=MovementMode.Restricted||pet.InsideRestriction(pet.Position))
