@@ -1,4 +1,15 @@
-# Vpet 1.6.3
+# Vpet 1.7.0
+
+- Hover over a stopped D20 to show its current value in the pet's speech bubble. Moving away restores the usual reaction or game announcement; Settings retains its pause indicator.
+- Left-drag the ball or D20 to move it inside the play zone. Right-drag to aim and release to launch along the red arrow. Simple left-clicks still bounce the ball or roll the die.
+- Label fences above their top-left corners: Restricted Area for the separate red fence and Play Zone for the blue shared/toy fence. Labels follow movement, resizing, visibility, and window location.
+- Add Clean Up Toys directly below Display Play Zone in the chest menu. It removes every toy and cancels active play while leaving the chest and fence available.
+- Clicking a face-up card now only flips it face down. Click again to call the pet for another game. During spontaneous play, the pet approaches first, turns a revealed card face down, then starts its round.
+- Give user-started card games a 30-second decision window after the pet announces its card. If no choice is made, clear the announcement and have the pet move away before resuming its saved movement rules. Settings and other movement pauses suspend this timer.
+- Always flip the coin upward, even when its animation crosses the fence or screen edge.
+- Move Check for Updates below the final separator, immediately above Close Vpet.
+
+## Vpet 1.6.3
 
 - Display A instead of 1 for all four Ace cards, both on card faces and in card-value speech bubbles. Ace remains the lowest rank in High/Low.
 - During spontaneous D20 play, have the pet walk to a clear position beside the die before launching it. It then watches the roll, announces the result, and resumes its normal movement rules. Moving the play zone updates the visit, and removing the die or picking up the pet cancels it.
