@@ -1,4 +1,16 @@
-# Vpet 1.5.4
+# Vpet 1.6.0
+
+- Add Coin, Card, and D20 toys to the chest. Coin visits include a quarter-second pause, half-second shake, airborne flip, and Heads/Tails result using the supplied artwork. Pull and release the D20 to roll and ricochet; the pet watches without chasing and announces its final 1–20 result.
+- Play High/Low with the card: the pet announces a card, then choose High on the top half or Low on the bottom. Correct guesses show Love, incorrect guesses show Sad, and equal ranks show Question. Each round resets all 52 cards and excludes the announced exact card from the flip. Pets can also choose and play these games on their own.
+- Keep card, coin, and die announcements separate from the eight customizable reactions. Called cards remain in the speech bubble until a choice is made. Picking up the pet or closing/removing the toy cancels its game.
+- Add Sound Setting at the top of the triangle menu, with a volume slider, Test sound, Save, and Cancel. The saved volume applies to your taps and the pet's replies; testing does not save or add a remembered tap.
+- Add independent Animation speed controls in Tweak and Complete, from 0.25x to 3x, with 1x as the default. Changes play immediately and survive project saving, export, and use by the pet. Older projects retain their original speed.
+- Change random reaction intervals to Often: 15–30 seconds, Sometimes: 30–60 seconds, and Rarely: 90–120 seconds.
+- Replace the restricted circle and radius settings with a rectangular fence. Drag its plus control to move it and its edges or corners to resize it. It stays below the pet and remains active while hidden.
+- Add an Advanced tab with Sync Play Zone with Restricted Area enabled by default. Restricted movement uses the play-zone fence, and both display toggles control that shared fence, even with the chest closed. Disable sync to use separate saved fences.
+- Make settings resizable with wrapping text, controls, and vertical scrolling. Remove the Legacy 5 x 10 option from Sprite settings; use Sprite Maker to turn PNG sheets into custom sprite packages.
+
+## Vpet 1.5.4
 
 - Move Tweak and Complete to the bottom right of Sprite Maker, with How to Guide immediately to its left. Remove Back to Sprite Maker from the Tweak and Complete footer; close that window to return to the editor.
 - Make the hollow center of the triangle toy clickable, including right-clicking to open its sound menu. Simplify the sound names to Chime, Honk, and Drum; Chime remains the default.
