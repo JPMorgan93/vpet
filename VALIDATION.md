@@ -6,6 +6,8 @@
 
 79 native toy-window checks, 131 expanded settings/game checks, and 65 updater-window checks passed. Actual mouse messages verify left-drag positioning without an arrow, right-drag aiming and launching, the D20 hover speech bubble and removal on pointer exit, face-up versus face-down card clicks, toy cleanup and unchecked menu items, and both menu orders. Existing shared/independent fence controls, sound volume, animation speed, responsive settings, and updater dialogs remain covered. The expanded suite now drains the initial Shown event before stopping its timer and centers test fences independently of the user's cursor position. Fence labels and colors were visually inspected.
 
+The 1.7.0 EXE installer passed the isolated installation/update test: supplied artwork and shortcut icons matched, destination and shortcut choices were preserved, skipped-release notes survived consecutive upgrades, legacy update entry points skipped the setup wizard, and completion relaunched the installed app through its smoke test. Cleanup removed the test installation and its shortcuts. The personal installation and preferences were unchanged.
+
 ## Version 1.6.3
 
 4,474 automated assertions passed. New checks cover Ace labels and unchanged low-rank comparisons in all four suits; autonomous D20 visits in every movement mode with walking speed zero; no launch before arrival or while settings pause the visit; a clear adjacent launch position; stationary watching and result announcement; return to saved restrictions; rerouting after moving the play zone or disconnecting its display; and cancellation or interruption by user launches, pet dragging, and toy removal.
