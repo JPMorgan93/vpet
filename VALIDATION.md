@@ -1,5 +1,11 @@
 # Vpet validation
 
+## Version 1.6.3
+
+4,474 automated assertions passed. New checks cover Ace labels and unchanged low-rank comparisons in all four suits; autonomous D20 visits in every movement mode with walking speed zero; no launch before arrival or while settings pause the visit; a clear adjacent launch position; stationary watching and result announcement; return to saved restrictions; rerouting after moving the play zone or disconnecting its display; and cancellation or interruption by user launches, pet dragging, and toy removal.
+
+110 native settings/game UI checks passed, including the existing card and D20 mouse controls. The four Ace faces and their matching speech-bubble emotes were visually inspected.
+
 ## Version 1.6.2
 
 4,429 automated assertions passed. Coin and card spacing checks cover screen centers and corners with small, default, and maximum-size sprite frames at 100%, 150%, and 200% scaling. Original-size D20 containment and rolling remain covered. Pixel comparisons verify every die value from 1–20 is visible and does not paint over face lines at multiple scales and rotation angles; contact sheets were inspected at normal and enlarged scale.

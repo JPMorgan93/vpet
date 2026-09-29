@@ -108,7 +108,7 @@ announces Heads or Tails. The coin itself has no face values.
 Click Card: the pet stands beside it and announces a card until you choose High (top half)
 or Low (bottom half). The flipped card excludes that exact announced card.
 Correct guesses show Love; incorrect guesses show Sad; equal ranks show Question.
-1 is lowest, followed by 2-10, J, Q, K. Suits do not affect rank. All 52 cards
+Ace (A) is lowest, followed by 2-10, J, Q, K. Suits do not affect rank. All 52 cards
 reset each round. Click the revealed card to play again. Drag Coin or Card
 to reposition it. The pet chooses High or Low randomly during autonomous play.
 The D20 uses its original size, with smaller numbers inside its central face
@@ -117,6 +117,9 @@ or click for a random roll.
 It spins and ricochets inside the fence. The pet watches without chasing, then
 announces a number from 1 to 20 when it stops. Game announcements are special
 emotes, excluded from the default reaction/customization list.
+When choosing the D20 for spontaneous play, the pet first walks beside the die,
+then launches it, watches the roll, and announces the result. Your clicks and
+pulls still launch it immediately while the pet watches from its current spot.
 
 Pets also visit available toys on a randomized 60-120 second schedule. Toy visits
 can temporarily leave Static or restricted movement, then restore normal rules.

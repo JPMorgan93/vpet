@@ -1,4 +1,10 @@
-# Vpet 1.6.2
+# Vpet 1.6.3
+
+- Display A instead of 1 for all four Ace cards, both on card faces and in card-value speech bubbles. Ace remains the lowest rank in High/Low.
+- During spontaneous D20 play, have the pet walk to a clear position beside the die before launching it. It then watches the roll, announces the result, and resumes its normal movement rules. Moving the play zone updates the visit, and removing the die or picking up the pet cancels it.
+- Keep user-triggered D20 rolls immediate: clicking or pulling the die makes the pet watch from its current position.
+
+## Vpet 1.6.2
 
 - Have the pet stand beside the coin using the same spacing as the card. Keep the full sprite clear of the toy and inside the screen, including custom sprites, screen edges, and repositioned coins.
 - Return the D20 to its original size, with matching fence clearance, rolling rotation, and launch arrow. Make its numbers smaller and fit them inside the central face so double-digit values do not overlap the die's lines.
