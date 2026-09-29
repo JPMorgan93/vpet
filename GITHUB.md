@@ -20,7 +20,11 @@ Local tasks **Vpet: Build and test** and **Vpet: Build installer** are also avai
 
 ## Make a public update
 
-1. Increase `version` in `release.json` (for example, `1.1.0` to `1.1.1`) and update `CHANGELOG.md`.
+Use a **patch increment (0.0.1)** for adjustments, fixes, and tweaks to existing features, tools, or toys. For example, `1.7.0` becomes `1.7.1`.
+
+A **minor increment (0.1.0)** is only for additions of new features, tools, or toys, and requires the owner's explicit version choice. Once the implementation is ready for review, explain the additions and ask whether to release as the next minor version (for example, `1.8.0`) or the next patch version (`1.7.1`). Wait for the answer before applying a minor increment or publishing it. Implementing a new feature does not automatically authorize a minor release; use a patch if the owner chooses it. This policy is also recorded in `AGENTS.md`.
+
+1. Select the version using the policy above, then update `version` in `release.json` and `CHANGELOG.md`.
 2. Save/push to `test`; verify the Actions run and test its installer.
 3. Open a pull request from `test` to **main**, review it, and merge when ready.
 4. The main workflow builds/tests that exact commit, uploads the installer and `SHA256SUMS.txt` to a draft release, then publishes it as the latest stable release.

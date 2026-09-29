@@ -26,7 +26,7 @@ This compiles to `bin/release`, runs the existing automated suite, builds the in
 
 The build tool used for this release is Inno Setup 6.4.3, downloaded from its official GitHub release. Its installer Authenticode signature was verified as valid, with publisher Pyrsys B.V. The tool was installed under `.tools/InnoSetup` for the current user; it is not bundled with Vpet.
 
-For future versions, update `release.json` and the first section of `CHANGELOG.md`. The build checks that their version numbers match, embeds that section as the app's update description, and supplies the same description to GitHub Releases. The app metadata, generated manifest, settings title, and installer version derive from that single version value. Keep the installer AppId unchanged. Merge a tested candidate from `test` to `main` to publish it.
+For future versions, follow the version policy in `GITHUB.md`: use patch increments for existing-feature adjustments; minor increments are reserved for new features, tools, or toys and require the owner to explicitly choose minor versus patch. Then update `release.json` and the first section of `CHANGELOG.md`. The build checks that their version numbers match, embeds that section as the app's update description, and supplies the same description to GitHub Releases. The app metadata, generated manifest, settings title, and installer version derive from that single version value. Keep the installer AppId unchanged. Merge a tested candidate from `test` to `main` to publish it.
 
 ## Original 1.0.0 installer validation on 2026-09-26
 
