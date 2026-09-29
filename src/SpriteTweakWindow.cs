@@ -40,7 +40,8 @@ namespace Vpet
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,0);
             for(int i=0;i<cycles.Length;i++)if(project.Enabled(i)&&project.Slots(i).Length>0){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});choices.Controls.Add(cycles[i]);}
-            var previewControls=new TableLayoutPanel{Dock=DockStyle.Fill,AutoSize=true,ColumnCount=1};previewControls.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            var previewControls=new TableLayoutPanel{Dock=DockStyle.Fill,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=1,RowCount=2};previewControls.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            previewControls.RowStyles.Add(new RowStyle(SizeType.AutoSize));previewControls.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             previewControls.Controls.Add(zoom,0,0);var speedControls=MakerUi.Flow();speedControls.Controls.Add(speedLabel);speedControls.Controls.Add(animationSpeed);
             speedControls.Controls.Add(MakerUi.Button("Reset to 1x",delegate{animationSpeed.Value=100;}));previewControls.Controls.Add(speedControls,0,1);root.Controls.Add(previewControls,0,1);
             animationSpeed.ValueChanged+=delegate

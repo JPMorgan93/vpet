@@ -75,10 +75,11 @@ namespace Vpet
                             {
                                 settings.SelectTab(tab);Application.DoEvents();var page=tabs.TabPages[tab];
                                 Check(!page.HorizontalScroll.Visible,"Settings tab fits horizontally at width "+width+": "+page.Text);
+                                if(width==550)CaptureForm(settings,"settings-responsive-"+tab);
                                 foreach(var label in Descendants(page).OfType<Label>().Where(l=>l.Visible&&!string.IsNullOrEmpty(l.Text)))
                                 {
                                     var needed=TextRenderer.MeasureText(label.Text,label.Font,new Size(Math.Max(1,label.ClientSize.Width),int.MaxValue),TextFormatFlags.WordBreak|TextFormatFlags.NoPrefix);
-                                    Check(label.Height+5>=needed.Height,"Settings label has room for all text: "+label.Text.Substring(0,Math.Min(35,label.Text.Length)));
+                                    Check(label.Height+5>=needed.Height,"Settings label has room for all text: "+label.Text.Substring(0,Math.Min(35,label.Text.Length))+" ("+label.Size+" vs "+needed+")");
                                 }
                                 if(width==550)CaptureForm(settings,"settings-responsive-"+tab);
                             }
