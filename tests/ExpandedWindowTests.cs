@@ -50,6 +50,7 @@ namespace Vpet
                     var windows=pet.Toys;var toys=windows.Model;windows.SetVisible(true);
                     foreach(string toy in new[]{"Coin","Card","D20","Triangle"})Item(windows.Menu,toy).PerformClick();windows.Update();Application.DoEvents();
                     Check(windows.Coin.Visible&&windows.Card.Visible&&windows.Die.Visible,"Chest toggles show all three new native toy windows");
+                    Check(windows.Die.Width==(int)Math.Ceiling(92*toys.Scale)&&windows.Die.Height==(int)Math.Ceiling(92*toys.Scale),"Native D20 window uses twice the original width and height");
                     Check(windows.Menu.Items[windows.Menu.Items.Count-2].Text=="Help Messages"&&windows.Menu.Items[windows.Menu.Items.Count-1].Text=="Close Toy Chest","New toys retain the help and close footer");
                     Item(windows.TriangleMenu,"Sound Setting").PerformClick();var sound=MakerField<ToySoundWindow>(windows,"soundWindow");
                     Check(sound.Visible&&windows.Busy&&!pet.ShowPause,"Sound Setting opens the volume dialog without the settings pause emote");
@@ -57,6 +58,8 @@ namespace Vpet
                     FindButton(sound,"Save").PerformClick();Check(toys.Settings.Volume==.42f&&Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Toys.Volume==.42f,"Saved instrument volume persists through the actual menu");
                     var point=Point.Round(toys.Coin);ToyMouse(windows.Coin,0x201,point);ToyMouse(windows.Coin,0x202,point);Check(toys.Target==PlayTarget.Coin&&pet.Model.Playing,"Native coin click starts a visit");
                     point=Point.Round(toys.Card);ToyMouse(windows.Card,0x201,point);ToyMouse(windows.Card,0x202,point);double now=0;Until(toys,pet.Model,ref now,()=>toys.WaitingForCardChoice);
+                    typeof(PetWindow).GetMethod("Render",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(pet,null);windows.Update();Application.DoEvents();
+                    Check(Native.WindowFromPoint(new Native.POINT(point.X,point.Y-12))==windows.Card.Handle&&Native.WindowFromPoint(new Native.POINT(point.X,point.Y+12))==windows.Card.Handle,"Both card choices remain directly clickable while the pet stands beside it");
                     var high=new Point(point.X,point.Y-12);ToyMouse(windows.Card,0x201,high);ToyMouse(windows.Card,0x202,high);Check(toys.ChoiceHigh==true&&toys.Fetch==FetchPhase.Flipping,"Top half of the native card chooses High");
                     toys.PressCard(now);Until(toys,pet.Model,ref now,()=>toys.WaitingForCardChoice);var low=new Point(point.X,point.Y+12);ToyMouse(windows.Card,0x201,low);ToyMouse(windows.Card,0x202,low);Check(toys.ChoiceHigh==false,"Bottom half of the native card chooses Low");
                     point=Point.Round(toys.Die);ToyMouse(windows.Die,0x201,point);ToyMouse(windows.Die,0x200,new Point(point.X+50,point.Y-25));Check(windows.Arrow.Visible,"Pulling the D20 shows the red launch arrow");ToyMouse(windows.Die,0x202,Cursor.Position);

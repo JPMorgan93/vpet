@@ -10,7 +10,7 @@ namespace Vpet
     internal static partial class Tests
     {
         static void ExpandedFeatures()
-        {SoundVolumes();AnimationSpeeds();RectangleFences();NewToyGames();GameInterruptions();}
+        {SoundVolumes();AnimationSpeeds();RectangleFences();NewToyGames();GameInterruptions();ToyPresentation();}
         static void SoundVolumes()
         {
             foreach(TriangleSound sound in Enum.GetValues(typeof(TriangleSound)))
