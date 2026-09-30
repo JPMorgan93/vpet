@@ -79,6 +79,8 @@ namespace Vpet
     internal class LayeredWindow : Form
     {
         readonly bool clickThrough;
+        // UpdateLayeredWindow moves/resizes the native window without refreshing WinForms' Bounds cache.
+        internal Rectangle PresentedBounds {get;private set;}
         public IntPtr CompanionHandle;
         public IntPtr OtherCompanionHandle;
         public IntPtr BehindWindow;
@@ -116,6 +118,7 @@ namespace Vpet
                 var blend=new Native.BLEND{Op=0,Flags=0,Alpha=255,Format=1};
                 if(!Native.UpdateLayeredWindow(Handle,screen,ref point,ref size,dc,ref origin,0,ref blend,2))
                     throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                PresentedBounds=new Rectangle(screenPosition,image.Size);
             }
             finally
             {

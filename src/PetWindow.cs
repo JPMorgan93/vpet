@@ -193,9 +193,9 @@ namespace Vpet
         void PositionReminder()
         {
             if(reminderBubble==null||Reminders.Pending==null)return;
-            var body=crossingWindow.Visible&&Model.Crossing!=null&&Model.Crossing.Progress>=.5f?crossingWindow.Bounds:Bounds;
-            var work=Screen.FromRectangle(body).WorkingArea;
-            reminderBubble.Place(body,bubble.Visible?bubble.Bounds:Rectangle.Empty,work,Model.Settings.Layer,Model.Current.Scale,this);
+            var body=crossingWindow.Visible&&Model.Crossing!=null&&Model.Crossing.Progress>=.5f?crossingWindow.PresentedBounds:PresentedBounds;
+            if(body.IsEmpty)return;
+            reminderBubble.Place(body,bubble.Visible?bubble.PresentedBounds:Rectangle.Empty,Model.Current.Work,Model.Settings.Layer,Model.Current.Scale,this);
         }
         public void OpenEmoteFolder(){Process.Start(new ProcessStartInfo(EmoteDirectory){UseShellExecute=true});}
         public void ApplyLayer()
@@ -318,8 +318,8 @@ namespace Vpet
             else phase+=dt*(Model.Walking?8*Model.ActualSpeed/(100*Model.Current.Scale):4);
             if(now>=nextRandom&&!Model.Dragging&&!Model.Shaking(now)&&!Model.Paused&&!Model.Playing&&now>=bubbleUntil)
                 ShowReaction(Reactions.Choose(Model.Settings.Personality,8+CustomEmotes.Count,random));
+            if(now>=nextReminderPoll){nextReminderPoll=now+1;CheckReminders();}
             Render();restrictedOverlay.Update();Toys.Update();
-            if(now>=nextReminderPoll){nextReminderPoll=now+1;CheckReminders();}PositionReminder();
             if(now>=nextSave){Save();nextSave=now+15;}
             if(smoke)SmokeStep(now);
             else if(now>=nextUpdateCheck&&!checkingUpdate&&!installingUpdate)CheckForUpdates(false);
@@ -480,6 +480,7 @@ namespace Vpet
                 }
             }
             else if(bubble.Visible)bubble.Hide();
+            PositionReminder();
             // Keep the lock even when other applications open, restore, or reorder themselves.
             EnforceUnderAll();if(bubble.Visible)bubble.EnforceUnderAll();if(crossingWindow.Visible)crossingWindow.EnforceUnderAll();
         }

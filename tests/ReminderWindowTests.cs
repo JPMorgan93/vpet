@@ -82,7 +82,7 @@ namespace Vpet
                     focus.Show();focus.Activate();Application.DoEvents();IntPtr before=Native.GetForegroundWindow();pet.CheckReminders();typeof(PetWindow).GetMethod("PositionReminder",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);Application.DoEvents();
                     var bubble=MakerField<ReminderBubble>(pet,"reminderBubble");Check(bubble.Visible&&bubble.Controls.OfType<RichTextBox>().Single().Text==r.Message,"Due reminder displays in its own clickable speech bubble");
                     Check(Native.GetForegroundWindow()==before,"Reminder popup does not steal keyboard focus");
-                    Check(!bubble.Bounds.IntersectsWith(pet.Bounds)&&Screen.FromRectangle(pet.Bounds).WorkingArea.Contains(bubble.Bounds),"Reminder sits beside pet within the screen");CaptureForm(bubble,"reminder-bubble");
+                    Check(!bubble.Bounds.IntersectsWith(OnScreen(pet))&&pet.Model.Current.Work.Contains(bubble.Bounds),"Reminder sits beside pet within the screen");CaptureForm(bubble,"reminder-bubble");
                     pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();typeof(PetWindow).GetMethod("PositionReminder",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);Application.DoEvents();
                     using(var capture=new Bitmap(bubble.Width,bubble.Height)){using(var g=Graphics.FromImage(capture))g.CopyFromScreen(bubble.Location,Point.Empty,bubble.Size);capture.Save(Path.Combine(artifacts,"reminder-bubble-screen.png"));}
                     foreach(float scale in new[]{1f,1.5f,2f})
