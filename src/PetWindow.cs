@@ -28,6 +28,12 @@ namespace Vpet
         readonly LayeredWindow crossingWindow=new LayeredWindow(false);
         readonly RestrictedAreaOverlay restrictedOverlay;
         internal readonly ToyWindows Toys;
+        internal readonly ReminderStore Reminders;
+        ReminderWindow reminderWindow;
+        ReminderBubble reminderBubble;
+        readonly ToyChime reminderChime=new ToyChime();
+        double nextReminderPoll;
+        internal Func<DateTime> ReminderNow=()=>DateTime.Now;
         readonly NotifyIcon tray=new NotifyIcon();
         readonly ContextMenuStrip menu=new ContextMenuStrip();
         readonly MenuDismissal menuDismissal;
@@ -63,6 +69,7 @@ namespace Vpet
             this.smoke=smoke;this.smokeOutput=smokeOutput;DataDirectory=dataDirectory;ReferencePath=referencePath;
             InstallAvailable=InstallUpdate;
             Directory.CreateDirectory(DataDirectory);Directory.CreateDirectory(EmoteDirectory);
+            Reminders=new ReminderStore(Path.Combine(DataDirectory,"reminders.json"));
             Replacements=new EmoteReplacements(Path.Combine(DataDirectory,"DefaultEmotes"));
             var prefs=Preferences.Load(Path.Combine(DataDirectory,"settings.json"));
             if(prefs.AutoUpdate)nextUpdateCheck=0;
@@ -138,6 +145,7 @@ namespace Vpet
             var toyChest=new ToolStripMenuItem("Display Toy Chest"){CheckOnClick=true};
             toyChest.Click+=delegate{Toys.SetVisible(toyChest.Checked);};menu.Items.Add(toyChest);
             menu.Items.Add("Upload Vpet…",null,delegate{OpenSettings(2);});
+            menu.Items.Add("Reminders",null,delegate{OpenReminders();});
             menu.Items.Add("Settings…",null,delegate{OpenSettings(0);});
             installUpdate=new ToolStripMenuItem("Install update…"){Visible=false};installUpdate.Click+=delegate{if(availableUpdate!=null)InstallAvailable(availableUpdate);};menu.Items.Add(installUpdate);
             menu.Items.Add(new ToolStripSeparator());menu.Items.Add("Check for Updates…",null,delegate{CheckForUpdates(true);});menu.Items.Add("Close Vpet",null,delegate{Close();});
@@ -157,6 +165,37 @@ namespace Vpet
         {
             if(!SettingsOpen){settingsWindow=new SettingsWindow(this);settingsWindow.FormClosed+=delegate{settingsWindow=null;Save();};settingsWindow.Show();}
             settingsWindow.SelectTab(tab);settingsWindow.Activate();
+        }
+        internal void OpenReminders()
+        {
+            if(reminderWindow==null||reminderWindow.IsDisposed)
+            {reminderWindow=new ReminderWindow(Reminders){Icon=Icon};reminderWindow.FormClosed+=delegate{reminderWindow=null;};reminderWindow.Show();}
+            reminderWindow.Activate();
+        }
+        internal void CheckReminders()
+        {
+            try{Reminders.Poll(ReminderNow());}
+            catch(Exception ex){Notify("Reminders could not be saved",ex.Message);nextReminderPoll=Now+60;return;}
+            var pending=Reminders.Pending;
+            if(pending==null){if(reminderBubble!=null)reminderBubble.Hide();return;}
+            if(reminderBubble==null)
+            {
+                reminderBubble=new ReminderBubble();reminderBubble.Dismissed+=delegate
+                {
+                    var current=Reminders.Pending;if(current==null)return;
+                    try{Reminders.Dismiss(current.Id);CheckReminders();PositionReminder();}
+                    catch(Exception ex){Notify("Reminder could not be dismissed",ex.Message);}
+                };
+            }
+            if(reminderBubble.ReminderKey!=pending.Id+":"+pending.Pending)
+            {reminderBubble.Display(pending);reminderChime.Play();}
+        }
+        void PositionReminder()
+        {
+            if(reminderBubble==null||Reminders.Pending==null)return;
+            var body=crossingWindow.Visible&&Model.Crossing!=null&&Model.Crossing.Progress>=.5f?crossingWindow.Bounds:Bounds;
+            var work=Screen.FromRectangle(body).WorkingArea;
+            reminderBubble.Place(body,bubble.Visible?bubble.Bounds:Rectangle.Empty,work,Model.Settings.Layer,Model.Current.Scale,this);
         }
         public void OpenEmoteFolder(){Process.Start(new ProcessStartInfo(EmoteDirectory){UseShellExecute=true});}
         public void ApplyLayer()
@@ -270,7 +309,8 @@ namespace Vpet
             bool hovering=IsHovered();
             if(hovering&&!Model.Hovered&&!buttonDown&&!menuOpen&&!SettingsOpen&&!Model.Playing&&now-lastHover>=5)
             {ShowReaction(Reactions.Hover(Model.Settings.Personality));lastHover=now;}
-            Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging||Toys.MovingFence;
+            Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging||Toys.MovingFence||
+                (reminderBubble!=null&&reminderBubble.Visible&&reminderBubble.Bounds.Contains(Cursor.Position));
             Toys.Model.BeforePetTick(now,dt);
             Model.Tick(now,dt);
             Toys.Model.AfterPetTick(now,dt);
@@ -279,6 +319,7 @@ namespace Vpet
             if(now>=nextRandom&&!Model.Dragging&&!Model.Shaking(now)&&!Model.Paused&&!Model.Playing&&now>=bubbleUntil)
                 ShowReaction(Reactions.Choose(Model.Settings.Personality,8+CustomEmotes.Count,random));
             Render();restrictedOverlay.Update();Toys.Update();
+            if(now>=nextReminderPoll){nextReminderPoll=now+1;CheckReminders();}PositionReminder();
             if(now>=nextSave){Save();nextSave=now+15;}
             if(smoke)SmokeStep(now);
             else if(now>=nextUpdateCheck&&!checkingUpdate&&!installingUpdate)CheckForUpdates(false);
@@ -326,6 +367,7 @@ namespace Vpet
         {
             if(update==null||installingUpdate||updateNotesOpen||closing)return;
             if(updateCheckWindow!=null)updateCheckWindow.Close();
+            if(reminderWindow!=null)reminderWindow.Close();if(reminderBubble!=null)reminderBubble.Close();reminderChime.Dispose();
             installingUpdate=true;installUpdate.Enabled=false;
             using(var progress=new UpdateProgressWindow(update.Version))
             {
