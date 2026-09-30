@@ -270,7 +270,7 @@ namespace Vpet
             bool hovering=IsHovered();
             if(hovering&&!Model.Hovered&&!buttonDown&&!menuOpen&&!SettingsOpen&&!Model.Playing&&now-lastHover>=5)
             {ShowReaction(Reactions.Hover(Model.Settings.Personality));lastHover=now;}
-            Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging||Toys.Busy;
+            Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging||Toys.MovingFence;
             Toys.Model.BeforePetTick(now,dt);
             Model.Tick(now,dt);
             Toys.Model.AfterPetTick(now,dt);

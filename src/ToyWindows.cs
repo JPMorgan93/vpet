@@ -27,6 +27,7 @@ namespace Vpet
         internal readonly LayeredWindow Help=new LayeredWindow(true){Text="Toy help"};
         internal readonly ContextMenuStrip Menu=new ContextMenuStrip();
         internal readonly ContextMenuStrip TriangleMenu=new ContextMenuStrip();
+        readonly ToolStripMenuItem cleanUp;
         readonly MenuDismissal dismissal,triangleDismissal;
         readonly Bitmap chestImage,ballImage,triangleImage;
         readonly ToyChime chime;
@@ -45,6 +46,7 @@ namespace Vpet
         LayerMode? layer;
         ToySoundWindow soundWindow;
         internal bool Busy {get{return captured!=null||Menu.Visible||TriangleMenu.Visible||soundWindow!=null;}}
+        internal bool MovingFence {get{return captured==Fence;}}
         internal IEnumerable<LayeredWindow> Windows {get{yield return Help;yield return Ball;yield return Triangle;yield return Coin;yield return Card;yield return Die;yield return Arrow;yield return FenceLabel;yield return Fence;yield return Chest;}}
         internal ToyAnnouncement CurrentAnnouncement
         {
@@ -73,12 +75,13 @@ namespace Vpet
             var display=new ToolStripMenuItem("Display Play Zone"){CheckOnClick=true};
             display.Click+=delegate{Model.Settings.DisplayZone=display.Checked;fenceKey="";Update();save();};
             Menu.Items.Add(display);
-            Menu.Items.Add("Clean Up Toys",null,delegate
+            cleanUp=new ToolStripMenuItem("Clean Up Toys"){Enabled=false};Menu.Items.Add(cleanUp);
+            cleanUp.Click+=delegate
             {
                 EndGesture(false);TriangleMenu.Close();if(soundWindow!=null)soundWindow.Close();Model.CleanUp(now());
                 foreach(ToolStripItem entry in Menu.Items){var item=entry as ToolStripMenuItem;if(item!=null&&item.Tag is PlayTarget)item.Checked=false;}
                 Update();save();
-            });
+            };
             var ball=new ToolStripMenuItem("Ball"){CheckOnClick=true,Tag=PlayTarget.Ball};
             ball.Click+=delegate{if(ball.Checked)Model.SpawnBall(now());else{EndGesture(false);Model.RemoveBall(now());}Update();};Menu.Items.Add(ball);
             var triangle=new ToolStripMenuItem("Triangle"){CheckOnClick=true,Tag=PlayTarget.Triangle};
@@ -91,7 +94,7 @@ namespace Vpet
             var help=new ToolStripMenuItem("Help Messages"){CheckOnClick=true,Checked=Model.Settings.HelpMessages};
             help.Click+=delegate{Model.Settings.HelpMessages=help.Checked;Update();save();};Menu.Items.Add(help);
             Menu.Items.Add("Close Toy Chest",null,delegate{SetVisible(false);});
-            Menu.Opening+=delegate{TriangleMenu.Close();display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;coin.Checked=Model.HasCoin;card.Checked=Model.HasCard;die.Checked=Model.HasDie;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
+            Menu.Opening+=delegate{TriangleMenu.Close();cleanUp.Enabled=HasToys;display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;coin.Checked=Model.HasCoin;card.Checked=Model.HasCard;die.Checked=Model.HasDie;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
             Chest.ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
             TriangleMenu.Items.Add("Sound Setting",null,delegate
             {
@@ -199,6 +202,7 @@ namespace Vpet
         public void Update()
         {
             if(disposed)return;
+            cleanUp.Enabled=HasToys;
             if(!Model.Settings.DisplayChest){foreach(var window in Windows)if(window!=Fence&&window!=FenceLabel)window.Hide();UpdateFence();KeepBelowPet();return;}
             KeepBelowPet();
             var chestPoint=new Point((int)Math.Round(Model.Chest.X-chestImage.Width/2f),(int)Math.Round(Model.Chest.Y-chestImage.Height/2f));
@@ -223,6 +227,7 @@ namespace Vpet
             UpdateHelp();
             KeepBelowPet();
         }
+        bool HasToys {get{return Model.HasBall||Model.HasTriangle||Model.HasCoin||Model.HasCard||Model.HasDie;}}
         void UpdateFence()
         {
             if(Model.Settings.DisplayZone&&(Model.Settings.DisplayChest||(pet.Settings.SyncPlayZone&&pet.Settings.Movement==MovementMode.Restricted)))

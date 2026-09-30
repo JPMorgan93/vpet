@@ -264,7 +264,8 @@ namespace Vpet
             AdvanceDie(dt);
             AdvanceCard(dt);
             ConsiderPlay(now);
-            if(Fetch==FetchPhase.None||Aiming||DieAiming||Editing||pet.Dragging)return;
+            // Re-route visits while toys are being moved; editing only delays the interaction at arrival.
+            if(Fetch==FetchPhase.None||pet.Dragging)return;
             if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(CoinApproach());else if(Target==PlayTarget.Card)RouteTo(CardApproach());else if(Target==PlayTarget.D20)RouteTo(DieApproach());else RouteToBall();}
             else if(Fetch==FetchPhase.Returning)
             {
