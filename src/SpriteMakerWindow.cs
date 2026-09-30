@@ -45,6 +45,7 @@ namespace Vpet
         readonly Label selectionHelp=MakerUi.Label("Upload a transparent PNG to begin.");
         readonly SpriteSheetView sheet=new SpriteSheetView();
         readonly SplitContainer editorSplit=new SplitContainer{Dock=DockStyle.Fill,Orientation=Orientation.Horizontal,SplitterWidth=8,FixedPanel=FixedPanel.Panel2,Size=new Size(960,350),Panel1MinSize=80,Panel2MinSize=45,SplitterDistance=242};
+        readonly SplitContainer workspaceSplit=new SplitContainer{Dock=DockStyle.Fill,Orientation=Orientation.Horizontal,SplitterWidth=8,FixedPanel=FixedPanel.Panel1,Size=new Size(960,660),Panel1MinSize=100,Panel2MinSize=190,SplitterDistance=310};
         readonly Button complete,loadLast,updateSheet;
         bool syncing;
         public string ExportedPath {get;private set;}
@@ -53,9 +54,10 @@ namespace Vpet
             this.preferences=preferences??new Preferences();this.savePreferences=savePreferences;
             Text="Vpet Sprite Maker";Font=new Font("Segoe UI",10);ClientSize=new Size(1000,800);MinimumSize=new Size(800,650);
             StartPosition=FormStartPosition.CenterParent;BackColor=Color.FromArgb(248,247,252);AutoScaleMode=AutoScaleMode.Dpi;
-            var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=7,Padding=new Padding(12)};
-            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            for(int i=0;i<5;i++)root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
+            var outer=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=2,Padding=new Padding(12)};outer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));outer.RowStyles.Add(new RowStyle(SizeType.Percent,100));outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(outer);outer.Controls.Add(workspaceSplit,0,0);
+            var controlScroll=new Panel{Dock=DockStyle.Fill,AutoScroll=true};workspaceSplit.Panel1.Controls.Add(controlScroll);
+            var root=new TableLayoutPanel{Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=1,RowCount=4};root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            for(int i=0;i<4;i++)root.RowStyles.Add(new RowStyle(SizeType.AutoSize));controlScroll.Controls.Add(root);
             var commands=MakerUi.Flow();root.Controls.Add(commands,0,0);
             commands.Controls.Add(MakerUi.Button("Upload Sprite Sheet",Upload));
             updateSheet=MakerUi.Button("Update Sprite Sheet",UpdateSheet);commands.Controls.Add(updateSheet);
@@ -63,7 +65,7 @@ namespace Vpet
             commands.Controls.Add(MakerUi.Button("Save Project As…",delegate{SaveProject(true);}));
             commands.Controls.Add(MakerUi.Button("Load Project",LoadProject));
             loadLast=MakerUi.Button("Load Last Project",delegate{OpenProject(this.preferences.LastSpriteProject);});commands.Controls.Add(loadLast);
-            var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;root.Controls.Add(bottom,0,6);
+            var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;outer.Controls.Add(bottom,0,1);
             complete=MakerUi.Button("Tweak and Complete",OpenTweak);bottom.Controls.Add(complete);
             bottom.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,false);}));
             var options=MakerUi.Flow();root.Controls.Add(options,0,1);
@@ -74,7 +76,9 @@ namespace Vpet
             var frameChoices=MakerUi.Flow();root.Controls.Add(frameChoices,0,3);
             for(int i=0;i<5;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);frameChoices.Controls.Add(slots[i]);}
             frameChoices.Controls.Add(MakerUi.Button("Set",delegate{SetFrame();}));frameChoices.Controls.Add(MakerUi.Button("Clear",delegate{ClearFrame();}));frameChoices.Controls.Add(selectionHelp);
-            root.Controls.Add(zoom,0,4);viewport.Controls.Add(sheet);editorSplit.Panel1.Controls.Add(viewport);editorSplit.Panel2.Controls.Add(status);root.Controls.Add(editorSplit,0,5);
+            var preview=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=2};preview.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));preview.RowStyles.Add(new RowStyle(SizeType.AutoSize));preview.RowStyles.Add(new RowStyle(SizeType.Percent,100));workspaceSplit.Panel2.Controls.Add(preview);
+            preview.Controls.Add(zoom,0,0);viewport.Controls.Add(sheet);editorSplit.Panel1.Controls.Add(viewport);editorSplit.Panel2.Controls.Add(status);preview.Controls.Add(editorSplit,0,1);
+            workspaceSplit.BackColor=editorSplit.BackColor=Color.FromArgb(213,204,226);
             sheet.DimensionsChanged+=delegate(int w,int h){SetDimensions(w,h);};
             frameWidth.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};frameHeight.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};
             diagonal.CheckedChanged+=delegate{if(Project!=null&&!syncing){Project.Data.Diagonals=diagonal.Checked;Dirty=true;if(!Project.Enabled(Cycle))Cycle=0;ChooseCycle(Cycle);}};

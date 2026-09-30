@@ -29,6 +29,7 @@ namespace Vpet
                 frequencies[0].SelectedIndex=1;frequencies[2].SelectedIndex=2;frequencies[4].SelectedIndex=5;MakerField<NumericUpDown>(window,"hour").Value=12;MakerField<ComboBox>(window,"period").SelectedIndex=0;
                 text.Text=new string('a',199)+"b";Check(text.MaxLength==200&&MakerField<Label>(window,"count").Text.StartsWith("200"),"Editor exposes 200-character limit and count");
                 CaptureForm(window,"reminder-recurring-editor");
+                File.WriteAllLines(Path.Combine(artifacts,"reminder-layout.txt"),Descendants(MakerField<TableLayoutPanel>(window,"recurring")).Select(c=>c.GetType().Name+" "+c.Text+" "+c.Bounds+" preferred "+c.GetPreferredSize(new Size(c.Width,0))).ToArray());
                 foreach(int width in new[]{500,850})
                 {
                     window.ClientSize=new Size(width,620);Application.DoEvents();
@@ -80,6 +81,8 @@ namespace Vpet
                     var bubble=MakerField<ReminderBubble>(pet,"reminderBubble");Check(bubble.Visible&&bubble.Controls.OfType<RichTextBox>().Single().Text==r.Message,"Due reminder displays in its own clickable speech bubble");
                     Check(Native.GetForegroundWindow()==before,"Reminder popup does not steal keyboard focus");
                     Check(!bubble.Bounds.IntersectsWith(pet.Bounds)&&Screen.FromRectangle(pet.Bounds).WorkingArea.Contains(bubble.Bounds),"Reminder sits beside pet within the screen");CaptureForm(bubble,"reminder-bubble");
+                    pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();typeof(PetWindow).GetMethod("PositionReminder",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);Application.DoEvents();
+                    using(var capture=new Bitmap(bubble.Width,bubble.Height)){using(var g=Graphics.FromImage(capture))g.CopyFromScreen(bubble.Location,Point.Empty,bubble.Size);capture.Save(Path.Combine(artifacts,"reminder-bubble-screen.png"));}
                     FindButton(bubble,"Dismiss").PerformClick();Check(!bubble.Visible&&pet.Reminders.Pending==null,"Dismiss closes and acknowledges only the due reminder");pet.CheckReminders();Check(!bubble.Visible,"Dismissed one-time alert stays closed");focus.Close();
                     }
                     pet.Close();
