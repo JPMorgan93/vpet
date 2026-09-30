@@ -6,6 +6,8 @@
 
 75 new reminder/adjustment UI checks, 119 existing Sprite Maker checks, 79 toy-window checks, and 131 expanded settings/game checks passed. Native tests cover Add/Edit/Save/Delete/Cancel, Sunday-first multi-day selection and independent frequencies, read-only saved messages, explicit AM/PM, responsive layouts, non-activating reminder bubbles, Dismiss, full-length messages at 100%, 150%, and 200% scale, cleanup availability for every toy, pet movement during toy/chest drags and both menus and instrument settings, both Sprite Maker dividers, and visible footer controls. Reminder and editor screenshots were reviewed, including an actual on-screen capture to verify rich-text links. Tests use separate data directories and do not alter the personal installation or reminders. The owner explicitly selected the 1.8.0 minor release for the new Reminders feature.
 
+The 1.8.0 installer passed the isolated installation/update test. It preserved destination, shortcut choices, unrelated files, and skipped-release history; installed artwork and icons matched; legacy updater entry points skipped setup questions; and completion relaunched the installed app through its smoke test. Cleanup removed the test installation and shortcuts while leaving the personal installation and preferences intact.
+
 ## Version 1.7.0
 
 4,550 automated assertions passed. New coverage checks manual face-up card turnover without starting a game; autonomous approach before turning the card down; the 30-second choice timeout, paused timers, and departure in every movement mode at speed zero; left-drag containment and cancellation for ball and die; upward coin flips beyond fence and display bounds; clearing all toys while retaining chest and fence; and red/blue fence artwork.
