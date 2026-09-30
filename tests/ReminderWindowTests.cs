@@ -29,7 +29,6 @@ namespace Vpet
                 frequencies[0].SelectedIndex=1;frequencies[2].SelectedIndex=2;frequencies[4].SelectedIndex=5;MakerField<NumericUpDown>(window,"hour").Value=12;MakerField<ComboBox>(window,"period").SelectedIndex=0;
                 text.Text=new string('a',199)+"b";Check(text.MaxLength==200&&MakerField<Label>(window,"count").Text.StartsWith("200"),"Editor exposes 200-character limit and count");
                 CaptureForm(window,"reminder-recurring-editor");
-                File.WriteAllLines(Path.Combine(artifacts,"reminder-layout.txt"),Descendants(MakerField<TableLayoutPanel>(window,"recurring")).Select(c=>c.GetType().Name+" "+c.Text+" "+c.Bounds+" preferred "+c.GetPreferredSize(new Size(c.Width,0))).ToArray());
                 foreach(int width in new[]{500,850})
                 {
                     window.ClientSize=new Size(width,620);Application.DoEvents();
@@ -50,7 +49,10 @@ namespace Vpet
                 maker.SetProject(MakerFixture(),null);maker.Show();Application.DoEvents();var split=MakerField<SplitContainer>(maker,"editorSplit");var viewport=MakerField<SpriteSheetViewport>(maker,"viewport");var sheet=MakerField<SpriteSheetView>(maker,"sheet");
                 float zoom=sheet.Zoom;var draft=sheet.Draft;int height=viewport.Height;split.SplitterDistance-=30;Application.DoEvents();
                 Check(viewport.Height<height&&sheet.Zoom==zoom&&sheet.Draft==draft,"Internal splitter resizes preview without changing zoom or selection");
-                maker.ClientSize=new Size(800,650);Application.DoEvents();Check(viewport.Height>=split.Panel1MinSize&&FindButton(maker,"Tweak and Complete").Bottom>0,"Preview retains usable minimum at smallest maker size");CaptureForm(maker,"maker-resizable-preview");maker.Dirty=false;maker.Close();
+                var workspace=MakerField<SplitContainer>(maker,"workspaceSplit");height=viewport.Height;workspace.SplitterDistance-=60;Application.DoEvents();Check(viewport.Height>height&&sheet.Zoom==zoom,"Upper divider gives the edit canvas more room without changing zoom");
+                maker.ClientSize=new Size(800,650);Application.DoEvents();Check(viewport.Height>=split.Panel1MinSize,"Preview retains usable minimum at smallest maker size");
+                foreach(string caption in new[]{"How to Guide","Tweak and Complete"}){var button=FindButton(maker,caption);Check(maker.ClientRectangle.Contains(new Rectangle(maker.PointToClient(button.PointToScreen(Point.Empty)),button.Size)),"Maker footer stays fully visible: "+caption);}
+                CaptureForm(maker,"maker-resizable-preview");maker.Dirty=false;maker.Close();
             }
             Point original=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();
             try
@@ -83,6 +85,12 @@ namespace Vpet
                     Check(!bubble.Bounds.IntersectsWith(pet.Bounds)&&Screen.FromRectangle(pet.Bounds).WorkingArea.Contains(bubble.Bounds),"Reminder sits beside pet within the screen");CaptureForm(bubble,"reminder-bubble");
                     pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();typeof(PetWindow).GetMethod("PositionReminder",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);Application.DoEvents();
                     using(var capture=new Bitmap(bubble.Width,bubble.Height)){using(var g=Graphics.FromImage(capture))g.CopyFromScreen(bubble.Location,Point.Empty,bubble.Size);capture.Save(Path.Combine(artifacts,"reminder-bubble-screen.png"));}
+                    foreach(float scale in new[]{1f,1.5f,2f})
+                    {
+                        var longReminder=r.Copy();longReminder.Message=new string('W',200);bubble.Display(longReminder);bubble.Place(pet.Bounds,Rectangle.Empty,work,LayerMode.OverEverything,scale,pet);Application.DoEvents();
+                        var body=bubble.Controls.OfType<RichTextBox>().Single();var end=body.GetPositionFromCharIndex(body.TextLength-1);
+                        Check(end.Y+body.Font.Height<=body.ClientSize.Height,"All 200 message characters fit the reminder bubble at scale "+scale);
+                    }
                     FindButton(bubble,"Dismiss").PerformClick();Check(!bubble.Visible&&pet.Reminders.Pending==null,"Dismiss closes and acknowledges only the due reminder");pet.CheckReminders();Check(!bubble.Visible,"Dismissed one-time alert stays closed");focus.Close();
                     }
                     pet.Close();
