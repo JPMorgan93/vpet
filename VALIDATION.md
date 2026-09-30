@@ -1,5 +1,11 @@
 # Vpet validation
 
+## Version 1.8.1
+
+5,850 automated assertions passed. The new native regression reproduced the original failure: the rendered pet was on a negative-origin display while the reminder used the unchanged WinForms bounds at (0, 0), 300 x 300. Layered windows now record the bounds successfully passed to UpdateLayeredWindow, and reminders use those coordinates in the pet's rendering pass.
+
+588 reminder-follow UI assertions and 76 existing reminder/adjustment UI checks passed. They compare reminder placement with native GetWindowRect results during real mouse drags, walking, all three window layers, named pets with emotes, screen corners, crossings in both directions across this PC's two connected displays, and release settling. Dismiss remains effective after subsequent renders. Tests use isolated preferences and reminders.
+
 ## Version 1.8.0
 
 5,850 automated assertions passed. Reminder checks use explicit calendar fixtures for every weekday/frequency; midnight/noon conversion; monthly and leap-year boundaries; skipped and repeated clock hours; inactive and completed reminders; missed-occurrence catch-up; restart persistence; queued and coalesced notifications; deletion; 200-character limits; atomic backups; unreadable-file preservation; and HTTP/HTTPS link validation. Movement checks cover continued visits while the ball, triangle, coin, or card is being moved.

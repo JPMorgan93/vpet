@@ -157,6 +157,8 @@ Messages allow up to 200 characters, including clickable HTTP/HTTPS links.
 Active is checked by default. Save stores the entry, Delete erases it, and
 Cancel discards unsaved edits.
 When due, the pet chimes and displays a separate reminder bubble with Dismiss.
+The bubble stays beside the pet and follows walking, dragging, and movement
+between displays, updating alongside the emote speech bubble.
 Hover over it to hold the pet still while reading or clicking. Dismiss closes
 that occurrence; recurring reminders remain scheduled. One-time reminders
 become Completed and do not repeat. Notifications do not steal keyboard focus.

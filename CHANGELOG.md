@@ -1,4 +1,9 @@
-# Vpet 1.8.0
+# Vpet 1.8.1
+
+- Keep the reminder speech bubble beside the pet and move it with the pet during walking, dragging, and travel between displays. Use the actual rendered sprite and emote positions instead of WinForms' outdated window bounds, which could leave reminders near the original window location.
+- Position reminders in the same rendering pass as the emote bubble, using the active display's working area so they remain visible at screen edges and after crossing to another display. Preserve window-location settings, message contents, and Dismiss behavior.
+
+## Vpet 1.8.0
 
 - Add Reminders directly above Settings in the pet menu. The Reminder Window provides Add Reminder and an inline editor above a read-only list, with an Edit button beside each saved entry.
 - Support One-Time reminders with a date and time, and Recurring reminders with multiple Sunday-through-Saturday days. Each day has its own Every, Every other, First, Second, Third, or Fourth weekday frequency. All times use explicit AM/PM controls and the PC's local time.

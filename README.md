@@ -1,10 +1,10 @@
-# Vpet 1.8.0
+# Vpet 1.8.1
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.8.0-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.8.1-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -158,7 +158,7 @@ Choose **Reminders**, directly above **Settings** in the pet's right-click menu,
 - Enter a message of up to **200 characters**. HTTP and HTTPS links are clickable in saved messages and reminder bubbles.
 - **Active** starts checked. **Save** adds or updates the locked entry. **Delete** erases the selected reminder; deleting an unsaved draft just closes it. **Cancel** discards unsaved edits.
 
-When due, Vpet plays a chime and shows a separate speech bubble beside the pet with a **Dismiss** button. It keeps the normal emote bubble available and does not steal keyboard focus. Hovering over the reminder holds the pet still for reading and clicking; it does not use the Settings pause emote. The bubble follows Window Location and remains inside the monitor's working area. Dismiss acknowledges that occurrence; recurring reminders can fire again at their next scheduled time. One-time reminders become Completed in the list and do not repeat.
+When due, Vpet plays a chime and shows a separate speech bubble beside the pet with a **Dismiss** button. It follows the pet while walking, dragging, or moving between displays, updating alongside the emote bubble. It keeps the normal emote bubble available and does not steal keyboard focus. Hovering over the reminder holds the pet still for reading and clicking; it does not use the Settings pause emote. The bubble follows Window Location and remains inside the active monitor's working area. Dismiss acknowledges that occurrence; recurring reminders can fire again at their next scheduled time. One-time reminders become Completed in the list and do not repeat.
 
 Vpet must be running to notify you. Reminders, undismissed messages, and firing history are saved across restarts. After sleep or downtime, Vpet shows the latest missed occurrence of each active reminder. Multiple reminders queue in due-time order, one bubble at a time. Repeated occurrences of an undismissed recurring reminder are combined to avoid a backlog. Saving edits restarts that reminder's schedule from the save time and clears its old pending message. Turning it inactive or deleting it also cancels its pending message. For reminders after signing in, enable **Load Vpet on PC startup** in Sprite settings.
 
