@@ -142,7 +142,7 @@ namespace Vpet
         public void CleanUp(double now)
         {Aiming=DieAiming=Editing=false;RemoveBall(now);RemoveTriangle(now);RemoveCoin(now);RemoveCard(now);RemoveDie(now);ClearAnnouncement();}
         public void DragBall(PointF point,double now)
-        {if(!HasBall)return;Ball=Geometry.Clamp(point,BallBounds);Velocity=PointF.Empty;Launcher=BallLauncher.None;bounceTime=1;if(Target==PlayTarget.Ball&&Fetch!=FetchPhase.None)FinishFetch(now);}
+        {if(!HasBall)return;Ball=Geometry.Clamp(point,BallBounds);Velocity=PointF.Empty;Launcher=BallLauncher.None;bounceTime=1;if(Target==PlayTarget.Ball&&Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Approaching)FinishFetch(now);}
         public void RemoveBall(double now)
         {HasBall=false;Aiming=false;Velocity=PointF.Empty;Launcher=BallLauncher.None;bounceTime=1;if(Target==PlayTarget.Ball)FinishFetch(now);}
         public void SpawnBall(double now)

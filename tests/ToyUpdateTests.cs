@@ -36,7 +36,7 @@ namespace Vpet
             }
             var model=Pet(MovementMode.Static);var games=Toys(model);games.SpawnDie();games.SpawnCoin();games.SpawnCard();games.SpawnTriangle();double time=0;
             games.LaunchPull(new PointF(40,20),time);games.DragBall(new PointF(-10000,10000),time);
-            Check(!games.Rolling&&games.Launcher==BallLauncher.None&&!model.Playing&&ToyModel.ContainsInclusive(games.BallBounds,games.Ball),"Moving the ball clamps it and cancels its active launch/fetch");
+            Check(!games.Rolling&&games.Launcher==BallLauncher.None&&model.Playing&&games.Fetch==FetchPhase.Approaching&&ToyModel.ContainsInclusive(games.BallBounds,games.Ball),"Moving the ball clamps it and stops rolling while preserving a pet already approaching it");
             games.RollDie(time);games.DragDie(new PointF(10000,-10000),time);
             Check(!games.DieRolling&&!model.Playing&&ToyModel.ContainsInclusive(games.DieBounds,games.Die),"Moving the D20 clamps it and ends its roll without launching");
             games.MoveZone(new PointF(240,160));games.DragGame(PlayTarget.Coin,new PointF(games.Coin.X,games.CoinBounds.Top));games.PressCoin(time);

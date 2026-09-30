@@ -108,7 +108,7 @@ namespace Vpet
             if(pet.BeginToyDeparture())Fetch=FetchPhase.Leaving;else FinishFetch(now);
         }
         public void DragDie(PointF point,double now)
-        {if(!HasDie)return;Die=Geometry.Clamp(point,DieBounds);DieVelocity=PointF.Empty;if(Target==PlayTarget.D20&&Fetch!=FetchPhase.None)FinishFetch(now);}
+        {if(!HasDie)return;Die=Geometry.Clamp(point,DieBounds);DieVelocity=PointF.Empty;if(Target==PlayTarget.D20&&Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Approaching)FinishFetch(now);}
         PointF CoinApproach(){return BesideToy(Coin,23*Scale,23*Scale);}
         PointF CardApproach(){return BesideToy(Card,23*Scale,32*Scale);}
         PointF DieApproach(){return BesideToy(Die,DieRadius,DieRadius);}
