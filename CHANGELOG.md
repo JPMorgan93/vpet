@@ -1,4 +1,15 @@
-# Vpet 1.7.0
+# Vpet 1.8.0
+
+- Add Reminders directly above Settings in the pet menu. The Reminder Window provides Add Reminder and an inline editor above a read-only list, with an Edit button beside each saved entry.
+- Support One-Time reminders with a date and time, and Recurring reminders with multiple Sunday-through-Saturday days. Each day has its own Every, Every other, First, Second, Third, or Fourth weekday frequency. All times use explicit AM/PM controls and the PC's local time.
+- Save messages up to 200 characters with clickable web links. New reminders start active; Save, Delete, and Cancel manage entries. Every-other schedules begin with the week in which that day was selected.
+- Play a chime when a reminder is due and show a separate speech bubble beside the pet with Dismiss. Notifications preserve keyboard focus, follow Window Location, and remain visible until dismissed. Hovering holds the pet still for reading. One-time reminders become Completed; recurring reminders remain scheduled.
+- Preserve reminder schedules, pending messages, and firing history across restarts. Vpet must be running to notify; reopening or waking shows the latest missed occurrence of each reminder. Multiple reminders queue, and undismissed recurring occurrences are combined. Saves retain a backup and do not overwrite unreadable reminder files.
+- Grey out Clean Up Toys when no toys are present, and enable it when any toy is added.
+- Keep the pet moving while toys or the chest are dragged, or while the chest menu, triangle menu, or instrument sound settings are open. Moving a toy the pet is approaching updates its destination without pausing that visit.
+- Make Sprite Maker's display/edit area resizable within the window. Drag the divider above Preview zoom to resize it; upper controls scroll independently. A second divider adjusts the validation area. Zoom and frame mappings are preserved, and guide/completion buttons remain visible at the bottom.
+
+## Vpet 1.7.0
 
 - Hover over a stopped D20 to show its current value in the pet's speech bubble. Moving away restores the usual reaction or game announcement; Settings retains its pause indicator.
 - Left-drag the ball or D20 to move it inside the play zone. Right-drag to aim and release to launch along the red arrow. Simple left-clicks still bounce the ball or roll the die.
