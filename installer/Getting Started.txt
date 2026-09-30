@@ -48,6 +48,9 @@ The default is 1x. Moving its slider resumes playback immediately. Save Tweaks
 or Complete saves these speeds in the project and exported pet. Speed-enabled
 projects and sprites require Vpet 1.6.0 or later; older files play at 1x.
 Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
+In Sprite Maker, drag the divider above Preview zoom to resize the display/edit
+area inside the window. Upper controls scroll independently. A second divider
+below the sheet resizes its validation area. Zoom and frame mappings stay intact.
 Hold Ctrl and turn the mouse wheel to zoom around the pointer.
 Magic Tweak aligns each pose's lowest visible pixels to a shared ground point.
 Save .vpetproject files for editing; export .vpetsprite files for use in Vpet.
@@ -78,6 +81,7 @@ Right-click the chest > Display Play Zone to show or hide the fence. The fence
 still keeps toys inside when hidden. Toggle Ball to add or remove the ball.
 Clean Up Toys, directly below Display Play Zone, removes every toy and cancels
 active play while leaving the chest and fence available.
+It is greyed out when no toys are in the play space.
 Click the ball for three bounces, each half as high. Left-drag to move it inside
 the zone. Right-drag to aim, then release to launch along the red arrow.
 The ball ricochets off the fence and slows to a stop.
@@ -86,6 +90,8 @@ half a second, then returns it with random direction and strength without immedi
 Fetching temporarily overrides Static mode, zero speed and restricted roaming.
 Your saved settings remain intact; a restricted pet walks back inside its fence.
 Dragging the pet cancels play. Close Toy Chest in the chest menu puts away all toys.
+Moving toys or the chest, opening their menus, and changing sound settings do not
+pause the pet's motion. A pet approaching a moved toy keeps walking toward it.
 
 Help Messages stays directly above Close Toy Chest at the bottom of the menu.
 Toggle it for hints above the chest when hovering
@@ -137,3 +143,24 @@ can temporarily leave Static or restricted movement, then restore normal rules.
 A pause symbol appears only while Vpet settings are open. Toys and right-click
 menus do not trigger it. It is
 not a replaceable reaction. Try It Out previews temporarily replace this symbol.
+
+REMINDERS
+Right-click the pet > Reminders, directly above Settings, opens Reminder Window.
+Add Reminder opens an Edit Reminder box above the saved, read-only list.
+Use Edit on the left of a saved entry to change it.
+Choose One-Time for a date and time, or Recurring for days from Sun through Sat.
+Each selected day has its own frequency: Every, Every other, First, Second,
+Third, or Fourth weekday of the month. Every is the default. Every other uses
+the Sunday-Saturday week when that day was selected as its first week.
+All selected days share one time, with explicit AM/PM controls, in PC local time.
+Messages allow up to 200 characters, including clickable HTTP/HTTPS links.
+Active is checked by default. Save stores the entry, Delete erases it, and
+Cancel discards unsaved edits.
+When due, the pet chimes and displays a separate reminder bubble with Dismiss.
+Hover over it to hold the pet still while reading or clicking. Dismiss closes
+that occurrence; recurring reminders remain scheduled. One-time reminders
+become Completed and do not repeat. Notifications do not steal keyboard focus.
+Vpet must be running. After sleep or reopening, it shows each reminder's latest
+missed occurrence. Pending messages survive restart and queue one at a time.
+Saving edits restarts the schedule and clears the old pending message.
+Reminders are kept in reminders.json beside settings.json; saves retain a .bak.

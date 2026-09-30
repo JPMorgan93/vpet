@@ -2,6 +2,8 @@
 
 Open **Settings > Sprite > Open Sprite Maker**. **Tweak and Complete** sits at the bottom right, with **How to Guide** immediately to its left. The Tweak and Complete window uses the same footer arrangement with **Complete** and **How to Guide**.
 
+Resize the display/edit area inside Sprite Maker by dragging the horizontal divider above **Preview zoom**. The controls above it scroll independently when space is limited. Drag the second divider beneath the sheet to change the space reserved for validation messages. Both dividers preserve zoom, frame selections, and saved mappings; the guide and completion buttons stay at the bottom.
+
 ## Step 1 — Upload the sprite sheet
 
 Choose **Upload Sprite Sheet** and select a transparent PNG up to 4096 × 4096 pixels and 64 MiB. Sheets can use any arrangement. **Download current sprite sheet** in Sprite settings exports the active pet's PNG for editing; **Save default template** exports the original companion.

@@ -122,7 +122,7 @@ Right-click your pet and select **Display Toy Chest**. A chest and a blue dashed
 
 The zone fits inside one monitor's usable area, avoiding taskbars and gaps between screens. Move its center onto another monitor to move the play space there. It defaults to 480 × 320 pixels at 100% scaling; minimum dimensions expand to fit the full pet, and its maximum is the monitor's working area. Toy size follows the app's launch display scale. The chest, fence, and toys follow **Window Location**, stay below the pet, and never take keyboard focus. Empty transparent space passes clicks through.
 
-Right-click the chest for **Display Play Zone**, **Clean Up Toys**, toy toggles for **Ball**, **Triangle**, **Coin**, **Card**, and **D20**, followed by **Help Messages** and **Close Toy Chest**. Clean Up Toys removes all toys and cancels active play while leaving the chest and fence available. Toggle a toy off to remove it and cancel its active interaction. Hiding the fence keeps its boundaries active. Help Messages stays directly above Close Toy Chest at the bottom of the menu. It defaults on and displays hints above the chest only while hovering over the fence border/center or a toy; disable it to hide those hints. The fence uses a plus-shaped center control.
+Right-click the chest for **Display Play Zone**, **Clean Up Toys**, toy toggles for **Ball**, **Triangle**, **Coin**, **Card**, and **D20**, followed by **Help Messages** and **Close Toy Chest**. Clean Up Toys removes all toys and cancels active play while leaving the chest and fence available. It is greyed out when no toys are present and becomes available as soon as any toy is added. Toggle a toy off to remove it and cancel its active interaction. Hiding the fence keeps its boundaries active. Help Messages stays directly above Close Toy Chest at the bottom of the menu. It defaults on and displays hints above the chest only while hovering over the fence border/center or a toy; disable it to hide those hints. The fence uses a plus-shaped center control.
 
 Left-click the ball for three bounces, each reaching half the previous height. **Left-drag to reposition** it inside the fence; **right-drag to aim** in the opposite direction. Release the right button to launch along the solid red arrow; a longer pull increases power up to a limit. The ball reflects off the fence and slows to a stop. Pet return shots vary randomly in both direction and strength.
 
@@ -142,17 +142,34 @@ Click the face-down **Card** to start High/Low. The pet walks to a clear spot be
 
 **Left-drag the D20 to reposition** it inside the fence. **Right-drag and release** along its red arrow to launch it, or left-click for a random roll. Hover over the stopped die to show its current value in the pet's speech bubble; moving away restores the usual reaction or game announcement. It uses its original 46 × 46 pixel size at 100% scaling, including transparent margins. Small numbers fit inside the central face without overlapping its lines, including double digits. It spins, ricochets within the fence, and slows to a stop. The pet stops and faces the die without chasing, then announces its final **1–20** result. Card, coin, and die results are special announcements, excluded from random/customizable reactions just like the pause indicator.
 
-Available toys attract spontaneous play every **60–120 seconds**, chosen randomly after the previous action. The pet may return a ball, play a triangle phrase, flip a coin, play High/Low, or roll the D20. Before an autonomous D20 roll, the pet walks to a clear position beside it, then launches and watches the die. User clicks and pulls still launch it immediately. Toy visits temporarily override Static, speed 0, and restricted roaming just like user-triggered fetching; saved movement rules resume afterwards. Menus, settings, hovering and dragging pause the pet's actions.
+Available toys attract spontaneous play every **60–120 seconds**, chosen randomly after the previous action. The pet may return a ball, play a triangle phrase, flip a coin, play High/Low, or roll the D20. Before an autonomous D20 roll, the pet walks to a clear position beside it, then launches and watches the die. User clicks and pulls still launch it immediately. Toy visits temporarily override Static, speed 0, and restricted roaming just like user-triggered fetching; saved movement rules resume afterwards. Moving toys or the chest, opening the chest or triangle menus, and changing instrument sound settings keep the pet walking. Moving an approached toy updates the visit; interaction at arrival waits until it is released. The pet's own menu, Settings, hovering over or dragging the pet, and moving a fence still pause movement.
 
 Random reaction frequency is separate: **Often: 15–30 seconds**, **Sometimes: 30–60 seconds**, and **Rarely: 90–120 seconds**.
 
 A **pause symbol** appears in the speech bubble only while the Vpet settings window is open. Toy interactions and right-click menus do not trigger it. It is a built-in status indicator, excluded from replaceable reactions. Explicit **Try It Out** previews temporarily replace it, then the pause symbol returns.
+
+## Reminders
+
+Choose **Reminders**, directly above **Settings** in the pet's right-click menu, to open the **Reminder Window**. **Add Reminder** opens an **Edit Reminder** box above the saved list. Saved entries are read-only; use the **Edit** button on the left to load one into the editor.
+
+- **One-Time:** choose a date and time.
+- **Recurring:** select one or more days from **Sun–Sat**, then set each day's frequency: **Every**, **Every other**, or the **First**, **Second**, **Third**, or **Fourth** occurrence of that weekday in the month. Each day starts at Every. Every other uses the Sunday–Saturday week when that day was selected as its first week; editing an existing selected day retains its original week.
+- All times have explicit **AM/PM** controls and use the PC's local time. Every selected recurring day uses the reminder's common time.
+- Enter a message of up to **200 characters**. HTTP and HTTPS links are clickable in saved messages and reminder bubbles.
+- **Active** starts checked. **Save** adds or updates the locked entry. **Delete** erases the selected reminder; deleting an unsaved draft just closes it. **Cancel** discards unsaved edits.
+
+When due, Vpet plays a chime and shows a separate speech bubble beside the pet with a **Dismiss** button. It keeps the normal emote bubble available and does not steal keyboard focus. Hovering over the reminder holds the pet still for reading and clicking; it does not use the Settings pause emote. The bubble follows Window Location and remains inside the monitor's working area. Dismiss acknowledges that occurrence; recurring reminders can fire again at their next scheduled time. One-time reminders become Completed in the list and do not repeat.
+
+Vpet must be running to notify you. Reminders, undismissed messages, and firing history are saved across restarts. After sleep or downtime, Vpet shows the latest missed occurrence of each active reminder. Multiple reminders queue in due-time order, one bubble at a time. Repeated occurrences of an undismissed recurring reminder are combined to avoid a backlog. Saving edits restarts that reminder's schedule from the save time and clears its old pending message. Turning it inactive or deleting it also cancels its pending message. For reminders after signing in, enable **Load Vpet on PC startup** in Sprite settings.
+
+`bin/Vpet.Tests.exe --reminder-window-tests` checks reminder editing and notifications, toy motion during dragging/menus, cleanup availability, and Sprite Maker resizing using isolated data.
 
 ## Local storage
 
 Normal settings and imported assets live under `%LOCALAPPDATA%\VpetPrototype`:
 
 - `settings.json`: preferences and position.
+- `reminders.json`: reminder schedules, messages, firing history, and pending notifications. Successful saves keep the previous file as `reminders.json.bak`.
 - `pet.vpetsprite`: active custom sprite package; legacy `pet.png`: accepted custom sprite sheet, copied independently of the original upload.
 - `Emotes/`: live custom reactions.
 - `DefaultEmotes/`: replacements for the eight built-in reaction images.
