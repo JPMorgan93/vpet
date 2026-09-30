@@ -24,7 +24,7 @@ namespace Vpet
                 Check(MakerField<TableLayoutPanel>(window,"list").Controls.Count==1&&Descendants(MakerField<TableLayoutPanel>(window,"list")).OfType<RichTextBox>().All(t=>t.ReadOnly&&t.DetectUrls),"Saved reminder list is locked and detects hyperlinks");
                 FindButton(window,"Edit").PerformClick();Application.DoEvents();Check(text.Text==store.Items.Single().Message,"Edit restores the saved reminder above the list");
                 var kind=MakerField<ComboBox>(window,"kind");kind.SelectedIndex=1;var days=MakerField<CheckBox[]>(window,"days");days[0].Checked=true;days[2].Checked=true;days[4].Checked=true;Application.DoEvents();
-                var frequencies=MakerField<ComboBox[]>(window,"frequencies");Check(frequencies[0].Visible&&frequencies[2].Visible&&frequencies[4].Visible&&!frequencies[1].Visible,"Each selected day has its own visible frequency picker");
+                var frequencies=MakerField<ComboBox[]>(window,"frequencies");Check(frequencies[0].Visible&&frequencies[2].Visible&&frequencies[4].Visible&&frequencies[1].Parent==null,"Each selected day has its own visible frequency picker");
                 Check(days.Select(d=>d.Text).SequenceEqual(new[]{"Sun","Mon","Tue","Wed","Thu","Fri","Sat"})&&frequencies[2].SelectedIndex==0,"Days start Sunday and selected days default to Every");
                 frequencies[0].SelectedIndex=1;frequencies[2].SelectedIndex=2;frequencies[4].SelectedIndex=5;MakerField<NumericUpDown>(window,"hour").Value=12;MakerField<ComboBox>(window,"period").SelectedIndex=0;
                 text.Text=new string('a',199)+"b";Check(text.MaxLength==200&&MakerField<Label>(window,"count").Text.StartsWith("200"),"Editor exposes 200-character limit and count");
