@@ -38,6 +38,8 @@ namespace Vpet
                 {Native.EnableDpi();Application.EnableVisualStyles();ToyWindowsTest();Console.WriteLine("PASS: "+count+" toy chest native UI checks.");return 0;}
                 if(Array.IndexOf(args,"--reminder-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();ReminderWindows();Console.WriteLine("PASS: "+count+" reminder and adjustment UI checks.");return 0;}
+                if(Array.IndexOf(args,"--reminder-follow-tests")>=0)
+                {Native.EnableDpi();Application.EnableVisualStyles();ReminderFollowing();Console.WriteLine("PASS: "+count+" reminder follow UI checks.");return 0;}
                 if(Array.IndexOf(args,"--expanded-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();ExpandedWindows();Console.WriteLine("PASS: "+count+" expanded settings, animation, and game UI checks.");return 0;}
                 if(Array.IndexOf(args,"--maker-window-tests")>=0)
