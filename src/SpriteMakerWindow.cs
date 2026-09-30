@@ -79,6 +79,7 @@ namespace Vpet
             var preview=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=2};preview.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));preview.RowStyles.Add(new RowStyle(SizeType.AutoSize));preview.RowStyles.Add(new RowStyle(SizeType.Percent,100));workspaceSplit.Panel2.Controls.Add(preview);
             preview.Controls.Add(zoom,0,0);viewport.Controls.Add(sheet);editorSplit.Panel1.Controls.Add(viewport);editorSplit.Panel2.Controls.Add(status);preview.Controls.Add(editorSplit,0,1);
             workspaceSplit.BackColor=editorSplit.BackColor=Color.FromArgb(213,204,226);
+            workspaceSplit.Panel1.BackColor=workspaceSplit.Panel2.BackColor=BackColor;editorSplit.Panel2.BackColor=BackColor;
             sheet.DimensionsChanged+=delegate(int w,int h){SetDimensions(w,h);};
             frameWidth.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};frameHeight.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};
             diagonal.CheckedChanged+=delegate{if(Project!=null&&!syncing){Project.Data.Diagonals=diagonal.Checked;Dirty=true;if(!Project.Enabled(Cycle))Cycle=0;ChooseCycle(Cycle);}};

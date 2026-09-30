@@ -100,8 +100,12 @@ namespace Vpet
             // Detach persistent picklists before disposing their previous row containers.
             foreach(var combo in frequencies)if(combo.Parent!=null)combo.Parent.Controls.Remove(combo);
             foreach(Control row in frequencyRows.Controls.Cast<Control>().ToArray())row.Dispose();frequencyRows.Controls.Clear();frequencyRows.RowStyles.Clear();frequencyRows.RowCount=0;
+            frequencyRows.ColumnCount=2;frequencyRows.ColumnStyles.Clear();frequencyRows.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,100));frequencyRows.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             for(int i=0;i<7;i++)if(days[i].Checked)
-            {var row=MakerUi.Flow();row.Controls.Add(MakerUi.Label(((DayOfWeek)i).ToString()));row.Controls.Add(frequencies[i]);ReminderUi.Add(frequencyRows,row);}
+            {
+                int row=frequencyRows.RowCount++;frequencyRows.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                frequencyRows.Controls.Add(ReminderUi.Label(((DayOfWeek)i).ToString()),0,row);frequencies[i].Dock=DockStyle.Top;frequencies[i].Margin=new Padding(4,7,4,7);frequencyRows.Controls.Add(frequencies[i],1,row);
+            }
         }
         internal void SaveDraft()
         {

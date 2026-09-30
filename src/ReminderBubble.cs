@@ -76,6 +76,7 @@ namespace Vpet
                 Native.SetWindowPos(Handle,mode==LayerMode.OverEverything?new IntPtr(-1):new IntPtr(-2),0,0,0,0,0x213);
             }
             if(!Visible)Show();
+            if(mode==LayerMode.UnderAll)Native.SetWindowPos(Handle,Native.UnderAllTarget(Handle,IntPtr.Zero,IntPtr.Zero),0,0,0,0,0x213);
         }
         GraphicsPath Outline()
         {
