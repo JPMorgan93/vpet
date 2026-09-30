@@ -72,13 +72,17 @@ namespace Vpet
                     }
                     toys.Menu.Show(toys.Chest,new Point(3,3));Application.DoEvents();AssertPetWalks(pet,"toy chest menu");toys.Menu.Close();
                     toys.TriangleMenu.Show(toys.Triangle,new Point(3,3));Application.DoEvents();AssertPetWalks(pet,"triangle menu");toys.TriangleMenu.Close();
-                    Item(toys.TriangleMenu,"Sound Setting").PerformClick();Application.DoEvents();AssertPetWalks(pet,"triangle sound settings");MakerField<ToySoundWindow>(toys,"soundWindow").Close();
+                    Item(toys.TriangleMenu,"Sound Setting").PerformClick();Application.DoEvents();AssertPetWalks(pet,"triangle sound settings");MakerField<ToySoundWindow>(toys,"soundWindow").Close();Application.DoEvents();
                     pet.ReminderNow=()=>now.AddMinutes(5);var r=Reminder.New(now);r.Message="A reminder with a link: https://example.com. Dismiss when finished.";pet.Reminders.Save(r,now);
-                    IntPtr before=Native.GetForegroundWindow();pet.CheckReminders();typeof(PetWindow).GetMethod("PositionReminder",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);Application.DoEvents();
+                    using(var focus=new Form{Text="Reminder focus test",Size=new Size(220,120),StartPosition=FormStartPosition.Manual,Location=new Point(work.Right-230,work.Bottom-130)})
+                    {
+                    focus.Show();focus.Activate();Application.DoEvents();IntPtr before=Native.GetForegroundWindow();pet.CheckReminders();typeof(PetWindow).GetMethod("PositionReminder",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);Application.DoEvents();
                     var bubble=MakerField<ReminderBubble>(pet,"reminderBubble");Check(bubble.Visible&&bubble.Controls.OfType<RichTextBox>().Single().Text==r.Message,"Due reminder displays in its own clickable speech bubble");
                     Check(Native.GetForegroundWindow()==before,"Reminder popup does not steal keyboard focus");
                     Check(!bubble.Bounds.IntersectsWith(pet.Bounds)&&Screen.FromRectangle(pet.Bounds).WorkingArea.Contains(bubble.Bounds),"Reminder sits beside pet within the screen");CaptureForm(bubble,"reminder-bubble");
-                    FindButton(bubble,"Dismiss").PerformClick();Check(!bubble.Visible&&pet.Reminders.Pending==null,"Dismiss closes and acknowledges only the due reminder");pet.CheckReminders();Check(!bubble.Visible,"Dismissed one-time alert stays closed");pet.Close();
+                    FindButton(bubble,"Dismiss").PerformClick();Check(!bubble.Visible&&pet.Reminders.Pending==null,"Dismiss closes and acknowledges only the due reminder");pet.CheckReminders();Check(!bubble.Visible,"Dismissed one-time alert stays closed");focus.Close();
+                    }
+                    pet.Close();
                 }
             }
             finally{Cursor.Position=original;if(foreground!=IntPtr.Zero)Native.SetForegroundWindow(foreground);}

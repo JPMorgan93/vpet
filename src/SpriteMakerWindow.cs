@@ -10,7 +10,7 @@ namespace Vpet
     internal static class MakerUi
     {
         public static readonly Color Purple=Color.FromArgb(66,46,105);
-        public static FlowLayoutPanel Flow(){return new FlowLayoutPanel{Dock=DockStyle.Fill,AutoSize=true,WrapContents=true,Padding=new Padding(4)};}
+        public static FlowLayoutPanel Flow(){return new FlowLayoutPanel{Dock=DockStyle.Fill,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,WrapContents=true,Padding=new Padding(4)};}
         public static Button Button(string text,EventHandler click)
         {
             var b=new Button{Text=text,AutoSize=true,MinimumSize=new Size(90,34),Margin=new Padding(4),FlatStyle=FlatStyle.Flat,BackColor=Color.White};
@@ -54,6 +54,7 @@ namespace Vpet
             Text="Vpet Sprite Maker";Font=new Font("Segoe UI",10);ClientSize=new Size(1000,800);MinimumSize=new Size(800,650);
             StartPosition=FormStartPosition.CenterParent;BackColor=Color.FromArgb(248,247,252);AutoScaleMode=AutoScaleMode.Dpi;
             var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=7,Padding=new Padding(12)};
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             for(int i=0;i<5;i++)root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
             var commands=MakerUi.Flow();root.Controls.Add(commands,0,0);
             commands.Controls.Add(MakerUi.Button("Upload Sprite Sheet",Upload));
