@@ -132,8 +132,8 @@ namespace Vpet
                 g.Clear(Color.FromArgb(236,230,246));
                 foreach(int remaining in new[]{3,2,1,0})using(var image=PlateArtwork.Draw(remaining,1))
                 {
-                    Check(image.GetPixel(0,0).A==0&&image.GetPixel(48,74).A==255,"Plate state "+remaining+" keeps transparent surroundings and an opaque white rim");
-                    Check(image.GetPixel(60,40).A==(remaining==3?255:0),"First bite visibly removes the right food section");
+                    Check(image.Size==new Size(72,63)&&image.GetPixel(0,0).A==0&&image.GetPixel(36,55).A==255,"Plate state "+remaining+" is 75% size with transparent surroundings and an opaque white rim");
+                    Check(image.GetPixel(45,30).A==(remaining==3?255:0),"First bite visibly removes the right food section");
                     int x=(3-remaining)*110+7;g.DrawImageUnscaled(image,x,10);g.DrawString(remaining==0?"Empty":remaining+"/3 remaining",SystemFonts.DefaultFont,Brushes.Black,x,106);
                 }
                 preview.Save(Path.Combine(artifacts,"pudding-states.png"));
