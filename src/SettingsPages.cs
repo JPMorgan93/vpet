@@ -57,7 +57,7 @@ namespace Vpet
             Action describe=delegate
             {
                 var selected=pet.Model.Settings.Personality;string favorites=selected==Personality.Sweet?"Music, Love, and Question":selected==Personality.Sassy?"Anger, Fear, and Proud":"Question, Sad, and Disgust";
-                description.Text="Hover: "+Reactions.Names[Reactions.Hover(selected)]+". Pick up and drag: "+Reactions.Names[Reactions.Pickup(selected)]+". Click: Love.\nRandom reactions favor "+favorites+". All eight default emotes can appear randomly.";
+                description.Text="Hover: "+Reactions.Names[Reactions.Hover(selected)]+". Pick up and drag: "+Reactions.Names[Reactions.Pickup(selected)]+". Click: Love.\nRandom reactions favor "+favorites+". All nine default emotes can appear randomly.";
             };describe();personality.SelectedIndexChanged+=delegate{pet.Model.Settings.Personality=(Personality)personality.SelectedIndex;describe();pet.SettingsChanged(false);};
             Add(page,Copy("Random reactions",true));var frequency=Choice(new[]{"Rarely · 90–120 seconds","Sometimes · 30–60 seconds","Often · 15–30 seconds","Off"},(int)pet.Model.Settings.Frequency,330);Add(page,Row(frequency));
             frequency.SelectedIndexChanged+=delegate{pet.Model.Settings.Frequency=(Frequency)frequency.SelectedIndex;pet.SettingsChanged(true);};
@@ -107,7 +107,7 @@ namespace Vpet
                 e.Graphics.DrawImage(sprites.FrameAtPhase(walk,previewDirection.SelectedIndex,phase),new Rectangle((animationPreview.ClientSize.Width-w)/2,(animationPreview.ClientSize.Height-h)/2,w,h));
             };
             Add(page,Copy("Runtime sheet preview",true));sheetPreview=new PictureBox{Height=300,SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.FromArgb(233,228,242)};Add(page,sheetPreview);UpdateSheetPreview();
-            Add(page,Copy("Rows: idle up, down, side, up-diagonal, down-diagonal; then the five walking animations. Optional emotes follow: Music, Love, Question, Anger, Sad, Fear, Disgust, Proud. Downloaded directional artwork faces left."));
+            Add(page,Copy("Rows: idle up, down, side, up-diagonal, down-diagonal; then the five walking animations. Optional emotes follow: Music, Love, Question, Anger, Sad, Fear, Disgust, Proud, Hunger. Downloaded directional artwork faces left."));
             Add(page,Row(MakerUi.Button("Save default template…",delegate
             {
                 using(var dialog=new SaveFileDialog{Filter="PNG image|*.png",FileName="vpet-template.png"})if(dialog.ShowDialog(this)==DialogResult.OK)

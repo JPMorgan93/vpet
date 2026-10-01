@@ -56,7 +56,7 @@ namespace Vpet
             return (((int)Math.Floor(angle/90+.5))%4+4)%4*2;
         }
         public void SavePackage(string path)
-        {SpritePackage.Write(path,new SpriteManifest{Version=Speeds!=null?4:Counts.Length>10?3:2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts,CycleSpeeds=Speeds},Sheet);}
+        {SpritePackage.Write(path,new SpriteManifest{Version=Counts.Length>18?5:Speeds!=null?4:Counts.Length>10?3:2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts,CycleSpeeds=Speeds},Sheet);}
         public Bitmap EmoteFrame(int reaction,int index)
         {
             int row=SpriteProject.MovementCycles+reaction;

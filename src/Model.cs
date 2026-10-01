@@ -39,6 +39,7 @@ namespace Vpet
         [DataMember] public bool AutoUpdate;
         [DataMember] public string LastSpriteProject = "";
         [DataMember] public ToyPreferences Toys = new ToyPreferences();
+        [DataMember] public PlatePreferences Plate = new PlatePreferences();
 
         [OnDeserializing]
         void InitializeDefaults(StreamingContext context)
@@ -47,7 +48,7 @@ namespace Vpet
             RestrictedWidth=RestrictedHeight=float.NaN;SyncPlayZone=true;
             X=Y=AnchorX=AnchorY=float.NaN;Frequency=Frequency.Sometimes;
             PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;AutoUpdate=false;LastSpriteProject="";
-            Toys=new ToyPreferences();
+            Toys=new ToyPreferences();Plate=new PlatePreferences();
         }
 
         public void Validate()
@@ -64,6 +65,7 @@ namespace Vpet
             if(LastSpriteProject==null)LastSpriteProject="";
             if (!Enum.IsDefined(typeof(NameVisibility), NameDisplay)) NameDisplay=NameVisibility.Always;
             if(Toys==null)Toys=new ToyPreferences();Toys.Validate();
+            if(Plate==null)Plate=new PlatePreferences();Plate.Validate();
         }
         public static string CleanName(string name)
         {
@@ -377,13 +379,13 @@ namespace Vpet
 
     public static class Reactions
     {
-        public const int Love=1;
-        public static readonly string[] Names = { "Music", "Love", "Question", "Anger", "Sad", "Fear", "Disgust", "Proud" };
-        public static readonly int[] CodePoints = { 0x1F3B5,0x2665,0x2753,0x1F4A2,0x1F4A7,0x2757,0x1F300,0x1F3C6 };
+        public const int Love=1,Hunger=8;
+        public static readonly string[] Names = { "Music", "Love", "Question", "Anger", "Sad", "Fear", "Disgust", "Proud", "Hunger" };
+        public static readonly int[] CodePoints = { 0x1F3B5,0x2665,0x2753,0x1F4A2,0x1F4A7,0x2757,0x1F300,0x1F3C6,0x1F37D };
         public static string Emoji(int index)
         {
             // U+2665 has text presentation by default; VS16 requests its emoji presentation.
-            return char.ConvertFromUtf32(CodePoints[index])+(index==1?"\uFE0F":"");
+            return char.ConvertFromUtf32(CodePoints[index])+(index==Love||index==Hunger?"\uFE0F":"");
         }
         static readonly int[][] Priorities = { new[]{1,1,1,3,2,3,2,2}, new[]{3,3,2,1,2,1,2,1}, new[]{2,2,1,3,1,2,1,3} };
         public static int Weight(Personality p,int index) { int priority=index<8?Priorities[(int)p][index]:2; return priority==1?6:priority==2?3:1; }

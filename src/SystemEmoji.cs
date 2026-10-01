@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 namespace Vpet
 {
     // Render installed Windows emoji with DirectWrite + Direct2D's color-font flag.
-    // The white tile matches the bubble interior. Cache the eight immutable defaults.
+    // The white tile matches the bubble interior. Cache the immutable defaults.
     internal static class SystemEmoji
     {
-        static readonly Bitmap[] cache=new Bitmap[8];
+        static readonly Bitmap[] cache=new Bitmap[Reactions.Names.Length];
         public static Bitmap Image(int index)
         {
             if(cache[index]==null)cache[index]=Render(Reactions.Emoji(index));
