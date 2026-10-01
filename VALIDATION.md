@@ -1,5 +1,13 @@
 # Vpet validation
 
+## Pending release: Plate, Hunger, and menu adjustments
+
+6,033 automated assertions passed. New coverage exercises serving food in all movement modes with shared and independent fences, three one-eighth-second bites, portion rendering, restriction return, interruption, plate relocation, display crossings/disconnection, persistence, and coin flips while another toy is dragged even over the pet. Hunger tests cover the system emoji, replacement/restore, optional animation export, and migration of version 3/4 projects without losing their existing reaction mappings, sizes, offsets, or speeds. The pudding's four render states were visually inspected.
+
+425 native UI checks passed: 18 plate/Hunger, 121 Sprite Maker, 79 toy controls, 131 expanded settings/games, and 76 reminder/adjustment checks. These include native plate clicks and dragging, the new menus, optional Hunger controls, transparency, all three window layers, food above the pet, and Under All below application windows. Tests use isolated preferences.
+
+The candidate EXE installer built successfully. The isolated update test passed fresh installation, both updater entry points, preservation of shortcut choices and destination, supplied artwork/icon checks, skipped-version notes, completion/relaunch, and uninstall. It used a separate application ID and left the normal Vpet installation unchanged. The release number is awaiting the owner's minor-versus-patch choice.
+
 ## Version 1.8.1
 
 5,850 automated assertions passed. The new native regression reproduced the original failure: the rendered pet was on a negative-origin display while the reminder used the unchanged WinForms bounds at (0, 0), 300 x 300. Layered windows now record the bounds successfully passed to UpdateLayeredWindow, and reminders use those coordinates in the pet's rendering pass.

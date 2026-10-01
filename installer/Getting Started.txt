@@ -95,6 +95,10 @@ Moving toys or the chest, opening their menus, and changing sound settings do no
 pause the pet's motion. A pet approaching a moved toy keeps walking toward it.
 An airborne coin keeps flipping while other toys are dragged.
 
+Help Messages stays directly above Close Toy Chest at the bottom of the menu.
+Toggle it for hints above the chest when hovering
+over the fence border, its plus control, or a toy. Moving away hides the hint.
+
 PLATE AND FOOD
 Display Items is the first entry in the pet menu. Choose Plate to show or hide
 a white plate. Left-drag it anywhere on the desktop, independently of fences.
@@ -112,10 +116,6 @@ clear the food. Visibility, position and default food are saved, but the plate
 starts empty when Vpet restarts. Clean Up Toys does not remove the plate.
 Hunger uses the Windows U+1F37D emoji, can be replaced under Personality, and
 has an optional animation row in Sprite Maker alongside the other reactions.
-
-Help Messages stays directly above Close Toy Chest at the bottom of the menu.
-Toggle it for hints above the chest when hovering
-over the fence border, its plus control, or a toy. Moving away hides the hint.
 
 NEW SPRITE AND TOY CONTROLS
 Sprite Maker and Tweak and Complete both offer How to Guide with step-by-step
