@@ -53,6 +53,6 @@ Each animation is clipped before export. Smaller frames receive transparent padd
 
 ## File compatibility
 
-The Hunger update loads all existing version 1–4 projects and sprites. Opening an older project preserves every frame mapping, size, offset, and animation speed, and adds empty optional Hunger slots at 1× speed. New project saves and exports containing reaction animations use package version 5 and require the Hunger update or later. Movement-only exports still use version 2 without speed metadata, or version 4 with saved speeds. Older files without speed metadata continue at 1×.
+Vpet 1.9.0 loads all existing version 1–4 projects and sprites. Opening an older project preserves every frame mapping, size, offset, and animation speed, and adds empty optional Hunger slots at 1× speed. New project saves and exports containing reaction animations use package version 5 and require Vpet 1.9.0 or later. Movement-only exports still use version 2 without speed metadata, or version 4 with saved speeds. Older files without speed metadata continue at 1×.
 
 Previously installed legacy PNG pets remain supported. New PNG sheets go through Sprite Maker before use. New runtime atlases with emotes have nine additional rows in the reaction order above; older eight-reaction atlases still load. Downloaded PNGs carry artwork only: use Sprite Maker to select populated cells and restore frame counts and animation speeds before exporting a usable `.vpetsprite`.

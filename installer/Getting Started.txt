@@ -46,7 +46,7 @@ and final sprite. Projects retain the source art and your crop offsets.
 Animation speed controls each selected type independently, from 0.25x to 3x.
 The default is 1x. Moving its slider resumes playback immediately. Save Tweaks
 or Complete saves these speeds in the project and exported pet. New projects
-and reaction-enabled sprites require the Hunger update or later. Older files
+and reaction-enabled sprites require Vpet 1.9.0 or later. Older files
 keep every existing mapping, size, offset, and speed; Hunger starts empty at 1x.
 Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
 In Sprite Maker, drag the divider above Preview zoom to resize the display/edit
