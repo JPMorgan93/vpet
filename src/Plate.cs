@@ -25,8 +25,9 @@ namespace Vpet
         public int FoodRemaining {get;private set;}
         public bool PlateDragging;
         public bool HasPlate {get{return pet.Settings.Plate.Visible;}}
-        public PointF EatingPosition {get{return new PointF(PlatePosition.X,PlatePosition.Y-16*Scale);}}
-        public RectangleF PlateBounds {get{return new RectangleF(PlatePosition.X-48*Scale,PlatePosition.Y-66*Scale,96*Scale,84*Scale);}}
+        float PlateScale {get{return Scale*PlateArtwork.SizeMultiplier;}}
+        public PointF EatingPosition {get{return new PointF(PlatePosition.X,PlatePosition.Y-16*PlateScale);}}
+        public RectangleF PlateBounds {get{return new RectangleF(new PointF(PlatePosition.X-48*PlateScale,PlatePosition.Y-66*PlateScale),PlateArtwork.CanvasSize(Scale));}}
         void StorePlate(){pet.Settings.Plate.X=PlatePosition.X;pet.Settings.Plate.Y=PlatePosition.Y;}
         void PlacePlate(PointF requested)
         {
@@ -34,8 +35,9 @@ namespace Vpet
             foreach(var display in pet.Displays)
             {
                 var work=display.Work;
-                var allowed=RectangleF.FromLTRB(work.Left+48*Scale,work.Top+66*Scale,
-                    Math.Max(work.Left+48*Scale,work.Right-48*Scale),Math.Max(work.Top+66*Scale,work.Bottom-18*Scale));
+                var size=PlateArtwork.CanvasSize(Scale);
+                var allowed=RectangleF.FromLTRB(work.Left+48*PlateScale,work.Top+66*PlateScale,
+                    Math.Max(work.Left+48*PlateScale,work.Right-size.Width+48*PlateScale),Math.Max(work.Top+66*PlateScale,work.Bottom-size.Height+66*PlateScale));
                 var point=Geometry.Clamp(requested,allowed);float distance=Geometry.Distance(point,requested);
                 if(distance<score){best=display;result=point;score=distance;}
             }
@@ -159,10 +161,13 @@ namespace Vpet
 
     internal static class PlateArtwork
     {
+        internal const float SizeMultiplier=.75f;
+        internal static Size CanvasSize(float scale){return new Size((int)Math.Ceiling(96*scale*SizeMultiplier),(int)Math.Ceiling(84*scale*SizeMultiplier));}
         // Four states share exactly the same ground anchor; only the food is removed between bites.
         public static Bitmap Draw(int remaining,float scale)
         {
-            var image=new Bitmap((int)Math.Ceiling(96*scale),(int)Math.Ceiling(84*scale),PixelFormat.Format32bppArgb);
+            var size=CanvasSize(scale);scale*=SizeMultiplier;
+            var image=new Bitmap(size.Width,size.Height,PixelFormat.Format32bppArgb);
             using(var g=Graphics.FromImage(image))
             using(var rim=new Pen(Color.FromArgb(139,147,165),1.5f))
             {

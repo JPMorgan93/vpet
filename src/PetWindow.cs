@@ -153,6 +153,7 @@ namespace Vpet
             installUpdate=new ToolStripMenuItem("Install update…"){Visible=false};installUpdate.Click+=delegate{if(availableUpdate!=null)InstallAvailable(availableUpdate);};menu.Items.Add(installUpdate);
             menu.Items.Add("Settings…",null,delegate{OpenSettings(0);});
             menu.Items.Add(new ToolStripSeparator());menu.Items.Add("Reminders",null,delegate{OpenReminders();});
+            menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("Check for Updates…",null,delegate{CheckForUpdates(true);});menu.Items.Add("Close Vpet",null,delegate{Close();});
             menu.Opening+=delegate
             {

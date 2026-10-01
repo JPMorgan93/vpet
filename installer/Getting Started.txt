@@ -103,6 +103,7 @@ PLATE AND FOOD
 Display Items is the first entry in the pet menu. Choose Plate to show or hide
 a white plate. Left-drag it anywhere on the desktop, independently of fences.
 It follows Window Location and remains available when the chest is closed.
+The plate and pudding are 75% of their original size.
 Right-click the plate > Pudding to select the default food and serve it.
 Left-click an empty plate to serve the default again. Pudding has caramel,
 whipped cream and a strawberry, with whole, two-thirds and one-third portions.
@@ -165,8 +166,8 @@ menus do not trigger it. It is
 not a replaceable reaction. Try It Out previews temporarily replace this symbol.
 
 REMINDERS
-Right-click the pet > Reminders, directly above Check for Updates and below the
-separator following Settings, opens Reminder Window.
+Right-click the pet > Reminders, between Settings and Check for Updates with
+a separator on each side, opens Reminder Window.
 Add Reminder opens an Edit Reminder box above the saved, read-only list.
 Use Edit on the left of a saved entry to change it.
 Choose One-Time for a date and time, or Recurring for days from Sun through Sat.

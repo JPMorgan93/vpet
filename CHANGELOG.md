@@ -1,4 +1,9 @@
-# Vpet 1.9.0
+# Vpet 1.9.1
+
+- Reduce the plate and every pudding portion to 75% of their previous width and height. Adjust the pet's eating position and screen-edge limits to match the smaller artwork.
+- Add a separator between Reminders and Check for Updates in the pet's right-click menu.
+
+## Vpet 1.9.0
 
 - Add Display Items as the first pet-menu entry, with Toy Chest and the new Plate toggle. Move Reminders below the separator after Settings, directly above Check for Updates.
 - Add an independent white plate that follows Window Location and can be dragged around the desktop outside either fence. Its visibility, position, and default food are saved; it starts empty when Vpet restarts.
