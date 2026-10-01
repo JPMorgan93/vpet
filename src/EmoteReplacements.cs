@@ -8,14 +8,14 @@ namespace Vpet
     public sealed class EmoteReplacements : IDisposable
     {
         readonly string directory;
-        readonly Bitmap[] images=new Bitmap[8];
+        readonly Bitmap[] images=new Bitmap[Reactions.Names.Length];
         public EmoteReplacements(string directory)
         {
             this.directory=directory;Directory.CreateDirectory(directory);
-            for(int i=0;i<8;i++)if(File.Exists(PathFor(i)))
+            for(int i=0;i<images.Length;i++)if(File.Exists(PathFor(i)))
                 try{images[i]=SpriteSet.ReadPng(PathFor(i),Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize);}catch(Exception){/* Corrupt replacements fall back to the built-in symbol. */}
         }
-        string PathFor(int index){if(index<0||index>=8)throw new ArgumentOutOfRangeException("index");return Path.Combine(directory,Reactions.Names[index]+".png");}
+        string PathFor(int index){if(index<0||index>=images.Length)throw new ArgumentOutOfRangeException("index");return Path.Combine(directory,Reactions.Names[index]+".png");}
         public Bitmap Get(int index){return images[index];}
         public void Replace(int index,string source)
         {

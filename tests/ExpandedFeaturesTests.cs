@@ -31,7 +31,7 @@ namespace Vpet
         {
             using(var project=MakerFixture())
             {
-                Check(Enumerable.Range(0,18).All(i=>project.Speed(i)==1),"All older animation types play at 1x");
+                Check(Enumerable.Range(0,SpriteProject.TotalCycles).All(i=>project.Speed(i)==1),"All older animation types play at 1x");
                 project.Data.Frames[0][1]=new SpriteFrame{X=24,Y=0};
                 project.SetSpeed(0,.25f);project.SetSpeed(7,3);project.SetSpeed(11,1.75f);project.Data.EmoteAnimations=true;project.Data.Frames[11][0]=project.Data.Frames[0][0].Copy();project.Data.Frames[11][1]=project.Data.Frames[0][1].Copy();project.SetSize(11,20,24);
                 string path=Path.Combine(artifacts,"speed-project.vpetproject");project.Save(path);
@@ -88,7 +88,7 @@ namespace Vpet
                 Check(possible.Count==51,"Every other exact card can be drawn against "+GameArtwork.CardText(called));
             }
             Check(comparisons&&excluded,"All high/low outcomes use rank, ties use Question, and the announced exact card is excluded");
-            Check(Enumerable.Range(0,52).Select(GameArtwork.CardText).Distinct().Count()==52&&Reactions.Names.Length==8,"All 52 named cards remain separate from customizable reactions");
+            Check(Enumerable.Range(0,52).Select(GameArtwork.CardText).Distinct().Count()==52&&Reactions.Names.Length==9,"All 52 named cards remain separate from customizable reactions");
             foreach(MovementMode mode in Enum.GetValues(typeof(MovementMode)))
             {
                 var pet=Pet(mode);pet.Settings.Speed=0;var toys=Toys(pet);toys.RemoveBall(0);toys.SpawnCoin();double now=0;

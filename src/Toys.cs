@@ -30,7 +30,7 @@ namespace Vpet
 
     internal enum BallLauncher { None, User, Pet }
     internal enum FetchPhase { None, Approaching, Pausing, Shaking, Returning, Repeating, Waiting, Flipping, Watching, Result, TurningDown, Leaving }
-    internal enum PlayTarget { Ball, Triangle, Coin, Card, D20 }
+    internal enum PlayTarget { Ball, Triangle, Coin, Card, D20, Plate }
     [Flags] internal enum ZoneEdge { None=0, Left=1, Top=2, Right=4, Bottom=8 }
 
     // Ground-plane physics is independent of the bounce drawing and of the fence's visibility.
@@ -91,6 +91,7 @@ namespace Vpet
             if(!ToyPreferences.Finite(Zone.X)||!ToyPreferences.Finite(Zone.Y))
                 Zone=new RectangleF(pet.Position.X-240*Scale,pet.Position.Y-160*Scale,480*Scale,320*Scale);
             Chest=new PointF(Settings.ChestX,Settings.ChestY);
+            PlatePosition=new PointF(pet.Settings.Plate.X,pet.Settings.Plate.Y);
             bool firstChest=!ToyPreferences.Finite(Chest.X)||!ToyPreferences.Finite(Chest.Y);
             RecoverDisplays();
             // Leave the central movement control exposed when creating the table for the first time.
@@ -108,6 +109,7 @@ namespace Vpet
         {
             var display=Nearest(Center);DisplayId=display.Id;
             Zone=Fit(Zone,display);ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
+            RecoverPlate();
             if(Fetch!=FetchPhase.None){pet.CancelRoute();if(Fetch!=FetchPhase.Returning&&Fetch!=FetchPhase.Leaving&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();}
         }
         void ContainObjects()
@@ -131,7 +133,7 @@ namespace Vpet
         void ChangeZone(RectangleF zone)
         {
             Zone=zone;ContainObjects();Store();pet.SetSharedRestrictedArea(Zone);
-            if(Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&Fetch!=FetchPhase.Leaving&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();
+            if(Target!=PlayTarget.Plate&&Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Returning&&Fetch!=FetchPhase.Leaving&&(Target!=PlayTarget.D20||Fetch==FetchPhase.Approaching))RestartApproach();
         }
         public void DragChest(PointF point){Chest=Geometry.Clamp(point,ChestBounds);Store();}
         public void SetVisible(bool visible,double now)
@@ -249,9 +251,9 @@ namespace Vpet
         }
         void RouteToBall()
         {RouteTo(RestingPoint);}
-        void RouteTo(PointF target)
+        void RouteTo(PointF target,string targetDisplay=null)
         {
-            var display=pet.Displays.Find(d=>d.Id==DisplayId)??Nearest(target);
+            var display=pet.Displays.Find(d=>d.Id==(targetDisplay??DisplayId))??Nearest(target);
             // Stand as close as the full sprite and its name can fit at an outside screen edge.
             approach=Geometry.Clamp(target,display.Allowed(pet.FrameSize));approachDisplay=display.Id;
             if(!pet.Destination.HasValue||Geometry.Distance(pet.Destination.Value,approach)>.5f||pet.TargetDisplay!=approachDisplay)
@@ -266,7 +268,7 @@ namespace Vpet
             ConsiderPlay(now);
             // Re-route visits while toys are being moved; editing only delays the interaction at arrival.
             if(Fetch==FetchPhase.None||pet.Dragging)return;
-            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(CoinApproach());else if(Target==PlayTarget.Card)RouteTo(CardApproach());else if(Target==PlayTarget.D20)RouteTo(DieApproach());else RouteToBall();}
+            if(Fetch==FetchPhase.Approaching){if(Target==PlayTarget.Plate)RouteToPlate();else if(Target==PlayTarget.Triangle)RouteTo(Triangle);else if(Target==PlayTarget.Coin)RouteTo(CoinApproach());else if(Target==PlayTarget.Card)RouteTo(CardApproach());else if(Target==PlayTarget.D20)RouteTo(DieApproach());else RouteToBall();}
             else if(Fetch==FetchPhase.Returning)
             {
                 if(pet.Settings.Movement!=MovementMode.Restricted||pet.InsideRestriction(pet.Position))
@@ -274,13 +276,17 @@ namespace Vpet
                 var display=Nearest(pet.RestrictedCenter);approach=Geometry.Clamp(pet.RestrictedCenter,display.Allowed(pet.FrameSize));approachDisplay=display.Id;
                 if(!pet.Destination.HasValue){pet.IdleUntil=0;pet.SetDestination(approach,approachDisplay);}
             }
-            if(Fetch==FetchPhase.Shaking)pet.ShakeUntil=now+Math.Max(.001f,.5f-phaseTime);
+            if(Fetch==FetchPhase.Shaking)pet.ShakeUntil=now+Math.Max(.001f,(Target==PlayTarget.Plate?.125f:.5f)-phaseTime);
         }
         public void AfterPetTick(double now,float dt)
         {
             if(Fetch==FetchPhase.None)return;
-            if(Aiming||DieAiming||Editing||pet.Dragging||pet.Paused||pet.Hovered){if(Fetch==FetchPhase.Repeating)repeatStarted+=Math.Max(0,dt);return;}
+            // Once the coin is airborne it completes its flip while unrelated toys are handled.
+            bool flippingCoin=Target==PlayTarget.Coin&&Fetch==FetchPhase.Flipping;
+            bool handlingToy=Aiming||DieAiming||Editing;
+            if((!flippingCoin&&Target!=PlayTarget.Plate&&handlingToy)||pet.Dragging||pet.Paused||(pet.Hovered&&!(flippingCoin&&handlingToy))){if(Fetch==FetchPhase.Repeating)repeatStarted+=Math.Max(0,dt);return;}
             if(Fetch==FetchPhase.Leaving){if(!pet.Destination.HasValue&&pet.Crossing==null)FinishFetch(now);return;}
+            if(FoodTick(now,dt))return;
             if(GameTick(now,dt))return;
             if(Fetch==FetchPhase.Repeating)
             {

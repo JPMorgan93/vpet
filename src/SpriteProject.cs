@@ -31,7 +31,7 @@ namespace Vpet
     }
     public sealed class SpriteProject : IDisposable
     {
-        public const int MovementCycles=10,TotalCycles=18;
+        public const int MovementCycles=10,TotalCycles=19;
         public static readonly string[] Cycles=new[]{"Idle Up","Idle Down","Idle Left/Right","Idle Diag Up","Idle Diag Down","Walk Up","Walk Down","Walk Left/Right","Walk Diag Up","Walk Diag Down"}.Concat(Reactions.Names).ToArray();
         public Bitmap Source {get;private set;}
         public SpriteManifest Data {get;private set;}
@@ -49,13 +49,13 @@ namespace Vpet
         {
             if(float.IsNaN(speed)||float.IsInfinity(speed)||speed<.25f||speed>3)throw new ArgumentOutOfRangeException("speed");
             InitializeSizes();if(Data.CycleSpeeds==null)Data.CycleSpeeds=Enumerable.Repeat(1f,TotalCycles).ToArray();
-            Data.CycleSpeeds[row]=speed;Data.Version=4;
+            Data.CycleSpeeds[row]=speed;Data.Version=5;
         }
         void InitializeSizes()
         {
             if(Data.CycleWidths==null)Data.CycleWidths=Enumerable.Repeat(Data.Width,TotalCycles).ToArray();
             if(Data.CycleHeights==null)Data.CycleHeights=Enumerable.Repeat(Data.Height,TotalCycles).ToArray();
-            Data.Version=Math.Max(3,Data.Version);
+            Data.Version=Math.Max(5,Data.Version);
         }
         public void SetSize(int row,int width,int height)
         {InitializeSizes();Data.CycleWidths[row]=Math.Max(1,Math.Min(100,width));Data.CycleHeights[row]=Math.Max(1,Math.Min(150,height));}
@@ -190,10 +190,12 @@ namespace Vpet
             // Older projects keep every selection and offset; new optional rows start empty.
             if(manifest.Frames.Length<TotalCycles)
             {
+                int previousRows=manifest.Frames.Length;
                 Array.Resize(ref manifest.Frames,TotalCycles);
-                for(int row=MovementCycles;row<TotalCycles;row++)manifest.Frames[row]=new SpriteFrame[5];
-                if(manifest.CycleWidths!=null){Array.Resize(ref manifest.CycleWidths,TotalCycles);for(int row=MovementCycles;row<TotalCycles;row++)manifest.CycleWidths[row]=manifest.Width;}
-                if(manifest.CycleHeights!=null){Array.Resize(ref manifest.CycleHeights,TotalCycles);for(int row=MovementCycles;row<TotalCycles;row++)manifest.CycleHeights[row]=manifest.Height;}
+                for(int row=previousRows;row<TotalCycles;row++)manifest.Frames[row]=new SpriteFrame[5];
+                if(manifest.CycleWidths!=null){Array.Resize(ref manifest.CycleWidths,TotalCycles);for(int row=previousRows;row<TotalCycles;row++)manifest.CycleWidths[row]=manifest.Width;}
+                if(manifest.CycleHeights!=null){Array.Resize(ref manifest.CycleHeights,TotalCycles);for(int row=previousRows;row<TotalCycles;row++)manifest.CycleHeights[row]=manifest.Height;}
+                if(manifest.CycleSpeeds!=null){Array.Resize(ref manifest.CycleSpeeds,TotalCycles);for(int row=previousRows;row<TotalCycles;row++)manifest.CycleSpeeds[row]=1;}
             }
             var project=new SpriteProject(image);project.Data=manifest;return project;
         }
@@ -240,9 +242,9 @@ namespace Vpet
         }
         internal static void Validate(SpriteManifest data,string kind)
         {
-            if(data==null||data.Version<1||data.Version>4||data.Kind!=kind)throw new InvalidDataException("Unsupported sprite file format or version.");
-            int rows=data.Version==4&&kind=="sprite"?(data.Counts==null?0:data.Counts.Length):data.Version>=3?SpriteProject.TotalCycles:SpriteProject.MovementCycles;
-            if(rows!=10&&rows!=18)throw new InvalidDataException("Invalid animation list.");
+            if(data==null||data.Version<1||data.Version>5||data.Kind!=kind)throw new InvalidDataException("Unsupported sprite file format or version.");
+            int rows=data.Version>=4&&kind=="sprite"?(data.Counts==null?0:data.Counts.Length):data.Version==5?SpriteProject.TotalCycles:data.Version>=3?18:SpriteProject.MovementCycles;
+            if(rows!=10&&rows!=18&&(data.Version<5||rows!=SpriteProject.TotalCycles))throw new InvalidDataException("Invalid animation list.");
             if(data.CycleSpeeds!=null)
             {
                 if(data.Version<4||data.CycleSpeeds.Length!=rows||data.CycleSpeeds.Any(s=>float.IsNaN(s)||float.IsInfinity(s)||s<.25f||s>3))throw new InvalidDataException("Animation speeds must be between 0.25x and 3x.");
@@ -283,7 +285,7 @@ namespace Vpet
                 }
                 catch(SerializationException ex){throw new InvalidDataException("Invalid sprite manifest.",ex);}
                 Validate(data,kind);
-                var image=ReadPng(ReadEntry(zip.GetEntry(imageName),Limit),kind=="project"?4096:500,kind=="project"?4096:2700);
+                var image=ReadPng(ReadEntry(zip.GetEntry(imageName),Limit),kind=="project"?4096:500,kind=="project"?4096:SpriteProject.TotalCycles*150);
                 if((kind=="project"&&!SpriteProject.HasTransparency(image))||(kind=="sprite"&&(image.Width!=data.Width*5||image.Height!=data.Height*data.Counts.Length)))
                 {image.Dispose();throw new InvalidDataException("Sprite image dimensions/transparency do not match the manifest.");}
                 if(kind=="sprite"&&data.Version==1)for(int row=0;row<10;row++)for(int col=0;col<data.Counts[row];col++)

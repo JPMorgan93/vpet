@@ -1,4 +1,13 @@
-# Vpet 1.8.1
+# Vpet 1.9.0
+
+- Add Display Items as the first pet-menu entry, with Toy Chest and the new Plate toggle. Move Reminders below the separator after Settings, directly above Check for Updates.
+- Add an independent white plate that follows Window Location and can be dragged around the desktop outside either fence. Its visibility, position, and default food are saved; it starts empty when Vpet restarts.
+- Right-click the plate and choose Pudding to select and serve it, or left-click an empty plate to serve the default. Pudding includes caramel, whipped cream, and a strawberry, with whole, two-thirds, and one-third portions.
+- Serving food interrupts the pet's action and temporarily overrides Static, zero speed, and movement fences. The pet walks just above the plate, behind the food, then takes three bites. Each bite shakes for one eighth of a second and removes one third, with a brief pause between bites. Normal movement resumes after eating, including returning inside the restricted fence.
+- Add Hunger (U+1F37D) to default reactions, image replacement and preview controls, and optional Sprite Maker animations. Existing projects keep all frame mappings, dimensions, offsets, and speeds; Hunger starts empty. New projects and exports with reaction animations require Vpet 1.9.0 or later.
+- Keep an airborne coin flipping while other toys are dragged, including when the pointer passes over the pet.
+
+## Vpet 1.8.1
 
 - Keep the reminder speech bubble beside the pet and move it with the pet during walking, dragging, and travel between displays. Use the actual rendered sprite and emote positions instead of WinForms' outdated window bounds, which could leave reminders near the original window location.
 - Position reminders in the same rendering pass as the emote bubble, using the active display's working area so they remain visible at screen edges and after crossing to another display. Preserve window-location settings, message contents, and Dismiss behavior.

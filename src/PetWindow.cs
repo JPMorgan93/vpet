@@ -28,6 +28,7 @@ namespace Vpet
         readonly LayeredWindow crossingWindow=new LayeredWindow(false);
         readonly RestrictedAreaOverlay restrictedOverlay;
         internal readonly ToyWindows Toys;
+        internal readonly PlateWindow Plate;
         internal readonly ReminderStore Reminders;
         ReminderWindow reminderWindow;
         ReminderBubble reminderBubble;
@@ -89,6 +90,7 @@ namespace Vpet
             restrictedOverlay=new RestrictedAreaOverlay(Model,Save,this,crossingWindow);
             Toys=new ToyWindows(Model,this,crossingWindow,delegate{Save();if(SettingsOpen)settingsWindow.SyncRestrictedAreaVisibility();},()=>Now,random);
             Toys.Model.ReactionPlayed+=ShowReaction;
+            Plate=new PlateWindow(Toys.Model,Model,this,crossingWindow,Save,()=>Now);
             Text="Vpet";bubble.Text="Vpet reaction";bubble.Owner=this;
             BuildMenu();ContextMenuStrip=menu;
             menuDismissal=new MenuDismissal(menu);
@@ -117,6 +119,11 @@ namespace Vpet
         public bool SettingsOpen {get{return settingsWindow!=null&&!settingsWindow.IsDisposed;}}
         void BuildMenu()
         {
+            var displayItems=new ToolStripMenuItem("Display Items");menu.Items.Add(displayItems);
+            var toyChest=new ToolStripMenuItem("Toy Chest"){CheckOnClick=true};
+            toyChest.Click+=delegate{Toys.SetVisible(toyChest.Checked);};displayItems.DropDownItems.Add(toyChest);
+            var plate=new ToolStripMenuItem("Plate"){CheckOnClick=true};
+            plate.Click+=delegate{Plate.SetVisible(plate.Checked);};displayItems.DropDownItems.Add(plate);
             var movement=new ToolStripMenuItem("Movement Controls");
             var type=new ToolStripMenuItem("Type");
             foreach(MovementMode value in Enum.GetValues(typeof(MovementMode)))
@@ -142,17 +149,16 @@ namespace Vpet
             {var captured=value;var item=new ToolStripMenuItem(value.ToString()){Tag=value};item.Click+=delegate{Model.Settings.Personality=captured;Save();};personality.DropDownItems.Add(item);}
             personality.DropDownItems.Add(new ToolStripSeparator());personality.DropDownItems.Add("Emote frequency…",null,delegate{OpenSettings(1);});
             personality.DropDownItems.Add("Custom emote folder…",null,delegate{OpenEmoteFolder();});menu.Items.Add(personality);
-            var toyChest=new ToolStripMenuItem("Display Toy Chest"){CheckOnClick=true};
-            toyChest.Click+=delegate{Toys.SetVisible(toyChest.Checked);};menu.Items.Add(toyChest);
             menu.Items.Add("Upload Vpet…",null,delegate{OpenSettings(2);});
-            menu.Items.Add("Reminders",null,delegate{OpenReminders();});
-            menu.Items.Add("Settings…",null,delegate{OpenSettings(0);});
             installUpdate=new ToolStripMenuItem("Install update…"){Visible=false};installUpdate.Click+=delegate{if(availableUpdate!=null)InstallAvailable(availableUpdate);};menu.Items.Add(installUpdate);
-            menu.Items.Add(new ToolStripSeparator());menu.Items.Add("Check for Updates…",null,delegate{CheckForUpdates(true);});menu.Items.Add("Close Vpet",null,delegate{Close();});
+            menu.Items.Add("Settings…",null,delegate{OpenSettings(0);});
+            menu.Items.Add(new ToolStripSeparator());menu.Items.Add("Reminders",null,delegate{OpenReminders();});
+            menu.Items.Add("Check for Updates…",null,delegate{CheckForUpdates(true);});menu.Items.Add("Close Vpet",null,delegate{Close();});
             menu.Opening+=delegate
             {
                 menuOpen=true;
                 toyChest.Checked=Model.Settings.Toys.DisplayChest;
+                plate.Checked=Model.Settings.Plate.Visible;
                 displayArea.Checked=Model.RestrictedAreaVisible;
                 displayArea.Enabled=Model.Settings.Movement==MovementMode.Restricted;
                 foreach(ToolStripMenuItem item in type.DropDownItems)item.Checked=(MovementMode)item.Tag==Model.Settings.Movement;
@@ -208,11 +214,11 @@ namespace Vpet
             crossingWindow.CompanionHandle=Handle;crossingWindow.OtherCompanionHandle=bubble.Handle;
             SetLayer(Model.Settings.Layer);bubble.SetLayer(Model.Settings.Layer);crossingWindow.SetLayer(Model.Settings.Layer);
             restrictedOverlay.Update();
-            Toys.Update();
+            Toys.Update();Plate.UpdatePlate();
         }
         public void SettingsChanged(bool resetReaction)
         {
-            if(resetReaction)ResetReactionTimer();restrictedOverlay.Update();Toys.Update();Save();
+            if(resetReaction)ResetReactionTimer();restrictedOverlay.Update();Toys.Update();Plate.UpdatePlate();Save();
         }
         public void NameChanged()
         {
@@ -241,8 +247,8 @@ namespace Vpet
             if(reactionPreview!=null){reactionPreview.Dispose();reactionPreview=null;}
             if(customReaction!=null){customReaction.Dispose();customReaction=null;}
             reaction=index;reactionStarted=Now;
-            if(index>=8)
-            {if(index-8>=CustomEmotes.Count){reaction=-1;return;}customReaction=(Bitmap)CustomEmotes[index-8].Image.Clone();}
+            if(index>=Reactions.Names.Length)
+            {if(index-Reactions.Names.Length>=CustomEmotes.Count){reaction=-1;return;}customReaction=(Bitmap)CustomEmotes[index-Reactions.Names.Length].Image.Clone();}
             else if(Replacements.Get(index)!=null)customReaction=(Bitmap)Replacements.Get(index).Clone();
             bubbleUntil=Now+3;nextRandom=bubbleUntil+Reactions.Interval(Model.Settings.Frequency,random);
         }
@@ -317,9 +323,9 @@ namespace Vpet
             if(Model.Walking!=lastWalk){phase=0;lastWalk=Model.Walking;}
             else phase+=dt*(Model.Walking?8*Model.ActualSpeed/(100*Model.Current.Scale):4);
             if(now>=nextRandom&&!Model.Dragging&&!Model.Shaking(now)&&!Model.Paused&&!Model.Playing&&now>=bubbleUntil)
-                ShowReaction(Reactions.Choose(Model.Settings.Personality,8+CustomEmotes.Count,random));
+                ShowReaction(Reactions.Choose(Model.Settings.Personality,Reactions.Names.Length+CustomEmotes.Count,random));
             if(now>=nextReminderPoll){nextReminderPoll=now+1;CheckReminders();}
-            Render();restrictedOverlay.Update();Toys.Update();
+            Render();restrictedOverlay.Update();Toys.Update();Plate.UpdatePlate();
             if(now>=nextSave){Save();nextSave=now+15;}
             if(smoke)SmokeStep(now);
             else if(now>=nextUpdateCheck&&!checkingUpdate&&!installingUpdate)CheckForUpdates(false);
@@ -531,7 +537,7 @@ namespace Vpet
         {
             if(closing)return;closing=true;timer.Stop();menuDismissal.Dispose();Save();
             if(updateCheckWindow!=null)updateCheckWindow.Close();
-            if(SettingsOpen)settingsWindow.Close();Toys.Dispose();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
+            if(SettingsOpen)settingsWindow.Close();Plate.Close();Plate.Dispose();Toys.Dispose();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
             if(rendered!=null)rendered.Dispose();if(crossingRendered!=null)crossingRendered.Dispose();if(customReaction!=null)customReaction.Dispose();Replacements.Dispose();
             if(reactionPreview!=null)reactionPreview.Dispose();
             if(gameReactionPreview!=null)gameReactionPreview.Dispose();

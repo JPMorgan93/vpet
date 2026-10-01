@@ -79,7 +79,7 @@ namespace Vpet
                     Check(loaded.Data.Version==1&&Enumerable.Range(0,10).All(row=>loaded.Width(row)==20&&loaded.Height(row)==24),"Version 1 projects retain their original shared size on every cycle");
                     loaded.SetSize(2,25,26);loaded.Save(path);
                 }
-                using(var loaded=SpriteProject.Load(path))Check(loaded.Data.Version==3&&loaded.Width(2)==25&&loaded.Width(0)==20,"Legacy project upgrades without changing other cycles");
+                using(var loaded=SpriteProject.Load(path))Check(loaded.Data.Version==5&&loaded.Width(2)==25&&loaded.Width(0)==20,"Legacy project upgrades without changing other cycles");
                 using(var built=legacy.Build())
                 {
                     path=Path.Combine(artifacts,"legacy-sprite.vpetsprite");SpritePackage.Write(path,new SpriteManifest{Kind="sprite",Width=built.Cell.Width,Height=built.Cell.Height,Counts=built.Counts},built.Sheet);

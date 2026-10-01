@@ -24,8 +24,8 @@ namespace Vpet
                 string path=Path.Combine(artifacts,"emote-facing.vpetproject");project.Save(path);
                 using(var loaded=SpriteProject.Load(path))using(var sprite=loaded.Build())
                 {
-                    Check(loaded.Data.FacesRight&&loaded.Data.EmoteAnimations&&loaded.Data.Frames.Length==18,"Facing and optional emote project rows survive saving");
-                    Check(sprite.Counts.Length==18&&sprite.Cell==new Size(20,24),"Optional atlas rows preserve runtime cell dimensions");
+                    Check(loaded.Data.FacesRight&&loaded.Data.EmoteAnimations&&loaded.Data.Frames.Length==SpriteProject.TotalCycles,"Facing and optional emote project rows survive saving");
+                    Check(sprite.Counts.Length==SpriteProject.TotalCycles&&sprite.Cell==new Size(20,24),"Optional atlas rows preserve runtime cell dimensions");
                     int[] facings={6,2,0,7,1};
                     for(int row=0;row<10;row++)using(var source=project.RenderFrame(row,0))
                     {
@@ -50,11 +50,11 @@ namespace Vpet
                 var legacy=new SpriteManifest{Version=2,Kind="project",Width=20,Height=24,Frames=project.Data.Frames.Take(10).ToArray(),CycleWidths=Enumerable.Repeat(20,10).ToArray(),CycleHeights=Enumerable.Repeat(24,10).ToArray()};
                 path=Path.Combine(artifacts,"v2-migration.vpetproject");SpritePackage.Write(path,legacy,project.Source);
                 using(var migrated=SpriteProject.Load(path))
-                {Check(migrated.Data.Frames.Length==18&&migrated.Slots(11).Length==0&&migrated.Width(11)==20,"V2 projects gain empty optional slots and valid dimensions");migrated.Save(path);using(var sprite=migrated.Build())Check(sprite.EmoteFrame(1,0)==null,"Migrated project keeps ordinary runtime behavior");}
+                {Check(migrated.Data.Frames.Length==SpriteProject.TotalCycles&&migrated.Slots(11).Length==0&&migrated.Width(11)==20,"V2 projects gain empty optional slots and valid dimensions");migrated.Save(path);using(var sprite=migrated.Build())Check(sprite.EmoteFrame(1,0)==null,"Migrated project keeps ordinary runtime behavior");}
             }
             using(var pause=Artwork.Bubble(-1,null,1,false))
             {Check(pause.GetPixel(25,25).R<150&&pause.GetPixel(34,25).R==255&&pause.GetPixel(40,25).R<150,"Pause bubble draws two separated bars");pause.Save(Path.Combine(artifacts,"pause-bubble.png"));}
-            Check(Reactions.Names.Length==8&&!Reactions.Names.Contains("Pause"),"Pause never becomes a replaceable personality emote");
+            Check(Reactions.Names.Length==9&&!Reactions.Names.Contains("Pause"),"Pause never becomes a replaceable personality emote");
         }
         static void TrianglePlay()
         {
@@ -122,13 +122,16 @@ namespace Vpet
                 MakerField<ComboBox>(maker,"facing").SelectedIndex=1;MakerField<CheckBox>(maker,"emotes").Checked=true;Application.DoEvents();
                 Check(maker.Project.Data.FacesRight&&maker.Project.Data.EmoteAnimations,"Facing and optional emote controls update the project");
                 var cycles=MakerField<Button[]>(maker,"cycles");Check(cycles.Skip(10).All(b=>b.Visible)&&MakerField<SpriteSheetViewport>(maker,"viewport").Height>=100,"Optional buttons are visible and leave usable sheet space");
+                Check(cycles.Length==19&&cycles[18].Text=="Hunger","Sprite Maker exposes Hunger as an optional reaction animation");
+                maker.ChooseCycle(18);maker.SetDimensions(20,24);maker.Project.Data.Frames[18][0]=new SpriteFrame();
                 maker.ChooseCycle(11);maker.SetDimensions(25,27);maker.Project.Data.Frames[11][0]=new SpriteFrame();
                 using(var tweak=new SpriteTweakWindow(maker))
                 {
                     tweak.Show();Application.DoEvents();Check(FindButton(tweak,"How to Guide")!=null&&FindButton(tweak,"Love")!=null,"Tweak offers its guide and populated reaction animations");
+                    Check(FindButton(tweak,"Hunger")!=null,"Tweak and Complete includes populated Hunger animation");
                     Check(FindButton(tweak,"Back to Sprite Maker")==null,"Tweak footer removes Back to Sprite Maker while retaining the close-window control");
                     FindButton(tweak,"Love").PerformClick();FindButton(tweak,"Tweak").PerformClick();FindButton(tweak,"Magic Tweak").PerformClick();FindButton(tweak,"Undo").PerformClick();
-                    Check(maker.Project.Data.Frames.Length==18&&maker.Project.Data.Frames[11][0].OffsetY==0,"Undo preserves all optional rows and restores their offsets");
+                    Check(maker.Project.Data.Frames.Length==SpriteProject.TotalCycles&&maker.Project.Data.Frames[11][0].OffsetY==0,"Undo preserves all optional rows and restores their offsets");
                     using(var shot=new Bitmap(tweak.Width,tweak.Height)){tweak.DrawToBitmap(shot,new Rectangle(Point.Empty,shot.Size));shot.Save(Path.Combine(artifacts,"emote-tweak.png"));}tweak.Close();
                 }
                 using(var shot=new Bitmap(maker.Width,maker.Height)){maker.DrawToBitmap(shot,new Rectangle(Point.Empty,shot.Size));shot.Save(Path.Combine(artifacts,"emote-maker.png"));}

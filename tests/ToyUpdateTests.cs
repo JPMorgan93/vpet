@@ -56,7 +56,7 @@ namespace Vpet
             var windows=pet.Toys;var toys=windows.Model;pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();windows.SetVisible(true);
             windows.Menu.Show(windows.Chest,new Point(5,5));Application.DoEvents();windows.Menu.Close();
             Check(windows.Menu.Items[1].Text=="Clean Up Toys","Cleanup is directly below Display Play Zone");
-            var menu=MakerField<ContextMenuStrip>(pet,"menu");Check(menu.Items[menu.Items.Count-3] is ToolStripSeparator&&menu.Items[menu.Items.Count-2].Text=="Check for Updates…"&&menu.Items[menu.Items.Count-1].Text=="Close Vpet","Update check sits below the separator and directly above Close Vpet");
+            var menu=MakerField<ContextMenuStrip>(pet,"menu");Check(menu.Items[menu.Items.Count-4] is ToolStripSeparator&&menu.Items[menu.Items.Count-3].Text=="Reminders"&&menu.Items[menu.Items.Count-2].Text=="Check for Updates…"&&menu.Items[menu.Items.Count-1].Text=="Close Vpet","Reminders and update check sit below the separator and above Close Vpet");
             foreach(string name in new[]{"Ball","D20","Coin","Card","Triangle"})if(!((ToolStripMenuItem)Item(windows.Menu,name)).Checked)Item(windows.Menu,name).PerformClick();windows.Update();Application.DoEvents();
             Check(windows.FenceLabel.Visible&&windows.FenceLabel.Text=="Play Zone"&&windows.FenceLabel.Bottom<=windows.Fence.Top,"Play Zone label is visible above its top-left corner");
             foreach(bool die in new[]{false,true})
