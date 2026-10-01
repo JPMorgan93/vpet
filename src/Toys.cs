@@ -283,7 +283,8 @@ namespace Vpet
             if(Fetch==FetchPhase.None)return;
             // Once the coin is airborne it completes its flip while unrelated toys are handled.
             bool flippingCoin=Target==PlayTarget.Coin&&Fetch==FetchPhase.Flipping;
-            if((!flippingCoin&&Target!=PlayTarget.Plate&&(Aiming||DieAiming||Editing))||pet.Dragging||pet.Paused||pet.Hovered){if(Fetch==FetchPhase.Repeating)repeatStarted+=Math.Max(0,dt);return;}
+            bool handlingToy=Aiming||DieAiming||Editing;
+            if((!flippingCoin&&Target!=PlayTarget.Plate&&handlingToy)||pet.Dragging||pet.Paused||(pet.Hovered&&!(flippingCoin&&handlingToy))){if(Fetch==FetchPhase.Repeating)repeatStarted+=Math.Max(0,dt);return;}
             if(Fetch==FetchPhase.Leaving){if(!pet.Destination.HasValue&&pet.Crossing==null)FinishFetch(now);return;}
             if(FoodTick(now,dt))return;
             if(GameTick(now,dt))return;

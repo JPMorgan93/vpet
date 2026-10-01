@@ -78,7 +78,7 @@ namespace Vpet
             {
                 var pet=Pet(MovementMode.Static);var toys=Toys(pet);toys.SpawnCoin();toys.SpawnTriangle();toys.SpawnCard();toys.SpawnDie();toys.PressCoin(0);
                 double now=0;while(toys.Fetch!=FetchPhase.Flipping&&now<20){now+=.01;ToyStep(toys,pet,now,.01f);}
-                Check(toys.Fetch==FetchPhase.Flipping,"Coin reaches airborne flip before moving "+other);toys.Editing=true;
+                Check(toys.Fetch==FetchPhase.Flipping,"Coin reaches airborne flip before moving "+other);toys.Editing=true;pet.Hovered=true;
                 float last=toys.CoinFlip;
                 for(int i=0;i<130;i++)
                 {
