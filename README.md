@@ -55,8 +55,8 @@ The test executable checks movement timing, diagonal speed, hover and release be
 - Constant normalized travel speed, arrival slowdown, and direction hysteresis.
 - Multi-monitor work areas, transitions across gaps, relocation when displays disappear, and DPI-adjusted sprite size/speed.
 - Over Everything, ordinary Dynamic stacking, and Under All, which locks the pet and reactions beneath other application windows.
-- Three personalities, eight native Windows emoji, weighted random selection, adjustable frequency, and live custom PNG emote loading.
-- Replace any of the eight default emote images with your own PNG, or restore its original symbol. Replacements work for both interactions and random reactions.
+- Three personalities, nine native Windows emoji, weighted random selection, adjustable frequency, and live custom PNG emote loading.
+- Replace any default emote image with your own PNG, or restore its original symbol. Replacements work for both interactions and random reactions.
 - Sprite-sheet validation, animated previews, Apply, Restore Default, and template export.
 - Saved settings, position, facing, fence geometry, and imported artwork; tray controls and single-instance protection.
 
@@ -101,8 +101,9 @@ Default reactions use the installed **Segoe UI Emoji** font with native Windows 
 | Fear | ❗ | U+2757 |
 | Disgust | 🌀 | U+1F300 |
 | Proud | 🏆 | U+1F3C6 |
+| Hunger | 🍽️ | U+1F37D |
 
-Love requests emoji presentation with U+FE0F after U+2665. Appearance follows the PC's installed Windows emoji font. Custom images take precedence; Restore original returns to these emoji. The renderer uses [Direct2D's color-font option](https://blogs.windows.com/windowsdeveloper/2017/06/06/using-color-fonts-beautiful-text-icons/) and caches the eight rendered defaults.
+Love and Hunger request emoji presentation with U+FE0F. Appearance follows the PC's installed Windows emoji font. Custom images take precedence; Restore original returns to these emoji. Hunger has normal random weight for every personality and appears when food is served. The renderer uses [Direct2D's color-font option](https://blogs.windows.com/windowsdeveloper/2017/06/06/using-color-fonts-beautiful-text-icons/) and caches the rendered defaults.
 
 ## Restricted area
 
@@ -118,7 +119,7 @@ Speech bubbles use one continuous body-and-tail outline, drawn after the emoji o
 
 ## Toy chest and fetch
 
-Right-click your pet and select **Display Toy Chest**. A chest and a blue dashed rectangular play zone appear, labeled **Play Zone** above its top-left corner. Labels stay on screen when a fence touches the top edge. Drag the center control to move the zone; drag any edge to change one dimension, or a corner to change both. Drag the chest anywhere inside the fence. If moving or shrinking the fence leaves the chest outside, it moves to the new center. The center control stays accessible above the chest when they overlap.
+Right-click your pet and select **Display Items > Toy Chest**. Display Items is the first menu entry. A chest and a blue dashed rectangular play zone appear, labeled **Play Zone** above its top-left corner. Labels stay on screen when a fence touches the top edge. Drag the center control to move the zone; drag any edge to change one dimension, or a corner to change both. Drag the chest anywhere inside the fence. If moving or shrinking the fence leaves the chest outside, it moves to the new center. The center control stays accessible above the chest when they overlap.
 
 The zone fits inside one monitor's usable area, avoiding taskbars and gaps between screens. Move its center onto another monitor to move the play space there. It defaults to 480 × 320 pixels at 100% scaling; minimum dimensions expand to fit the full pet, and its maximum is the monitor's working area. Toy size follows the app's launch display scale. The chest, fence, and toys follow **Window Location**, stay below the pet, and never take keyboard focus. Empty transparent space passes clicks through.
 
@@ -148,9 +149,17 @@ Random reaction frequency is separate: **Often: 15–30 seconds**, **Sometimes: 
 
 A **pause symbol** appears in the speech bubble only while the Vpet settings window is open. Toy interactions and right-click menus do not trigger it. It is a built-in status indicator, excluded from replaceable reactions. Explicit **Try It Out** previews temporarily replace it, then the pause symbol returns.
 
+## Plate and food
+
+Choose **Display Items > Plate** to show or hide a white plate. Left-drag it around the desktop; it is independent of both fences and uses the pet's window location setting. Closing the chest or cleaning up toys leaves the plate available. Its visibility, position, and default food are saved; it starts empty after restarting Vpet.
+
+Right-click the plate and select **Pudding** to make it the default food and serve it. Left-click an empty plate to serve the default again. Pudding has caramel, whipped cream, and a strawberry, with whole, two-thirds, and one-third portions. Clicking a nonempty plate leaves its food intact; selecting Pudding from the menu serves a fresh portion.
+
+Serving food interrupts the pet's current action and temporarily overrides Static, zero speed, and movement fences. The pet shows Hunger and walks to a position just above the plate, behind the food. It shakes for one eighth of a second per bite, removing one third each time, with a brief pause between bites. After three bites the plate is empty and normal movement resumes; restricted pets walk back inside their fence. Moving the plate redirects the pet and delays eating until release. Picking up the pet or starting another toy interaction interrupts the visit. Hiding the plate clears the food.
+
 ## Reminders
 
-Choose **Reminders**, directly above **Settings** in the pet's right-click menu, to open the **Reminder Window**. **Add Reminder** opens an **Edit Reminder** box above the saved list. Saved entries are read-only; use the **Edit** button on the left to load one into the editor.
+Choose **Reminders**, below the separator following **Settings** and directly above **Check for Updates**, to open the **Reminder Window**. **Add Reminder** opens an **Edit Reminder** box above the saved list. Saved entries are read-only; use the **Edit** button on the left to load one into the editor.
 
 - **One-Time:** choose a date and time.
 - **Recurring:** select one or more days from **Sun–Sat**, then set each day's frequency: **Every**, **Every other**, or the **First**, **Second**, **Third**, or **Fourth** occurrence of that weekday in the month. Each day starts at Every. Every other uses the Sunday–Saturday week when that day was selected as its first week; editing an existing selected day retains its original week.
@@ -172,7 +181,7 @@ Normal settings and imported assets live under `%LOCALAPPDATA%\VpetPrototype`:
 - `reminders.json`: reminder schedules, messages, firing history, and pending notifications. Successful saves keep the previous file as `reminders.json.bak`.
 - `pet.vpetsprite`: active custom sprite package; legacy `pet.png`: accepted custom sprite sheet, copied independently of the original upload.
 - `Emotes/`: live custom reactions.
-- `DefaultEmotes/`: replacements for the eight built-in reaction images.
+- `DefaultEmotes/`: replacements for the nine built-in reaction images.
 - `error.log` / `asset-error.txt`: diagnostics if a runtime or saved-artwork error occurs.
 
 ## Prototype boundaries

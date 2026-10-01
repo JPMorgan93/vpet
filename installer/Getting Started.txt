@@ -45,8 +45,9 @@ In Tweak and Complete, artwork outside the frame is cut off in the preview
 and final sprite. Projects retain the source art and your crop offsets.
 Animation speed controls each selected type independently, from 0.25x to 3x.
 The default is 1x. Moving its slider resumes playback immediately. Save Tweaks
-or Complete saves these speeds in the project and exported pet. Speed-enabled
-projects and sprites require Vpet 1.6.0 or later; older files play at 1x.
+or Complete saves these speeds in the project and exported pet. New projects
+and reaction-enabled sprites require the Hunger update or later. Older files
+keep every existing mapping, size, offset, and speed; Hunger starts empty at 1x.
 Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
 In Sprite Maker, drag the divider above Preview zoom to resize the display/edit
 area inside the window. Upper controls scroll independently. A second divider
@@ -73,7 +74,7 @@ Random reactions occur Often: 15-30 seconds, Sometimes: 30-60 seconds,
 or Rarely: 90-120 seconds, separately from spontaneous toy visits.
 
 TOY CHEST
-Right-click the pet > Display Toy Chest to show a chest and rectangular fence.
+Right-click the pet > Display Items > Toy Chest to show a chest and fence.
 Drag the middle control to move the play space; drag its edges or corners to
 resize it. Drag the chest to place it inside. The zone fits one monitor's usable
 area; move its center onto another monitor to move the play space there.
@@ -92,6 +93,25 @@ Your saved settings remain intact; a restricted pet walks back inside its fence.
 Dragging the pet cancels play. Close Toy Chest in the chest menu puts away all toys.
 Moving toys or the chest, opening their menus, and changing sound settings do not
 pause the pet's motion. A pet approaching a moved toy keeps walking toward it.
+An airborne coin keeps flipping while other toys are dragged.
+
+PLATE AND FOOD
+Display Items is the first entry in the pet menu. Choose Plate to show or hide
+a white plate. Left-drag it anywhere on the desktop, independently of fences.
+It follows Window Location and remains available when the chest is closed.
+Right-click the plate > Pudding to select the default food and serve it.
+Left-click an empty plate to serve the default again. Pudding has caramel,
+whipped cream and a strawberry, with whole, two-thirds and one-third portions.
+Food interrupts the pet's current action. It shows Hunger and walks above the
+plate, behind the food, even in Static mode or outside movement fences.
+Three one-eighth-second shakes remove a third of the food each time, with a
+brief pause between bites. Normal movement resumes after the plate is empty.
+Moving the plate redirects the pet; it waits until release before eating.
+Picking up the pet or using another toy interrupts the meal. Hide the plate to
+clear the food. Visibility, position and default food are saved, but the plate
+starts empty when Vpet restarts. Clean Up Toys does not remove the plate.
+Hunger uses the Windows U+1F37D emoji, can be replaced under Personality, and
+has an optional animation row in Sprite Maker alongside the other reactions.
 
 Help Messages stays directly above Close Toy Chest at the bottom of the menu.
 Toggle it for hints above the chest when hovering
