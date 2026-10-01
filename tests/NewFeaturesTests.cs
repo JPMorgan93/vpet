@@ -122,10 +122,13 @@ namespace Vpet
                 MakerField<ComboBox>(maker,"facing").SelectedIndex=1;MakerField<CheckBox>(maker,"emotes").Checked=true;Application.DoEvents();
                 Check(maker.Project.Data.FacesRight&&maker.Project.Data.EmoteAnimations,"Facing and optional emote controls update the project");
                 var cycles=MakerField<Button[]>(maker,"cycles");Check(cycles.Skip(10).All(b=>b.Visible)&&MakerField<SpriteSheetViewport>(maker,"viewport").Height>=100,"Optional buttons are visible and leave usable sheet space");
+                Check(cycles.Length==19&&cycles[18].Text=="Hunger","Sprite Maker exposes Hunger as an optional reaction animation");
+                maker.ChooseCycle(18);maker.SetDimensions(20,24);maker.Project.Data.Frames[18][0]=new SpriteFrame();
                 maker.ChooseCycle(11);maker.SetDimensions(25,27);maker.Project.Data.Frames[11][0]=new SpriteFrame();
                 using(var tweak=new SpriteTweakWindow(maker))
                 {
                     tweak.Show();Application.DoEvents();Check(FindButton(tweak,"How to Guide")!=null&&FindButton(tweak,"Love")!=null,"Tweak offers its guide and populated reaction animations");
+                    Check(FindButton(tweak,"Hunger")!=null,"Tweak and Complete includes populated Hunger animation");
                     Check(FindButton(tweak,"Back to Sprite Maker")==null,"Tweak footer removes Back to Sprite Maker while retaining the close-window control");
                     FindButton(tweak,"Love").PerformClick();FindButton(tweak,"Tweak").PerformClick();FindButton(tweak,"Magic Tweak").PerformClick();FindButton(tweak,"Undo").PerformClick();
                     Check(maker.Project.Data.Frames.Length==SpriteProject.TotalCycles&&maker.Project.Data.Frames[11][0].OffsetY==0,"Undo preserves all optional rows and restores their offsets");
