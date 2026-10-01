@@ -1,5 +1,9 @@
 # Vpet validation
 
+## Version 1.9.1
+
+6,033 automated assertions passed, including the smaller artwork, all three bites, feeding position, and screen-edge recovery. The 72 × 63 pixel render states at 100% display scaling were visually inspected. 94 native UI checks passed: 18 plate/Hunger checks for serving, dragging, and window placement, plus 76 reminder/adjustment checks including the separators above and below Reminders. Tests use isolated preferences.
+
 ## Version 1.9.0
 
 6,033 automated assertions passed. New coverage exercises serving food in all movement modes with shared and independent fences, three one-eighth-second bites, portion rendering, restriction return, interruption, plate relocation, display crossings/disconnection, persistence, and coin flips while another toy is dragged even over the pet. Hunger tests cover the system emoji, replacement/restore, optional animation export, and migration of version 3/4 projects without losing their existing reaction mappings, sizes, offsets, or speeds. The pudding's four render states were visually inspected.

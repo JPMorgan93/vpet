@@ -1,10 +1,10 @@
-# Vpet 1.9.0
+# Vpet 1.9.1
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.9.0-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.9.1-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -153,13 +153,15 @@ A **pause symbol** appears in the speech bubble only while the Vpet settings win
 
 Choose **Display Items > Plate** to show or hide a white plate. Left-drag it around the desktop; it is independent of both fences and uses the pet's window location setting. Closing the chest or cleaning up toys leaves the plate available. Its visibility, position, and default food are saved; it starts empty after restarting Vpet.
 
+The plate and pudding are 75% of their original size. At 100% Windows scaling their shared transparent canvas is 72 × 63 pixels; both artwork and interaction placement follow display scaling.
+
 Right-click the plate and select **Pudding** to make it the default food and serve it. Left-click an empty plate to serve the default again. Pudding has caramel, whipped cream, and a strawberry, with whole, two-thirds, and one-third portions. Clicking a nonempty plate leaves its food intact; selecting Pudding from the menu serves a fresh portion.
 
 Serving food interrupts the pet's current action and temporarily overrides Static, zero speed, and movement fences. The pet shows Hunger and walks to a position just above the plate, behind the food. It shakes for one eighth of a second per bite, removing one third each time, with a brief pause between bites. After three bites the plate is empty and normal movement resumes; restricted pets walk back inside their fence. Moving the plate redirects the pet and delays eating until release. Picking up the pet or starting another toy interaction interrupts the visit. Hiding the plate clears the food.
 
 ## Reminders
 
-Choose **Reminders**, below the separator following **Settings** and directly above **Check for Updates**, to open the **Reminder Window**. **Add Reminder** opens an **Edit Reminder** box above the saved list. Saved entries are read-only; use the **Edit** button on the left to load one into the editor.
+Choose **Reminders**, between **Settings** and **Check for Updates** with a separator on each side, to open the **Reminder Window**. **Add Reminder** opens an **Edit Reminder** box above the saved list. Saved entries are read-only; use the **Edit** button on the left to load one into the editor.
 
 - **One-Time:** choose a date and time.
 - **Recurring:** select one or more days from **Sun–Sat**, then set each day's frequency: **Every**, **Every other**, or the **First**, **Second**, **Third**, or **Fourth** occurrence of that weekday in the month. Each day starts at Every. Every other uses the Sunday–Saturday week when that day was selected as its first week; editing an existing selected day retains its original week.
