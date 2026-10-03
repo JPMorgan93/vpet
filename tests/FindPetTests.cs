@@ -111,7 +111,9 @@ namespace Vpet
                     var saved=Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json"));Check(saved.FindPet.Enabled&&saved.FindPet.Modifier==FindPetModifier.Ctrl&&saved.FindPet.Key==(int)Keys.F24,"UI changes save the new shortcut");
                     settings.Close();focus.Show();focus.Activate();Application.DoEvents();IntPtr focused=Native.GetForegroundWindow();
                     FinderStage("Other application focused");
+                    var inputs=new List<string>();pet.FindPet.InputObserved=(raw,down,state)=>inputs.Add(raw+" "+down+" "+state);
                     FinderKey(Keys.ControlKey,true);FinderKey(Keys.F24,true);FinderKey(Keys.F24,false);FinderKey(Keys.ControlKey,false);
+                    pet.FindPet.InputObserved=null;FinderStage(string.Join("; ",inputs));
                     FinderStage("Shortcut active="+pet.FindPet.Spotlight.Active+", hook="+pet.FindPet.Hooked+", binding="+pet.Model.Settings.FindPet.Shortcut+", focus="+Native.GetForegroundWindow()+", expected="+focused);
                     Check(pet.FindPet.Spotlight.Active,"Global shortcut activates from another application");
                     Check(Native.GetForegroundWindow()==focused,"Global shortcut keeps the other application's keyboard focus");

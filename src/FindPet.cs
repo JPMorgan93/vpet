@@ -93,6 +93,7 @@ namespace Vpet
         bool mappingQueued,disposed;
         internal bool Capturing {get{return mapped!=null||mappingQueued;}}
         internal bool Hooked {get{return hook!=IntPtr.Zero;}}
+        internal Action<int,bool,string> InputObserved;
         public FindPetController(Form window,FindPetPreferences settings,Func<double> now)
         {this.window=window;this.settings=settings;this.now=now;callback=Observe;}
         string EnsureHook()
@@ -122,6 +123,7 @@ namespace Vpet
                 if(down||up)
                 {
                     int raw=Marshal.ReadInt32(data);
+                    if(InputObserved!=null)InputObserved(raw,down,"capture="+Capturing+", suppressed="+suppressed.Contains(raw)+", enabled="+settings.Enabled);
                     if(suppressed.Contains(raw))
                     {if(up){suppressed.Remove(raw);Queue(StopIfIdle);}return new IntPtr(1);}
                     if(mapped!=null&&Native.GetForegroundWindow()==captureOwner&&down)
@@ -138,6 +140,7 @@ namespace Vpet
                     }
                     if(!Capturing&&keys.Input(raw,down,now(),settings))
                     {
+                        if(InputObserved!=null)InputObserved(raw,down,"matched generation "+generation);
                         int token=generation;Queue(delegate{if(!disposed&&token==generation&&settings.Enabled&&!Capturing)Spotlight.Trigger(now());});
                     }
                 }
