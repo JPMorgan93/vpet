@@ -40,6 +40,7 @@ namespace Vpet
         [DataMember] public string LastSpriteProject = "";
         [DataMember] public ToyPreferences Toys = new ToyPreferences();
         [DataMember] public PlatePreferences Plate = new PlatePreferences();
+        [DataMember] public FindPetPreferences FindPet = new FindPetPreferences();
 
         [OnDeserializing]
         void InitializeDefaults(StreamingContext context)
@@ -48,7 +49,7 @@ namespace Vpet
             RestrictedWidth=RestrictedHeight=float.NaN;SyncPlayZone=true;
             X=Y=AnchorX=AnchorY=float.NaN;Frequency=Frequency.Sometimes;
             PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;AutoUpdate=false;LastSpriteProject="";
-            Toys=new ToyPreferences();Plate=new PlatePreferences();
+            Toys=new ToyPreferences();Plate=new PlatePreferences();FindPet=new FindPetPreferences();
         }
 
         public void Validate()
@@ -66,6 +67,7 @@ namespace Vpet
             if (!Enum.IsDefined(typeof(NameVisibility), NameDisplay)) NameDisplay=NameVisibility.Always;
             if(Toys==null)Toys=new ToyPreferences();Toys.Validate();
             if(Plate==null)Plate=new PlatePreferences();Plate.Validate();
+            if(FindPet==null)FindPet=new FindPetPreferences();FindPet.Validate();
         }
         public static string CleanName(string name)
         {

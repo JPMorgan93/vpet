@@ -77,16 +77,7 @@ namespace Vpet
         }
         void AddArtwork()
         {
-            var page=PageStack("Sprite");Add(page,Copy("Load Vpet on PC startup",true));
-            var startup=Choice(new[]{"No (Default)","Yes"},pet.Model.Settings.LaunchOnStartup?1:0);Add(page,Row(startup));
-            Add(page,Copy("Yes opens your pet automatically when you sign in to Windows. Choose No to turn this off."));bool resetting=false;
-            startup.SelectedIndexChanged+=delegate
-            {
-                if(resetting)return;try{pet.SetLaunchOnStartup(startup.SelectedIndex==1);}
-                catch(Exception ex){resetting=true;startup.SelectedIndex=pet.Model.Settings.LaunchOnStartup?1:0;resetting=false;MessageBox.Show(this,ex.Message,"Could not change startup setting");}
-            };
-            Add(page,Copy("Auto-update on app startup",true));var autoUpdate=Choice(new[]{"No (Default)","Yes"},pet.Model.Settings.AutoUpdate?1:0);autoUpdate.Name="AutoUpdate";Add(page,Row(autoUpdate));
-            Add(page,Copy("Yes installs new releases automatically when Vpet starts. Check for updates shows the version and an Update button. Changes appear after installation."));autoUpdate.SelectedIndexChanged+=delegate{pet.Model.Settings.AutoUpdate=autoUpdate.SelectedIndex==1;pet.Save();};
+            var page=PageStack("Sprite");
             Add(page,Copy("Make this pet your own",true));Add(page,Copy("Create a sprite in Sprite Maker or upload a .vpetsprite file. Each animation can use frames up to 100 × 150 pixels."));
             useButton.Text="Use this pet";useButton.AutoSize=true;useButton.MinimumSize=new Size(125,36);useButton.Enabled=false;useButton.Click+=UsePending;
             Add(page,Row(MakerUi.Button("Upload Custom Sprite",ChooseSheet),useButton,MakerUi.Button("Restore default",delegate
@@ -122,7 +113,18 @@ namespace Vpet
         }
         void AddAdvanced()
         {
-            var page=PageStack("Advanced");Add(page,Copy("Movement and toy play space",true));
+            var page=PageStack("Advanced");Add(page,Copy("Load Vpet on PC startup",true));
+            var startup=Choice(new[]{"No (Default)","Yes"},pet.Model.Settings.LaunchOnStartup?1:0);Add(page,Row(startup));
+            Add(page,Copy("Yes opens your pet automatically when you sign in to Windows. Choose No to turn this off."));bool resetting=false;
+            startup.SelectedIndexChanged+=delegate
+            {
+                if(resetting)return;try{pet.SetLaunchOnStartup(startup.SelectedIndex==1);}
+                catch(Exception ex){resetting=true;startup.SelectedIndex=pet.Model.Settings.LaunchOnStartup?1:0;resetting=false;MessageBox.Show(this,ex.Message,"Could not change startup setting");}
+            };
+            Add(page,Copy("Auto-update on app startup",true));var autoUpdate=Choice(new[]{"No (Default)","Yes"},pet.Model.Settings.AutoUpdate?1:0);autoUpdate.Name="AutoUpdate";Add(page,Row(autoUpdate));
+            Add(page,Copy("Yes installs new releases automatically when Vpet starts. Check for updates shows the version and an Update button. Changes appear after installation."));autoUpdate.SelectedIndexChanged+=delegate{pet.Model.Settings.AutoUpdate=autoUpdate.SelectedIndex==1;pet.Save();};
+            AddFindMyVpet(page);
+            Add(page,Copy("Movement and toy play space",true));
             var sync=new CheckBox{Name="SyncPlayZone",Text="Sync Play Zone with Restricted Area",AutoSize=true,Checked=pet.Model.Settings.SyncPlayZone};Add(page,sync);
             Add(page,Copy("On by default. In Restricted movement, your pet uses the play-zone fence and the separate restricted fence is hidden. Display restricted area and Display Play Zone control the same fence. You can move or resize it even with the toy chest hidden.\n\nTurn this off to keep the pet's restricted fence and toy play zone independent. Free Roam and Static still work normally."));
             sync.CheckedChanged+=delegate{pet.Model.Settings.SyncPlayZone=sync.Checked;pet.Model.CancelRoute();pet.Model.EnsureInsideRestrictedArea();SyncRestrictedAreaVisibility();pet.SettingsChanged(false);};

@@ -29,10 +29,11 @@ namespace Vpet
         readonly RestrictedAreaOverlay restrictedOverlay;
         internal readonly ToyWindows Toys;
         internal readonly PlateWindow Plate;
+        internal readonly FindPetController FindPet;
         internal readonly ReminderStore Reminders;
         ReminderWindow reminderWindow;
         ReminderBubble reminderBubble;
-        readonly ToyChime reminderChime=new ToyChime();
+        readonly ReminderChime reminderChime=new ReminderChime();
         double nextReminderPoll;
         internal Func<DateTime> ReminderNow=()=>DateTime.Now;
         readonly NotifyIcon tray=new NotifyIcon();
@@ -91,6 +92,7 @@ namespace Vpet
             Toys=new ToyWindows(Model,this,crossingWindow,delegate{Save();if(SettingsOpen)settingsWindow.SyncRestrictedAreaVisibility();},()=>Now,random);
             Toys.Model.ReactionPlayed+=ShowReaction;
             Plate=new PlateWindow(Toys.Model,Model,this,crossingWindow,Save,()=>Now);
+            FindPet=new FindPetController(this,prefs.FindPet,()=>Now);
             Text="Vpet";bubble.Text="Vpet reaction";bubble.Owner=this;
             BuildMenu();ContextMenuStrip=menu;
             menuDismissal=new MenuDismissal(menu);
@@ -108,6 +110,7 @@ namespace Vpet
             timer.Tick+=Tick;
             Shown+=delegate{ApplyLayer();RefreshEmotes();ResetReactionTimer();timer.Start();if(!smoke)BeginInvoke(new Action(ShowUpdateCompletion));};
             FormClosing+=OnClosing;
+            Shown+=delegate{string error=FindPet.ApplySettings();if(error!=null){prefs.FindPet.Enabled=false;Save();Notify("Find My Vpet could not start",error);}};
         }
         protected override void WndProc(ref Message message)
         {
@@ -316,10 +319,11 @@ namespace Vpet
             bool hovering=IsHovered();
             if(hovering&&!Model.Hovered&&!buttonDown&&!menuOpen&&!SettingsOpen&&!Model.Playing&&now-lastHover>=5)
             {ShowReaction(Reactions.Hover(Model.Settings.Personality));lastHover=now;}
-            Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging||Toys.MovingFence||
+            Toys.Model.DieHovered=Toys.HoveringDie;
+            Model.Hovered=hovering;Model.Paused=menuOpen||SettingsOpen||buttonDown||restrictedOverlay.Dragging||Toys.MovingFence||Toys.Model.InspectingDie||
                 (reminderBubble!=null&&reminderBubble.Visible&&reminderBubble.Bounds.Contains(Cursor.Position));
             Toys.Model.BeforePetTick(now,dt);
-            Model.Tick(now,dt);
+            if(!Toys.Model.InspectingDie)Model.Tick(now,dt);
             Toys.Model.AfterPetTick(now,dt);
             if(Model.Walking!=lastWalk){phase=0;lastWalk=Model.Walking;}
             else phase+=dt*(Model.Walking?8*Model.ActualSpeed/(100*Model.Current.Scale):4);
@@ -327,6 +331,12 @@ namespace Vpet
                 ShowReaction(Reactions.Choose(Model.Settings.Personality,Reactions.Names.Length+CustomEmotes.Count,random));
             if(now>=nextReminderPoll){nextReminderPoll=now+1;CheckReminders();}
             Render();restrictedOverlay.Update();Toys.Update();Plate.UpdatePlate();
+            if(FindPet.Spotlight.Active)
+            {
+                var frames=new List<SpotlightFrame>{new SpotlightFrame(PresentedBounds,rendered)};
+                if(crossingWindow.Visible)frames.Add(new SpotlightFrame(crossingWindow.PresentedBounds,crossingRendered));
+                FindPet.Spotlight.Update(now,frames.ToArray(),Screen.AllScreens.Select(s=>s.Bounds).ToArray());
+            }
             if(now>=nextSave){Save();nextSave=now+15;}
             if(smoke)SmokeStep(now);
             else if(now>=nextUpdateCheck&&!checkingUpdate&&!installingUpdate)CheckForUpdates(false);
@@ -438,11 +448,11 @@ namespace Vpet
         void Render()
         {
             var display=Model.Current;Size size=display.PetSize(Sprites.Cell);
-            animationFacing=Sprites.ResolveFacing(Model.Facing,Model.Walking?Model.LastMotion:PointF.Empty,animationFacing);
+            animationFacing=Sprites.ResolveFacing(Model.Facing,Model.Walking||Toys.Model.InspectingDie?Model.LastMotion:PointF.Empty,animationFacing);
             // Optional reaction poses apply to greetings, clicks and pickup too; missing rows retain normal animation.
             var emoteFrame=!ShowPause&&Toys.CurrentAnnouncement==null&&Now<bubbleUntil?Sprites.EmoteAtPhase(reaction,(Now-reactionStarted)*6):null;
             var frame=emoteFrame??Sprites.FrameAtPhase(Model.Walking,animationFacing,phase);
-            float offset=Model.Shaking(Now)?(float)(Math.Sin(Now*65)*3*display.Scale):0;
+            float offset=Model.Shaking(Now)&&!Toys.Model.InspectingDie?(float)(Math.Sin(Now*65)*3*display.Scale):0;
             PointF anchor=Geometry.Clamp(new PointF(Model.Position.X+offset,Model.Position.Y),display.Allowed(Sprites.Cell,false));
             var location=new Point((int)Math.Round(anchor.X-size.Width/2f),(int)Math.Round(anchor.Y-size.Height));
             if(Model.Crossing!=null)
@@ -536,7 +546,7 @@ namespace Vpet
         }
         void OnClosing(object sender,FormClosingEventArgs e)
         {
-            if(closing)return;closing=true;timer.Stop();menuDismissal.Dispose();Save();
+            if(closing)return;closing=true;timer.Stop();FindPet.Dispose();menuDismissal.Dispose();Save();
             if(updateCheckWindow!=null)updateCheckWindow.Close();
             if(SettingsOpen)settingsWindow.Close();Plate.Close();Plate.Dispose();Toys.Dispose();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
             if(rendered!=null)rendered.Dispose();if(crossingRendered!=null)crossingRendered.Dispose();if(customReaction!=null)customReaction.Dispose();Replacements.Dispose();

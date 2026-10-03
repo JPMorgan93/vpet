@@ -73,6 +73,8 @@ namespace Vpet
                     {
                         var point=new Point(window.Left+window.Width/2,window.Top+window.Height/2);ToyMouse(window,0x201,point);ToyMouse(window,0x200,new Point(point.X+7,point.Y+3));AssertPetWalks(pet,"dragging "+window.Text);ToyMouse(window,0x202,Cursor.Position);
                     }
+                    // The last drag leaves the pointer on the die; its hover inspection intentionally pauses movement.
+                    Cursor.Position=new Point(work.Left+1,work.Top+1);
                     toys.Menu.Show(toys.Chest,new Point(3,3));Application.DoEvents();AssertPetWalks(pet,"toy chest menu");toys.Menu.Close();
                     toys.TriangleMenu.Show(toys.Triangle,new Point(3,3));Application.DoEvents();AssertPetWalks(pet,"triangle menu");toys.TriangleMenu.Close();
                     Item(toys.TriangleMenu,"Sound Setting").PerformClick();Application.DoEvents();AssertPetWalks(pet,"triangle sound settings");MakerField<ToySoundWindow>(toys,"soundWindow").Close();Application.DoEvents();

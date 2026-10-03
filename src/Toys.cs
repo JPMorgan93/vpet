@@ -59,6 +59,8 @@ namespace Vpet
         public FetchPhase Fetch {get;private set;}
         public string DisplayId {get;private set;}
         public bool Editing;
+        public bool DieHovered;
+        public bool InspectingDie {get{return DieHovered&&HasDie&&Settings.DisplayChest&&!pet.Dragging;}}
         float bounceTime=1,phaseTime;
         PointF approach;
         string approachDisplay;
@@ -265,6 +267,7 @@ namespace Vpet
             AdvanceBall(dt);
             AdvanceDie(dt);
             AdvanceCard(dt);
+            if(InspectingDie)return;
             ConsiderPlay(now);
             // Re-route visits while toys are being moved; editing only delays the interaction at arrival.
             if(Fetch==FetchPhase.None||pet.Dragging)return;
@@ -280,6 +283,7 @@ namespace Vpet
         }
         public void AfterPetTick(double now,float dt)
         {
+            if(InspectingDie){FaceDie();if(Fetch==FetchPhase.Repeating)repeatStarted+=Math.Max(0,dt);return;}
             if(Fetch==FetchPhase.None)return;
             // Once the coin is airborne it completes its flip while unrelated toys are handled.
             bool flippingCoin=Target==PlayTarget.Coin&&Fetch==FetchPhase.Flipping;

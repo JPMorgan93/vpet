@@ -158,7 +158,7 @@ namespace Vpet
             if(!HasDie||!Settings.DisplayChest)return;ClearAnnouncement();tune.Clear();Target=PlayTarget.D20;pet.BeginPlay();
             DieVelocity=velocity;DieAiming=false;Fetch=FetchPhase.Watching;phaseTime=0;FaceDie();
         }
-        void FaceDie(){pet.Walking=false;pet.ActualSpeed=0;pet.Facing=Geometry.Direction(new PointF(Die.X-pet.Position.X,Die.Y-pet.Position.Y),pet.Facing);}
+        void FaceDie(){pet.Walking=false;pet.ActualSpeed=0;pet.LastMotion=new PointF(Die.X-pet.Position.X,Die.Y-pet.Position.Y);pet.Facing=Geometry.Direction(pet.LastMotion,pet.Facing);}
         public void AdvanceDie(float dt)
         {
             if(!HasDie||!Settings.DisplayChest||DieAiming||Editing)return;

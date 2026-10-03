@@ -1,8 +1,8 @@
-# Vpet 1.9.1
+# Vpet 1.10.0
 
 ## Files to distribute
 
-- `dist/Vpet-Setup-1.9.1-Windows-x64.exe` — standalone Windows EXE installer.
+- `dist/Vpet-Setup-1.10.0-Windows-x64.exe` — standalone Windows EXE installer.
 - `dist/SHA256SUMS.txt` — SHA-256 checksum for that exact installer.
 
 The installer contains the application, reference sprite sheet, Heads/Tails PNGs, icon files, and getting-started guide. The supplied Vpet Pixel icon is retained unchanged as the project's `Vpet.ico`; the installed `Vpet-Pixel.ico` copy gives shortcuts a new icon path so they do not reuse the old artwork's cache entry. Source code, tests, development settings, logs, and compiler tools are excluded. GitHub Actions attaches the installer and checksum to a public release after a successful main-branch build. See `GITHUB.md`.
@@ -16,7 +16,7 @@ The installer contains the application, reference sprite sheet, Heads/Tails PNGs
 - First installation offers to launch the app. Updates start without a continue prompt, show progress, preserve shortcut choices, and reopen the pet with a completion screen explaining what changed. Release notes are shown only after successful installation. Both current and older updater entry points skip the setup wizard for an existing installation. The completion history is embedded in the app and includes every release after the last version run, grouped newest first, even offline. Older apps without a last-run record fall back to the installed version.
 - Blocks installation while Vpet is running. Close the pet from its menu first.
 - Registers an uninstaller. Personal settings and artwork in `%LOCALAPPDATA%\VpetPrototype` are preserved. That folder name and the existing single-instance mutex remain unchanged for compatibility.
-- Uses a stable installer AppId for updates. Auto-update on app startup is optional (No by default) and installs new releases automatically when enabled. Manual Check for updates shows the current/available version and waits for the Update button. Periodic checks while running continue to notify. Startup at Windows sign-in is optional under Sprite and defaults to No. Uninstall removes the startup entry for this installation.
+- Uses a stable installer AppId for updates. Auto-update on app startup is optional (No by default) and installs new releases automatically when enabled. Manual Check for updates shows the current/available version and waits for the Update button. Periodic checks while running continue to notify. Startup at Windows sign-in is optional under Advanced and defaults to No. Uninstall removes the startup entry for this installation.
 
 ## Rebuild
 

@@ -107,7 +107,7 @@ namespace Vpet
             }
             base.WndProc(ref m);
         }
-        public void Present(Bitmap image,Point screenPosition)
+        public void Present(Bitmap image,Point screenPosition,byte opacity=255)
         {
             IntPtr screen=Native.GetDC(IntPtr.Zero), dc=Native.CreateCompatibleDC(screen), bitmap=IntPtr.Zero,old=IntPtr.Zero;
             try
@@ -115,7 +115,7 @@ namespace Vpet
                 bitmap=image.GetHbitmap(Color.FromArgb(0)); old=Native.SelectObject(dc,bitmap);
                 var point=new Native.POINT(screenPosition.X,screenPosition.Y);
                 var size=new Native.SIZE(image.Width,image.Height);var origin=new Native.POINT(0,0);
-                var blend=new Native.BLEND{Op=0,Flags=0,Alpha=255,Format=1};
+                var blend=new Native.BLEND{Op=0,Flags=0,Alpha=opacity,Format=1};
                 if(!Native.UpdateLayeredWindow(Handle,screen,ref point,ref size,dc,ref origin,0,ref blend,2))
                     throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
                 PresentedBounds=new Rectangle(screenPosition,image.Size);
