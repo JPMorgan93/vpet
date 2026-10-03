@@ -46,7 +46,6 @@ namespace Vpet
         }
         static void UpdateNotesWindows()
         {
-            reportChecks=true;
             using(var completed=new UpdateNotesWindow("9.8.7",string.Join("\n",Enumerable.Range(1,100).Select(i=>"- Change "+i))))
             {
                 completed.Show();Application.DoEvents();
@@ -66,14 +65,15 @@ namespace Vpet
             string root=AppDomain.CurrentDomain.BaseDirectory;
             foreach(bool auto in new[]{false,true})
             {
-            Console.WriteLine("Startup update mode "+auto);
             string data=Path.Combine(artifacts,"auto-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(data);new Preferences{AutoUpdate=auto}.Save(Path.Combine(data,"settings.json"));
             using(var pet=new PetWindow(data,Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"auto-smoke")))
             {
                 Check(pet.Model.Settings.AutoUpdate==auto&&MakerField<double>(pet,"nextUpdateCheck")== (auto?0:10),"Saved auto-update option schedules an immediate startup check");int installs=0;
+                pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();
+                typeof(PetWindow).GetField("smokeStep",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(pet,100);
                 pet.ReadUpdate=()=>new AvailableUpdate{Version="9.8.7",Notes="Must only display after completion"};
                 pet.InstallAvailable=update=>{installs++;Check(update.Version=="9.8.7","Installs discovered newest release");};
-                Console.WriteLine("Checking fake update");AwaitUpdate(pet.CheckForUpdatesAsync(false));Check(installs==(auto?1:0),"Only enabled startup checks auto-install");Console.WriteLine("Fake check returned");
+                AwaitUpdate(pet.CheckForUpdatesAsync(false));Check(installs==(auto?1:0),"Only enabled startup checks auto-install");
                 AwaitUpdate(pet.CheckForUpdatesAsync(false));Check(installs==(auto?1:0),"Periodic checks do not automatically restart the running app");
                 AwaitUpdate(pet.CheckForUpdatesAsync(true));Check(installs==(auto?1:0),"Manual Check for updates waits for Update even when automatic startup updates are enabled");
                 var check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");

@@ -10,9 +10,8 @@ namespace Vpet
     internal static partial class Tests
     {
         static int count;
-        static bool reportChecks;
         static string artifacts;
-        static void Check(bool condition,string message){count++;if(reportChecks)Console.WriteLine(condition+": "+message);if(!condition)throw new Exception("FAIL: "+message);}
+        static void Check(bool condition,string message){count++;if(!condition)throw new Exception("FAIL: "+message);}
         static void Near(float actual,float expected,float tolerance,string message){Check(Math.Abs(actual-expected)<=tolerance,message+" ("+actual+" vs "+expected+")");}
         static void Reject(Action action,string message)
         {bool rejected=false;try{action();}catch(InvalidDataException){rejected=true;}Check(rejected,message);}
