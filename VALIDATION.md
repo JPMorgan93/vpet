@@ -1,5 +1,15 @@
 # Vpet validation
 
+## Pending release: Find My Vpet and interaction adjustments
+
+6,068 automated assertions passed. New coverage checks default-off and saved locator settings, key normalization, modifier double taps, normal chords, held-key repeat rejection, invalid/cleared mappings, one-second fade timing, moving spotlight geometry, transparency and continuity across display boundaries, the eighth-second eating pause before food disappears, and the three distinct notes in the reminder WAV.
+
+258 native UI checks passed: 25 locator/settings/D20-hover, 18 plate/Hunger, 139 expanded settings/game, and 76 reminder/adjustment checks. The locator checks inject only synthetic test shortcuts into isolated windows, verify capture feedback and persistence, activation while another app is focused, no focus theft, click-through/topmost overlays on both connected displays, fade dismissal, and hook cleanup. D20 checks cover stopping/facing/value display and resuming walking or feeding after hover. The Advanced layout was visually inspected at the minimum test width. Startup and auto-update controls are first, with vertical scrolling for the remaining settings.
+
+Live desktop tests depend on cursor position. An initial expanded-game run and one die-hover run failed; unchanged reruns passed. The reminder menu test now moves the pointer away from the die after its drag checks, because D20 hover is intentionally a separate reason to pause. The updater-window harness stalled before invoking its fake Update callback in both the candidate and the unchanged September 30 1.9.1 binary; it is not counted as passing. Temporary diagnostic changes were removed. The relocated auto-update setting's on/off persistence is covered by the passing locator suite.
+
+The candidate EXE installer built successfully. The isolated installer/update test passed artwork/icon verification, fresh installation, progress-only updates, preserved destination and shortcut choices, skipped-version history, the legacy updater entry point, completion/relaunch, and cleanup. The normal Vpet installation and personal settings were unchanged. Version selection and public promotion are pending the owner's minor-versus-patch decision.
+
 ## Version 1.9.1
 
 6,033 automated assertions passed, including the smaller artwork, all three bites, feeding position, and screen-edge recovery. The 72 × 63 pixel render states at 100% display scaling were visually inspected. 94 native UI checks passed: 18 plate/Hunger checks for serving, dragging, and window placement, plus 76 reminder/adjustment checks including the separators above and below Reminders. Tests use isolated preferences.

@@ -45,11 +45,13 @@ The test executable checks movement timing, diagonal speed, hover and release be
 
 `bin/Vpet.exe --smoke-test` briefly opens the real pet and reaction windows, exercises all four settings tabs and window layers, saves screenshots of its own settings UI, writes a result to `bin/smoke-output/`, then exits after about eight seconds. It uses separate settings under `bin/smoke-data/` and does not change your normal pet settings. `bin/Vpet.Tests.exe --expanded-window-tests` checks the new game controls, independent/shared fences, sound volume, animation speed, and responsive settings with isolated preferences.
 
-## Included
+## Find My Vpet
 
 **Find My Vpet** is under **Settings > Advanced**, below the two startup options. It defaults off. Enable it, choose **ALT** or **CTRL**, then click the key box and press a key to map it. Clicking clears the previous key; the message confirms the new mapping or explains a failure. With the default ALT + ALT binding, double-tap Alt within half a second. CTRL + CTRL likewise uses two taps. Other bindings use the modifier and mapped key together.
 
 The shortcut circles the pet and dims all connected displays, following the pet as it moves and fading away over one second. It also reveals a pet underneath application windows without changing Window Location. The spotlight passes mouse input through and keeps keyboard focus in your current application. `bin/Vpet.Tests.exe --finder-window-tests` checks key capture, global activation, screen overlays, and D20 hover with isolated preferences.
+
+## Included
 
 - Four-frame directional idle and five-frame walking cycles with eight facings.
 - Original artwork read from the unchanged reference. The renderer isolates the 45 source frames and removes only exterior white background pixels at runtime; no new AI artwork is required.

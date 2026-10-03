@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -146,7 +145,8 @@ namespace Vpet
             pet.Model.SetDestination(new PointF(pet.Model.Position.X+100,pet.Model.Position.Y),pet.Model.CurrentDisplay);var position=pet.Model.Position;
             Cursor.Position=Point.Round(toys.Die);PetFrame(pet);
             Check(toys.InspectingDie&&pet.Model.Position==position&&!pet.Model.Walking&&pet.Model.Facing==Geometry.Direction(new PointF(toys.Die.X-position.X,toys.Die.Y-position.Y),2),"D20 hover stops walking and faces the die");
-            Check(windows.CurrentAnnouncement.Value==toys.DieValue&&MakerField<LayeredWindow>(pet,"bubble").Visible&&!pet.ShowPause,"D20 hover shows its number without the Settings pause emote");
+            var announcement=windows.CurrentAnnouncement;
+            Check(announcement!=null&&announcement.Value==toys.DieValue&&MakerField<LayeredWindow>(pet,"bubble").Visible&&!pet.ShowPause,"D20 hover shows its number without the Settings pause emote");
             Cursor.Position=new Point(pet.Model.Current.Work.Left+1,pet.Model.Current.Work.Top+1);PetFrame(pet);
             Check(!toys.InspectingDie&&pet.Model.Position!=position&&pet.Model.Walking,"Leaving die hover resumes the preserved walk");
             toys.SetPlateVisible(true,pet.Now);toys.ServeFood(FoodKind.Pudding,pet.Now);pet.Model.Place(toys.EatingPosition);Cursor.Position=Point.Round(toys.Die);
