@@ -108,9 +108,9 @@ namespace Vpet
                 }
                 using(var settings=new SettingsWindow(pet))
                 {
-                    settings.Show();settings.SelectTab(2);Application.DoEvents();
-                    var combo=(ComboBox)settings.Controls.Find("AutoUpdate",true).Single();Check(combo.SelectedIndex==(auto?1:0),"Sprite tab reflects saved auto-update choice");
-                    combo.SelectedIndex=auto?0:1;Check(pet.Model.Settings.AutoUpdate!=auto,"Sprite auto-update choice saves immediately");
+                    settings.Show();settings.SelectTab(3);Application.DoEvents();
+                    var combo=(ComboBox)settings.Controls.Find("AutoUpdate",true).Single();Check(combo.SelectedIndex==(auto?1:0),"Advanced tab reflects saved auto-update choice");
+                    combo.SelectedIndex=auto?0:1;Check(pet.Model.Settings.AutoUpdate!=auto,"Advanced auto-update choice saves immediately");
                     using(var image=new Bitmap(settings.Width,settings.Height)){settings.DrawToBitmap(image,new Rectangle(Point.Empty,settings.Size));image.Save(Path.Combine(artifacts,"auto-update-settings-"+auto+".png"));}settings.Close();
                 }
                 pet.Close();

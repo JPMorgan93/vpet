@@ -82,6 +82,8 @@ namespace Vpet
             }
             phaseTime+=Math.Max(0,Math.Min(.1f,dt));
             if(Fetch==FetchPhase.Shaking&&phaseTime>=.125f)
+            {pet.ShakeUntil=0;phaseTime=0;Fetch=FetchPhase.Waiting;}
+            else if(Fetch==FetchPhase.Waiting&&phaseTime>=.125f)
             {
                 FoodRemaining=Math.Max(0,FoodRemaining-1);pet.ShakeUntil=0;phaseTime=0;
                 if(FoodRemaining==0)FinishFetch(now);else Fetch=FetchPhase.Pausing;
@@ -116,6 +118,7 @@ namespace Vpet
             IntPtr handle=Handle;Native.BackgroundAdornments.Add(handle);FormClosed+=delegate{Native.BackgroundAdornments.Remove(handle);};
             var pudding=new ToolStripMenuItem("Pudding"){Checked=true};Menu.Items.Add(pudding);
             pudding.Click+=delegate{model.ServeFood(FoodKind.Pudding,now());UpdatePlate();save();};
+            Menu.Items.Add(new ToolStripSeparator());Menu.Items.Add("Remove Plate",null,delegate{SetVisible(false);});
             Menu.Opening+=delegate{pudding.Checked=pet.Settings.Plate.DefaultFood==FoodKind.Pudding;};
             ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
             MouseDown+=delegate(object sender,MouseEventArgs e)

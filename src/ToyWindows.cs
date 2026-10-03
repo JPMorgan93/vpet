@@ -47,13 +47,20 @@ namespace Vpet
         ToySoundWindow soundWindow;
         internal bool Busy {get{return captured!=null||Menu.Visible||TriangleMenu.Visible||soundWindow!=null;}}
         internal bool MovingFence {get{return captured==Fence;}}
+        internal bool HoveringDie
+        {
+            get
+            {
+                var point=Cursor.Position;
+                return Model.Settings.DisplayChest&&Model.HasDie&&Die.Visible&&captured==null&&Native.WindowFromPoint(new Native.POINT(point.X,point.Y))==Die.Handle;
+            }
+        }
         internal IEnumerable<LayeredWindow> Windows {get{yield return Help;yield return Ball;yield return Triangle;yield return Coin;yield return Card;yield return Die;yield return Arrow;yield return FenceLabel;yield return Fence;yield return Chest;}}
         internal ToyAnnouncement CurrentAnnouncement
         {
             get
             {
-                var point=Cursor.Position;
-                if(Model.Settings.DisplayChest&&Model.HasDie&&Die.Visible&&!Model.DieRolling&&captured==null&&Native.WindowFromPoint(new Native.POINT(point.X,point.Y))==Die.Handle)
+                if(HoveringDie)
                     return new ToyAnnouncement(SpecialEmoteKind.Number,Model.DieValue);
                 return Model.Announcement;
             }

@@ -38,7 +38,7 @@ namespace Vpet
                     if(toys.FoodRemaining!=previous)
                     {
                         Check(toys.FoodRemaining==previous-1,"Every bite removes exactly a third");
-                        Near((float)(time-shakeStarted),.125f,.006f,"Each eating shake lasts one eighth of a second");
+                        Near((float)(time-shakeStarted),.25f,.011f,"Food disappears after the eighth-second shake and eighth-second pause");
                         Near(pet.Position.X,toys.PlatePosition.X,1,"Eating pet centers behind the food");
                         Near(pet.Position.Y,toys.EatingPosition.Y,1,"Eating pet stands above the plate");
                         previous=toys.FoodRemaining;bites++;
@@ -177,7 +177,7 @@ namespace Vpet
                     pet.OpenSettings(1);Application.DoEvents();var settings=MakerField<SettingsWindow>(pet,"settingsWindow");
                     Check(Descendants(settings).OfType<Button>().Any(b=>b.Text=="Hunger"),"Settings includes Hunger Try a reaction button");
                     var choice=MakerField<ComboBox>(settings,"emoteChoice");Check(choice.Items.Contains("Hunger"),"Hunger has replace and restore options");settings.Close();
-                    toggle.PerformClick();Check(!plate.Visible&&!model.HasPlate,"Plate toggle removes the window");pet.Close();
+                    Item(plate.Menu,"Remove Plate").PerformClick();Check(!plate.Visible&&!model.HasPlate&&model.FoodRemaining==0,"Remove Plate hides the window and clears food");pet.Close();
                 }
             }
             finally{Cursor.Position=original;Native.SetForegroundWindow(foreground);}
