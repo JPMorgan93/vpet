@@ -141,7 +141,11 @@ namespace Vpet
                     if(!Capturing&&keys.Input(raw,down,now(),settings))
                     {
                         if(InputObserved!=null)InputObserved(raw,down,"matched generation "+generation);
-                        int token=generation;Queue(delegate{if(!disposed&&token==generation&&settings.Enabled&&!Capturing)Spotlight.Trigger(now());});
+                        int token=generation;Queue(delegate{
+                            if(InputObserved!=null)InputObserved(raw,down,"queued token="+token+", generation="+generation+", disposed="+disposed+", capturing="+Capturing+", enabled="+settings.Enabled);
+                            if(!disposed&&token==generation&&settings.Enabled&&!Capturing)Spotlight.Trigger(now());
+                            if(InputObserved!=null)InputObserved(raw,down,"after trigger active="+Spotlight.Active);
+                        });
                     }
                 }
             }
