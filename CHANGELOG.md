@@ -1,4 +1,14 @@
-# Vpet 1.9.1
+# Vpet 1.10.0
+
+- Add Find My Vpet under Advanced settings, off by default. Choose ALT or CTRL, click the key box to clear its old mapping, then press a key to assign it with confirmation. The default ALT + ALT shortcut uses a double tap; CTRL + CTRL also uses two taps.
+- Find My Vpet circles the pet and dims the surrounding displays, follows the pet as it moves, and fades away over one second. It can reveal the pet beneath other windows without changing Window Location, taking keyboard focus, or blocking mouse clicks.
+- Hovering over the D20 now pauses the pet's current action, turns it toward the die, and displays the die's current value. Moving away resumes the paused action.
+- Add a one-eighth-second pause after each eating shake, before one third of the food disappears.
+- Move Load Vpet on PC startup and Auto-update on app startup to the top of Advanced settings, retaining their saved values.
+- Change reminder alerts to a simple three-tone chime.
+- Add Remove Plate to the plate's right-click menu to hide the plate, clear its food, and end feeding.
+
+## Vpet 1.9.1
 
 - Reduce the plate and every pudding portion to 75% of their previous width and height. Adjust the pet's eating position and screen-edge limits to match the smaller artwork.
 - Add a separator between Reminders and Check for Updates in the pet's right-click menu.

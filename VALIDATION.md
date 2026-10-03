@@ -1,6 +1,6 @@
 # Vpet validation
 
-## Pending release: Find My Vpet and interaction adjustments
+## Version 1.10.0
 
 6,068 automated assertions passed. New coverage checks default-off and saved locator settings, key normalization, modifier double taps, normal chords, held-key repeat rejection, invalid/cleared mappings, one-second fade timing, moving spotlight geometry, transparency and continuity across display boundaries, the eighth-second eating pause before food disappears, and the three distinct notes in the reminder WAV.
 
@@ -8,7 +8,7 @@
 
 Live desktop tests depend on cursor position. An initial expanded-game run and one die-hover run failed; unchanged reruns passed. The reminder menu test now moves the pointer away from the die after its drag checks, because D20 hover is intentionally a separate reason to pause. The updater-window harness stalled before invoking its fake Update callback in both the candidate and the unchanged September 30 1.9.1 binary; it is not counted as passing. Temporary diagnostic changes were removed. The relocated auto-update setting's on/off persistence is covered by the passing locator suite.
 
-The candidate EXE installer built successfully. The isolated installer/update test passed artwork/icon verification, fresh installation, progress-only updates, preserved destination and shortcut choices, skipped-version history, the legacy updater entry point, completion/relaunch, and cleanup. The normal Vpet installation and personal settings were unchanged. Version selection and public promotion are pending the owner's minor-versus-patch decision.
+The candidate EXE installer built successfully. The isolated installer/update test passed artwork/icon verification, fresh installation, progress-only updates, preserved destination and shortcut choices, skipped-version history, the legacy updater entry point, completion/relaunch, and cleanup. Seven startup-registration assertions passed using a temporary registry key. The normal Vpet installation and personal settings were unchanged. The owner explicitly chose the 1.10.0 minor release for Find My Vpet.
 
 ## Version 1.9.1
 
