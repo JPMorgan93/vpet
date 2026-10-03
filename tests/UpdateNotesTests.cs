@@ -46,7 +46,7 @@ namespace Vpet
         }
         static void UpdateNotesWindows()
         {
-            Console.WriteLine("Update dialog tests begin");
+            reportChecks=true;
             using(var completed=new UpdateNotesWindow("9.8.7",string.Join("\n",Enumerable.Range(1,100).Select(i=>"- Change "+i))))
             {
                 completed.Show();Application.DoEvents();
