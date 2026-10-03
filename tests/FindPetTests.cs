@@ -80,6 +80,7 @@ namespace Vpet
         {keybd_event((byte)key,0,down?0u:2u,UIntPtr.Zero);var clock=Stopwatch.StartNew();while(clock.ElapsedMilliseconds<25){Application.DoEvents();System.Threading.Thread.Sleep(1);}}
         static void FindPetWindows()
         {
+            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
             File.WriteAllText(Path.Combine(artifacts,"finder-ui-trace.txt"),"Starting\r\n");
             Point original=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();string root=AppDomain.CurrentDomain.BaseDirectory;
             try
