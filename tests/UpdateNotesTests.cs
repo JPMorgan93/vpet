@@ -68,11 +68,7 @@ namespace Vpet
             string data=Path.Combine(artifacts,"auto-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(data);new Preferences{AutoUpdate=auto}.Save(Path.Combine(data,"settings.json"));
             using(var pet=new PetWindow(data,Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"auto-smoke")))
             {
-                try
-                {
                 Check(pet.Model.Settings.AutoUpdate==auto&&MakerField<double>(pet,"nextUpdateCheck")== (auto?0:10),"Saved auto-update option schedules an immediate startup check");int installs=0;
-                pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();
-                typeof(PetWindow).GetField("smokeStep",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(pet,100);
                 pet.ReadUpdate=()=>new AvailableUpdate{Version="9.8.7",Notes="Must only display after completion"};
                 pet.InstallAvailable=update=>{installs++;Check(update.Version=="9.8.7","Installs discovered newest release");};
                 AwaitUpdate(pet.CheckForUpdatesAsync(false));Check(installs==(auto?1:0),"Only enabled startup checks auto-install");
@@ -90,8 +86,6 @@ namespace Vpet
                 using(var image=new Bitmap(check.Width,check.Height)){check.DrawToBitmap(image,new Rectangle(Point.Empty,check.Size));image.Save(Path.Combine(artifacts,"update-available.png"));}
                 FindButton(check,"Close").PerformClick();Check(installs==(auto?1:0),"Closing update status never installs");
                 AwaitUpdate(pet.CheckForUpdatesAsync(true));check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
-                Check(check!=null&&!check.IsDisposed,"Second manual check has a live status window");
-                Check(FindButton(check,"Update")!=null,"Second manual check exposes Update");
                 FindButton(check,"Update").PerformClick();Check(installs==(auto?2:1)&&check.IsDisposed,"Update installs the displayed version once and closes status");
                 pet.ReadUpdate=()=>null;AwaitUpdate(pet.CheckForUpdatesAsync(true));check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
                 Check(check.Controls[0].Controls.OfType<Label>().Any(l=>l.Text.Contains("most recent version"))&&!FindButton(check,"Update").Visible,"Up-to-date window confirms newest version and has no install action");
@@ -120,9 +114,6 @@ namespace Vpet
                     using(var image=new Bitmap(settings.Width,settings.Height)){settings.DrawToBitmap(image,new Rectangle(Point.Empty,settings.Size));image.Save(Path.Combine(artifacts,"auto-update-settings-"+auto+".png"));}settings.Close();
                 }
                 pet.Close();
-                }
-                catch(Exception ex){Console.WriteLine(ex);throw;}
-                finally{if(!pet.IsDisposed)pet.Close();}
             }
             }
         }

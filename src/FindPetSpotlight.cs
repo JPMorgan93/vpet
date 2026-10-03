@@ -33,7 +33,7 @@ namespace Vpet
             using(var g=Graphics.FromImage(image))
             {
                 g.Clear(Color.FromArgb(170,0,0,0));g.TranslateTransform(-screen.Left,-screen.Top);g.SmoothingMode=SmoothingMode.AntiAlias;
-                var visible=frames.Where(frame=>frame.Image!=null&&frame.Bounds.IntersectsWith(screen)).ToArray();
+                var visible=frames.Where(frame=>frame.Image!=null&&Circle(frame.Bounds).IntersectsWith(screen)).ToArray();
                 g.CompositingMode=CompositingMode.SourceCopy;
                 foreach(var frame in visible){var circle=Circle(frame.Bounds);g.FillEllipse(Brushes.Transparent,circle);}
                 g.CompositingMode=CompositingMode.SourceOver;
