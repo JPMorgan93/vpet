@@ -88,6 +88,8 @@ namespace Vpet
                 using(var image=new Bitmap(check.Width,check.Height)){check.DrawToBitmap(image,new Rectangle(Point.Empty,check.Size));image.Save(Path.Combine(artifacts,"update-available.png"));}
                 FindButton(check,"Close").PerformClick();Check(installs==(auto?1:0),"Closing update status never installs");
                 AwaitUpdate(pet.CheckForUpdatesAsync(true));check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
+                Check(check!=null&&!check.IsDisposed,"Second manual check has a live status window");
+                Check(FindButton(check,"Update")!=null,"Second manual check exposes Update");
                 FindButton(check,"Update").PerformClick();Check(installs==(auto?2:1)&&check.IsDisposed,"Update installs the displayed version once and closes status");
                 pet.ReadUpdate=()=>null;AwaitUpdate(pet.CheckForUpdatesAsync(true));check=MakerField<UpdateCheckWindow>(pet,"updateCheckWindow");
                 Check(check.Controls[0].Controls.OfType<Label>().Any(l=>l.Text.Contains("most recent version"))&&!FindButton(check,"Update").Visible,"Up-to-date window confirms newest version and has no install action");
