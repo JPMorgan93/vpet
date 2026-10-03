@@ -80,8 +80,6 @@ namespace Vpet
         {keybd_event((byte)key,0,down?0u:2u,UIntPtr.Zero);var clock=Stopwatch.StartNew();while(clock.ElapsedMilliseconds<25){Application.DoEvents();System.Threading.Thread.Sleep(1);}}
         static void FindPetWindows()
         {
-            Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
-            File.WriteAllText(Path.Combine(artifacts,"finder-ui-trace.txt"),"Starting\r\n");
             Point original=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();string root=AppDomain.CurrentDomain.BaseDirectory;
             try
             {
@@ -90,8 +88,7 @@ namespace Vpet
                 {
                     try
                     {
-                    pet.Show();MakerField<Timer>(pet,"timer").Stop();
-                    FinderStage("Pet shown");
+                    pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();
                     typeof(PetWindow).GetField("smokeStep",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(pet,99);
                     pet.Model.Settings.Frequency=Frequency.Off;pet.Model.Settings.Movement=MovementMode.Static;Cursor.Position=new Point(2,2);
                     Check(!pet.FindPet.Hooked,"Disabled Find My Vpet installs no keyboard hook");
@@ -102,26 +99,18 @@ namespace Vpet
                     var key=(TextBox)settings.Controls.Find("FindPetKey",true).Single();var status=(Label)settings.Controls.Find("FindPetStatus",true).Single();
                     Check(!enabled.Checked&&modifier.Text=="ALT"&&key.Text=="ALT"&&key.ReadOnly,"Finder settings show the requested default controls");
                     key.Focus();typeof(Control).GetMethod("OnClick",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(key,new object[]{EventArgs.Empty});Application.DoEvents();
-                    FinderStage("Capture started");
                     Check(key.Text==""&&pet.Model.Settings.FindPet.Key==0&&status.Text.Contains("Press any key")&&pet.FindPet.Capturing,"Click clears the saved mapping and asks for a key");
                     FinderKey(Keys.F24,true);FinderKey(Keys.F24,false);Application.DoEvents();
-                    FinderStage("Capture key sent");
                     Check(key.Text=="F24"&&pet.Model.Settings.FindPet.Key==(int)Keys.F24&&status.Text.Contains("successfully")&&!pet.FindPet.Capturing,"Native key capture maps one key and confirms success");
                     Check(!pet.FindPet.Hooked,"Disabled feature releases its temporary capture hook");
                     modifier.SelectedIndex=1;enabled.Checked=true;Check(pet.FindPet.Hooked,"Enabling valid mapping installs shortcut observer");
                     var saved=Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json"));Check(saved.FindPet.Enabled&&saved.FindPet.Modifier==FindPetModifier.Ctrl&&saved.FindPet.Key==(int)Keys.F24,"UI changes save the new shortcut");
                     settings.Close();focus.Show();focus.Activate();Application.DoEvents();IntPtr focused=Native.GetForegroundWindow();
-                    FinderStage("Other application focused");
-                    var inputs=new List<string>();pet.FindPet.InputObserved=(raw,down,state)=>inputs.Add(raw+" "+down+" "+state);
                     FinderKey(Keys.ControlKey,true);FinderKey(Keys.F24,true);FinderKey(Keys.F24,false);FinderKey(Keys.ControlKey,false);
-                    pet.FindPet.InputObserved=null;FinderStage(string.Join("; ",inputs));
-                    FinderStage("Shortcut active="+pet.FindPet.Spotlight.Active+", hook="+pet.FindPet.Hooked+", binding="+pet.Model.Settings.FindPet.Shortcut+", focus="+Native.GetForegroundWindow()+", expected="+focused);
                     Check(pet.FindPet.Spotlight.Active,"Global shortcut activates from another application");
                     Check(Native.GetForegroundWindow()==focused,"Global shortcut keeps the other application's keyboard focus");
-                    FinderStage("Global activation observed");
                     var frame=new SpotlightFrame(pet.PresentedBounds,MakerField<Bitmap>(pet,"rendered"));var screens=Screen.AllScreens.Select(s=>s.Bounds).ToArray();
                     pet.FindPet.Spotlight.Update(pet.Now,new[]{frame},screens);Application.DoEvents();
-                    FinderStage("Spotlight rendered");
                     Check(pet.FindPet.Spotlight.Windows.Count(w=>w.Visible)==screens.Length,"Spotlight dims every connected display");
                     foreach(var window in pet.FindPet.Spotlight.Windows)
                     {
@@ -132,21 +121,19 @@ namespace Vpet
                     double moment=pet.Now;pet.FindPet.Spotlight.Trigger(moment);pet.FindPet.Spotlight.Update(moment+1.01,new[]{frame},screens);
                     Check(!pet.FindPet.Spotlight.Active&&pet.FindPet.Spotlight.Windows.All(w=>!w.Visible),"Spotlight windows disappear after the one-second fade");
                     pet.Model.Settings.FindPet.Key=(int)Keys.Menu;pet.Model.Settings.FindPet.Modifier=FindPetModifier.Alt;pet.FindPet.ApplySettings();
-                    FinderKey(Keys.Menu,true);FinderKey(Keys.Menu,false);FinderKey(Keys.Menu,true);FinderKey(Keys.Menu,false);
+                    // Queue both taps before pumping: Alt can enter another window's modal menu loop.
+                    keybd_event((byte)Keys.Menu,0,0,UIntPtr.Zero);keybd_event((byte)Keys.Menu,0,2,UIntPtr.Zero);
+                    keybd_event((byte)Keys.Menu,0,0,UIntPtr.Zero);FinderKey(Keys.Menu,false);
                     Check(pet.FindPet.Spotlight.Active,"Native double-tap Alt activates the default binding");
-                    FinderStage("Double tap observed");
                     pet.Model.Settings.FindPet.Enabled=false;pet.FindPet.ApplySettings();Check(!pet.FindPet.Hooked&&!pet.FindPet.Spotlight.Active,"Turning feature off removes hook and spotlight");
                     FinderDieHover(pet);
-                    FinderStage("Die hover tested");
                     pet.Close();Check(!pet.FindPet.Hooked&&!pet.FindPet.Spotlight.Windows.Any(),"Closing pet removes global input and overlay windows");
                     }
-                    catch(Exception ex){FinderStage(ex.ToString());throw;}
                     finally{if(!pet.IsDisposed)pet.Close();}
                 }
             }
             finally{FinderKey(Keys.F24,false);FinderKey(Keys.ControlKey,false);FinderKey(Keys.Menu,false);Cursor.Position=original;Native.SetForegroundWindow(foreground);}
         }
-        static void FinderStage(string message){File.AppendAllText(Path.Combine(artifacts,"finder-ui-trace.txt"),message+"\r\n");Console.WriteLine(message);}
         static void FinderDieHover(PetWindow pet)
         {
             var windows=pet.Toys;var toys=windows.Model;pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();windows.SetVisible(true);toys.SpawnDie();windows.Update();

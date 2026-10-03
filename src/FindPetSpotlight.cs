@@ -63,7 +63,7 @@ namespace Vpet
                 Native.SetWindowPos(window.Handle,new IntPtr(-1),0,0,0,0,0x213);
             }
         }
-        public void Hide(){if(Active)Console.WriteLine("Hide: "+Environment.StackTrace);Active=false;foreach(var window in windows.Values)window.Hide();}
+        public void Hide(){Active=false;foreach(var window in windows.Values)window.Hide();}
         public void Dispose(){foreach(var window in windows.Values){window.Close();window.Dispose();}windows.Clear();Active=false;}
     }
 }
