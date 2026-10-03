@@ -51,6 +51,8 @@ namespace Vpet
                         if(body==first)image.Save(Path.Combine(artifacts,"find-pet-spotlight.png"));
                     }
                 }
+                using(var edge=FindPetSpotlight.Draw(new Rectangle(0,0,200,300),new[]{new SpotlightFrame(new Rectangle(-45,70,40,60),sprite)}))
+                    Check(edge.GetPixel(3,100).A==0,"Spotlight stays continuous across a monitor boundary even when the pet body is on the other screen");
             }
             var pet=Pet(MovementMode.Static);var toys=Toys(pet);toys.SetPlateVisible(true,0);toys.ServeFood(FoodKind.Pudding,0);pet.Place(toys.EatingPosition);
             double now=0;ToyStep(toys,pet,now,.001f);
@@ -95,6 +97,9 @@ namespace Vpet
                     pet.OpenSettings(3);Application.DoEvents();var settings=MakerField<SettingsWindow>(pet,"settingsWindow");var tabs=MakerField<TabControl>(settings,"tabs");
                     var advanced=Descendants(tabs.TabPages[3]).ToArray();
                     Check(advanced.Any(c=>c.Text=="Load Vpet on PC startup")&&advanced.Any(c=>c.Text=="Auto-update on app startup")&&!Descendants(tabs.TabPages[2]).Any(c=>c.Text=="Load Vpet on PC startup"||c.Name=="AutoUpdate"),"Both startup options are on Advanced and removed from Sprite");
+                    var autoUpdate=(ComboBox)settings.Controls.Find("AutoUpdate",true).Single();autoUpdate.SelectedIndex=1;
+                    Check(pet.Model.Settings.AutoUpdate&&Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).AutoUpdate,"Advanced auto-update selection saves immediately");autoUpdate.SelectedIndex=0;
+                    Check(!Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).AutoUpdate,"Advanced auto-update can be switched back off");
                     var enabled=(CheckBox)settings.Controls.Find("FindPetEnabled",true).Single();var modifier=(ComboBox)settings.Controls.Find("FindPetModifier",true).Single();
                     var key=(TextBox)settings.Controls.Find("FindPetKey",true).Single();var status=(Label)settings.Controls.Find("FindPetStatus",true).Single();
                     Check(!enabled.Checked&&modifier.Text=="ALT"&&key.Text=="ALT"&&key.ReadOnly,"Finder settings show the requested default controls");

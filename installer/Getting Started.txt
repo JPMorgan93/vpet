@@ -20,7 +20,7 @@ Updates and uninstalling preserve these personal files.
 
 The pet works offline. When connected, it checks public releases at
 https://github.com/JPMorgan93/vpet.
-Settings > Sprite > Auto-update on app startup appears below the PC startup
+Settings > Advanced > Auto-update on app startup appears below the PC startup
 option. Choose Yes to install the newest release automatically at app startup.
 No is the default. Periodic checks while running announce available updates.
 Check for Updates, below the last separator and above Close Vpet in the pet
@@ -31,6 +31,17 @@ Settings, artwork and shortcut choices are preserved. Release notes appear
 only after the update succeeds and Vpet reopens, including all skipped releases
 since the last version you ran. Up-to-date checks show status without old notes.
 Users on version 1.0.0 must install 1.1.0 once to enable update checks.
+
+FIND MY VPET
+Settings > Advanced starts with the PC startup and auto-update options.
+Below them, Find My Vpet defaults off. Enable it, choose ALT or CTRL, then
+click the key box and press a key. Clicking clears the previous mapping;
+the message confirms success or reports a failure. Defaults are ALT + ALT:
+double-tap Alt within half a second. CTRL + CTRL also uses two taps.
+Other bindings use the modifier and mapped key together.
+Your shortcut circles the pet and dims the surrounding displays. The circle
+follows the pet, even beneath application windows, and fades away over one
+second. It keeps keyboard focus in your current app and passes clicks through.
 
 SPRITE MAKER
 Settings > Sprite > Open Sprite Maker lets you select animation frames from a
@@ -109,11 +120,12 @@ Left-click an empty plate to serve the default again. Pudding has caramel,
 whipped cream and a strawberry, with whole, two-thirds and one-third portions.
 Food interrupts the pet's current action. It shows Hunger and walks above the
 plate, behind the food, even in Static mode or outside movement fences.
-Three one-eighth-second shakes remove a third of the food each time, with a
-brief pause between bites. Normal movement resumes after the plate is empty.
+Each bite has a one-eighth-second shake, then a one-eighth-second pause before
+a third of the food disappears. Normal movement resumes after three bites.
 Moving the plate redirects the pet; it waits until release before eating.
-Picking up the pet or using another toy interrupts the meal. Hide the plate to
-clear the food. Visibility, position and default food are saved, but the plate
+Picking up the pet or using another toy interrupts the meal. Right-click the
+plate > Remove Plate to hide it, clear its food, and end feeding.
+Visibility, position and default food are saved, but the plate
 starts empty when Vpet restarts. Clean Up Toys does not remove the plate.
 Hunger uses the Windows U+1F37D emoji, can be replaced under Personality, and
 has an optional animation row in Sprite Maker alongside the other reactions.
@@ -150,7 +162,8 @@ approaches first, turns a face-up card down, then starts and chooses High or Low
 The D20 uses its original size, with smaller numbers inside its central face
 that stay clear of the lines. Left-drag to reposition it inside the zone;
 right-drag and release to launch along its red arrow, or click for a random roll.
-Hover over the stopped D20 to see its current number in the pet's speech bubble.
+Hover over the D20 to stop the pet's current action, face the die, and show its
+current number in the speech bubble. Moving away resumes the paused action.
 It spins and ricochets inside the fence. The pet watches without chasing, then
 announces a number from 1 to 20 when it stops. Game announcements are special
 emotes, excluded from the default reaction/customization list.
@@ -178,7 +191,8 @@ All selected days share one time, with explicit AM/PM controls, in PC local time
 Messages allow up to 200 characters, including clickable HTTP/HTTPS links.
 Active is checked by default. Save stores the entry, Delete erases it, and
 Cancel discards unsaved edits.
-When due, the pet chimes and displays a separate reminder bubble with Dismiss.
+When due, the pet plays a simple three-tone chime and displays a separate
+reminder bubble with Dismiss.
 The bubble stays beside the pet and follows walking, dragging, and movement
 between displays, updating alongside the emote speech bubble.
 Hover over it to hold the pet still while reading or clicking. Dismiss closes
