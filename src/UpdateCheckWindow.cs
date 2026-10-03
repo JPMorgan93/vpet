@@ -24,7 +24,7 @@ namespace Vpet
             update=MakerUi.Button("Update",delegate
             {
                 if(available==null)return;
-                var chosen=available;available=null;update.Enabled=false;Close();install(chosen);
+                Console.WriteLine("Update clicked");var chosen=available;available=null;update.Enabled=false;Console.WriteLine("Closing update window");Close();Console.WriteLine("Invoking install callback");install(chosen);Console.WriteLine("Callback done");
             });buttons.Controls.Add(update);
             var close=MakerUi.Button("Close",delegate{Close();});buttons.Controls.Add(close);CancelButton=close;
             ShowChecking();
