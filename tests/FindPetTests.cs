@@ -112,7 +112,9 @@ namespace Vpet
                     settings.Close();focus.Show();focus.Activate();Application.DoEvents();IntPtr focused=Native.GetForegroundWindow();
                     FinderStage("Other application focused");
                     FinderKey(Keys.ControlKey,true);FinderKey(Keys.F24,true);FinderKey(Keys.F24,false);FinderKey(Keys.ControlKey,false);
-                    Check(pet.FindPet.Spotlight.Active&&Native.GetForegroundWindow()==focused,"Global shortcut activates while another window keeps keyboard focus");
+                    FinderStage("Shortcut active="+pet.FindPet.Spotlight.Active+", hook="+pet.FindPet.Hooked+", binding="+pet.Model.Settings.FindPet.Shortcut+", focus="+Native.GetForegroundWindow()+", expected="+focused);
+                    Check(pet.FindPet.Spotlight.Active,"Global shortcut activates from another application");
+                    Check(Native.GetForegroundWindow()==focused,"Global shortcut keeps the other application's keyboard focus");
                     FinderStage("Global activation observed");
                     var frame=new SpotlightFrame(pet.PresentedBounds,MakerField<Bitmap>(pet,"rendered"));var screens=Screen.AllScreens.Select(s=>s.Bounds).ToArray();
                     pet.FindPet.Spotlight.Update(pet.Now,new[]{frame},screens);Application.DoEvents();
