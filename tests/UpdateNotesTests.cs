@@ -68,6 +68,8 @@ namespace Vpet
             string data=Path.Combine(artifacts,"auto-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(data);new Preferences{AutoUpdate=auto}.Save(Path.Combine(data,"settings.json"));
             using(var pet=new PetWindow(data,Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"auto-smoke")))
             {
+                try
+                {
                 Check(pet.Model.Settings.AutoUpdate==auto&&MakerField<double>(pet,"nextUpdateCheck")== (auto?0:10),"Saved auto-update option schedules an immediate startup check");int installs=0;
                 pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();
                 typeof(PetWindow).GetField("smokeStep",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(pet,100);
@@ -118,6 +120,9 @@ namespace Vpet
                     using(var image=new Bitmap(settings.Width,settings.Height)){settings.DrawToBitmap(image,new Rectangle(Point.Empty,settings.Size));image.Save(Path.Combine(artifacts,"auto-update-settings-"+auto+".png"));}settings.Close();
                 }
                 pet.Close();
+                }
+                catch(Exception ex){Console.WriteLine(ex);throw;}
+                finally{if(!pet.IsDisposed)pet.Close();}
             }
             }
         }
