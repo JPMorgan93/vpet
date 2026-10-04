@@ -55,13 +55,23 @@ namespace Vpet
                         now+=3.01;arcade.Step();var volume=MakerField<TrackBar>(arcade,"volume");Check(arcade.Dance.State==DanceState.Running&&volume.Visible&&volume.Orientation==Orientation.Vertical,"Song starts after countdown with vertical music volume");
                         // Send native key messages through the form, including an auto-repeat and release.
                         Native.SendMessage(arcade.Handle,0x100,new IntPtr((int)Keys.A),new IntPtr(1));Check(arcade.Dance.Misses==1,"Keyboard input outside a target overlap counts a miss");Native.SendMessage(arcade.Handle,0x100,new IntPtr((int)Keys.A),new IntPtr(0x40000001));Check(arcade.Dance.Misses==1,"Holding a mapped key does not generate repeat misses");Native.SendMessage(arcade.Handle,0x101,new IntPtr((int)Keys.A),IntPtr.Zero);
-                        FindButton(arcade,"\u21bb").PerformClick();Check(pet.Model.Settings.Arcade.ArrowKeys,"Key switch changes WASD to arrows and persists preference");
+                        MakerField<Button>(arcade,"switchKeys").PerformClick();Check(pet.Model.Settings.Arcade.ArrowKeys,"Key switch changes WASD to arrows and persists preference");
                         Check(!ArcadeKey(arcade,Keys.W),"Old letter mapping passes through after switching to arrows");ArcadeKey(arcade,Keys.Left);ArcadeKeyUp(arcade,Keys.Left);
                         Check(arcade.Dance.State==DanceState.Failed&&score.Text=="- -"&&FindButton(arcade,"Start").Visible,"Last miss returns Start, discards score, and stops the song");CaptureForm(arcade,"dance-failed");
+                        modes[0].Checked=true;double songTime=0;arcade.SongPosition=()=>songTime;FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();
+                        Keys[] arrows={Keys.Up,Keys.Down,Keys.Left,Keys.Right};int noteCount=0;
+                        foreach(var target in arcade.Dance.Chart)
+                        {
+                            songTime=target.HitTime;now+=.1;ArcadeKey(arcade,arrows[(int)target.Lane]);ArcadeKeyUp(arcade,arrows[(int)target.Lane]);
+                            if(++noteCount==5)CaptureForm(arcade,"dance-playing");
+                        }
+                        songTime=arcade.Dance.Duration;now+=.1;arcade.Step();
+                        Check(arcade.Dance.State==DanceState.Success&&arcade.Dance.Banked>0&&score.Text==arcade.Dance.Banked.ToString(),"Successful Dance song banks its streak-adjusted score in the UI");
+                        Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.High(ArcadeGame.Dance,ArcadeDifficulty.Easy)==arcade.Dance.Banked,"Successful Dance high score persists independently");CaptureForm(arcade,"dance-success");
                         FindButton(arcade,"Close Game").PerformClick();Check(arcade.Game==ArcadeGame.Lobby&&pet.ArcadeOpen&&!pet.Visible,"Close Game returns to lobby while desktop pet stays hidden");
                         ClickCabinet(arcade,1);Check(arcade.Game==ArcadeGame.Simon&&!volume.Visible,"Simon Says cabinet opens without music/volume controls");
                         FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();Check(arcade.Simon.State==SimonState.Showing&&arcade.Simon.Sequence.Count==1,"Simon begins by displaying one color");CaptureForm(arcade,"simon-watch");
-                        now+=.5+arcade.Simon.ShowStep+.01;arcade.Step();ArcadeLane lane=arcade.Simon.Sequence[0];Keys[] arrows={Keys.Up,Keys.Down,Keys.Left,Keys.Right};ArcadeKey(arcade,arrows[(int)lane]);ArcadeKeyUp(arcade,arrows[(int)lane]);
+                        now+=.5+arcade.Simon.ShowStep+.01;arcade.Step();ArcadeLane lane=arcade.Simon.Sequence[0];ArcadeKey(arcade,arrows[(int)lane]);ArcadeKeyUp(arcade,arrows[(int)lane]);
                         Check(arcade.Simon.Pending==50&&arcade.Simon.Sequence.Count==2,"Correct mapped key advances Simon and adds 50 pending points");
                         now+=.5+2*arcade.Simon.ShowStep+.01;arcade.Step();Keys wrong=arrows[((int)arcade.Simon.Sequence[0]+1)%4];ArcadeKey(arcade,wrong);ArcadeKeyUp(arcade,wrong);
                         Check(arcade.Simon.State==SimonState.Finished&&score.Text=="50"&&FindButton(arcade,"Start").Visible,"Simon mistake banks completed rounds and offers replay");

@@ -102,7 +102,7 @@ namespace Vpet
             {
                 int alpha=(int)(255*Math.Max(0,1-(now-resultAt)/2));string result=Game==ArcadeGame.Dance&&Dance!=null?Dance.State==DanceState.Success?"Success":"Failed":"Game Over";
                 TextAt(g,result,500,108,42,Color.FromArgb(alpha,resultReaction==7?Color.PaleGreen:Color.LightCoral),true);
-                using(var bubble=Artwork.Bubble(resultReaction,emote(resultReaction),1,false))g.DrawImage(bubble,new PointF(500-bubble.Width/2f,190-bubble.Height));
+                using(var bubble=Artwork.Bubble(resultReaction,emote(resultReaction),.8f,false))g.DrawImage(bubble,new PointF(500-bubble.Width/2f,276-bubble.Height));
             }
         }
         void DrawSquare(Graphics g,PointF center,ArcadeLane lane,bool target,bool lit)

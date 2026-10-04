@@ -33,6 +33,7 @@ namespace Vpet
         internal DanceGame Dance {get;private set;}
         internal SimonGame Simon {get;private set;}
         internal Func<double> Time {get;set;}
+        internal Func<double> SongPosition {get;set;}
         bool updating,showingHigh,resultHandled,disposed;
         double resultAt=-100,hopAt=-100,lastHop;
         int resultReaction=-1,facing=2;
@@ -45,26 +46,29 @@ namespace Vpet
             this.sprites=sprites;this.emote=emote;this.prefs=prefs;this.save=save;this.musicDirectory=musicDirectory;this.random=random;
             Text="Arcade Window";Font=new Font("Segoe UI",10);AutoScaleMode=AutoScaleMode.Dpi;BackColor=Color.FromArgb(36,27,58);
             ClientSize=new Size(1040,790);MinimumSize=new Size(700,620);StartPosition=FormStartPosition.CenterScreen;KeyPreview=true;
-            var top=new Panel{Dock=DockStyle.Top,Height=92};var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};
+            SongPosition=()=>music.Position;score.Font=new Font("Consolas",16,FontStyle.Bold);
+            var top=new Panel{Dock=DockStyle.Top,Height=92,BackColor=Color.FromArgb(241,236,249)};lobbyHeading.ForeColor=MakerUi.Purple;
+            var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};calculated.ForeColor=MakerUi.Purple;
             scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficulties);top.Controls.Add(lobbyHeading);
-            difficulties.Controls.Add(MakerUi.Label("Difficulty:"));
+            var difficultyLabel=MakerUi.Label("Difficulty:");difficultyLabel.ForeColor=MakerUi.Purple;difficulties.Controls.Add(difficultyLabel);
             for(int i=0;i<3;i++)
             {
-                int index=i;modes[i]=new RadioButton{Text=((ArcadeDifficulty)i).ToString(),AutoSize=true,ForeColor=Color.White,Margin=new Padding(6,15,6,8)};
+                int index=i;modes[i]=new RadioButton{Text=((ArcadeDifficulty)i).ToString(),AutoSize=true,ForeColor=MakerUi.Purple,Margin=new Padding(6,15,6,8)};
                 difficulties.Controls.Add(modes[i]);modes[i].CheckedChanged+=delegate{if(!updating&&modes[index].Checked)ChooseDifficulty((ArcadeDifficulty)index);};
             }
-            var footer=new TableLayoutPanel{Dock=DockStyle.Bottom,Height=88,ColumnCount=3,RowCount=2,Padding=new Padding(8)};
+            var footer=new TableLayoutPanel{Dock=DockStyle.Bottom,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=3,RowCount=2,Padding=new Padding(8)};
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,33));footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,34));footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,33));
             closeGame.Anchor=AnchorStyles.Left;start.Anchor=AnchorStyles.None;footer.Controls.Add(closeGame,0,0);footer.Controls.Add(start,1,0);footer.Controls.Add(guidance,0,1);footer.SetColumnSpan(guidance,3);
             Controls.Add(canvas);Controls.Add(top);Controls.Add(footer);
             canvas.Controls.Add(switchKeys);canvas.Controls.Add(volume);canvas.Controls.Add(volumeLabel);
-            switchKeys.MinimumSize=new Size(36,34);switchKeys.Size=new Size(42,36);switchKeys.Name="ArcadeKeyBinding";
+            switchKeys.MinimumSize=new Size(36,34);switchKeys.Size=new Size(42,36);switchKeys.Name="ArcadeKeyBinding";switchKeys.Text="";switchKeys.Image=ArcadeControls.SwitchIcon();switchKeys.AccessibleName="Switch between WASD and arrow keys";
             tips.SetToolTip(switchKeys,"Switch between WASD and arrow keys");tips.SetToolTip(score,"Click to show the high score for this game and difficulty");
             switchKeys.Click+=delegate{prefs.ArrowKeys=!prefs.ArrowKeys;held.Clear();save();Focus();canvas.Invalidate();};
             score.Click+=delegate{showingHigh=!showingHigh;RefreshControls();Focus();};
             start.Click+=delegate{StartGame();};closeGame.Click+=delegate{ShowLobby();};
             volume.Value=prefs.Volume;volume.ValueChanged+=delegate{prefs.Volume=volume.Value;try{music.SetVolume(prefs.Volume);}catch(Exception ex){MusicError(ex);}save();};
             canvas.Resize+=delegate{PositionControls();};canvas.Paint+=PaintArcade;canvas.MouseClick+=CabinetClick;
+            Resize+=delegate{guidance.MaximumSize=new Size(Math.Max(1,ClientSize.Width-32),0);};guidance.MaximumSize=new Size(ClientSize.Width-32,0);
             KeyDown+=delegate(object sender,KeyEventArgs e){if(HandleGameKey(e.KeyData)){e.Handled=true;e.SuppressKeyPress=true;}};
             KeyUp+=delegate(object sender,KeyEventArgs e){held.Remove(e.KeyCode);};Deactivate+=delegate{held.Clear();};
             timer.Tick+=delegate{Step();};Shown+=delegate{previous=Now;timer.Start();};
@@ -107,7 +111,7 @@ namespace Vpet
             {lobbyX+=lobbyDirection*80*dt;if(lobbyX>880){lobbyX=880;lobbyDirection=-1;}else if(lobbyX<120){lobbyX=120;lobbyDirection=1;}facing=lobbyDirection>0?0:4;}
             else if(Game==ArcadeGame.Dance&&Dance!=null)
             {
-                try{Dance.Update(now,Dance.State==DanceState.Running?(double?)music.Position:null);}
+                try{Dance.Update(now,Dance.State==DanceState.Running?(double?)SongPosition():null);}
                 catch(Exception ex){MusicError(ex);}
                 if(Dance!=null&&Dance.State==DanceState.Running)
                 {
@@ -160,6 +164,14 @@ namespace Vpet
         float SceneScale {get{return Math.Max(.1f,Math.Min(canvas.Width/1000f,canvas.Height/660f));}}
         PointF SceneOrigin {get{return new PointF((canvas.Width-1000*SceneScale)/2,(canvas.Height-660*SceneScale)/2);}}
         protected override void Dispose(bool disposing)
-        {if(disposing&&!disposed){disposed=true;timer.Stop();timer.Dispose();music.Dispose();tips.Dispose();save();}base.Dispose(disposing);}
+        {if(disposing&&!disposed){disposed=true;timer.Stop();timer.Dispose();music.Dispose();tips.Dispose();switchKeys.Image.Dispose();save();}base.Dispose(disposing);}
+    }
+    internal static class ArcadeControls
+    {
+        internal static Bitmap SwitchIcon()
+        {
+            var image=new Bitmap(26,26);using(var g=Graphics.FromImage(image))using(var cap=new AdjustableArrowCap(3,4,true))using(var pen=new Pen(MakerUi.Purple,2))
+            {g.SmoothingMode=SmoothingMode.AntiAlias;pen.CustomEndCap=cap;g.DrawArc(pen,5,5,16,16,205,140);g.DrawArc(pen,5,5,16,16,25,140);}return image;
+        }
     }
 }
