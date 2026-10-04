@@ -44,7 +44,7 @@ namespace Vpet
         {
             pet.Settings.Joystick.Visible=visible;
             if(visible)RecoverJoystick();
-            else {JoystickDragging=false;if(Target==PlayTarget.Joystick){if(Fetch==FetchPhase.Arcade&&ArcadeClosed!=null)ArcadeClosed();FinishFetch(now);}}
+            else {JoystickDragging=false;if(ArcadeClosed!=null)ArcadeClosed();if(Target==PlayTarget.Joystick)FinishFetch(now);}
         }
         public void DragJoystick(PointF point)
         {PlaceJoystick(point);if(Target==PlayTarget.Joystick&&Fetch==FetchPhase.Approaching)RestartApproach();}
@@ -104,10 +104,10 @@ namespace Vpet
         {
             var image=new Bitmap((int)Math.Ceiling(80*scale),(int)Math.Ceiling(72*scale),PixelFormat.Format32bppArgb);
             using(var g=Graphics.FromImage(image))using(var edge=new Pen(Color.FromArgb(28,23,45),2))
-            using(var body=new SolidBrush(Color.FromArgb(76,49,123)))using(var top=new SolidBrush(Color.FromArgb(122,81,176)))
+            using(var body=new SolidBrush(Color.FromArgb(76,49,123)))using(var top=new SolidBrush(Color.FromArgb(122,81,176)))using(var shadow=new SolidBrush(Color.FromArgb(45,20,15,30)))
             {
                 g.ScaleTransform(scale,scale);g.SmoothingMode=SmoothingMode.AntiAlias;
-                g.FillEllipse(new SolidBrush(Color.FromArgb(45,20,15,30)),5,56,70,12);
+                g.FillEllipse(shadow,5,56,70,12);
                 g.FillPolygon(body,new[]{new PointF(5,43),new PointF(68,43),new PointF(75,62),new PointF(10,65)});
                 g.FillPolygon(top,new[]{new PointF(5,43),new PointF(15,33),new PointF(74,34),new PointF(75,51),new PointF(10,54)});
                 g.DrawPolygon(edge,new[]{new PointF(5,43),new PointF(15,33),new PointF(74,34),new PointF(75,62),new PointF(10,65)});
