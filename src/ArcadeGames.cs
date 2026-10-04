@@ -128,9 +128,9 @@ namespace Vpet
         }
         public void Update(double now)
         {
-            if(State==SimonState.Countdown&&now-phaseAt>=3)NewRound(now);
-            else if(State==SimonState.Showing&&now-phaseAt>=.5+Sequence.Count*ShowStep){State=SimonState.Replaying;phaseAt=now;}
-            else if(State==SimonState.Replaying&&now-phaseAt>=5)Finish(now);
+            if(State==SimonState.Countdown&&now-phaseAt+1e-9>=3)NewRound(now);
+            else if(State==SimonState.Showing&&now-phaseAt+1e-9>=.5+Sequence.Count*ShowStep){State=SimonState.Replaying;phaseAt=now;}
+            else if(State==SimonState.Replaying&&now-phaseAt+1e-9>=5)Finish(now);
         }
         public void Press(ArcadeLane lane,double now)
         {

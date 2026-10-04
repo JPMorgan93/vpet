@@ -58,7 +58,7 @@ namespace Vpet
                     Console.WriteLine("PASS: public GitHub release "+update.Version+" discovered and installer downloaded/verified. No installer was executed.");return 0;
                 }
                 DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();UpdateDescriptions();StartupSettings();MakerProjects();ToyBehavior();OptionalAnimations();TrianglePlay();InstrumentSounds();SheetReplacement();ExpandedFeatures();ReminderSchedules();
-                PlateFeatures();FindPetFeatures();Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
+                PlateFeatures();FindPetFeatures();ArcadeFeatures();Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
             }
             catch(Exception ex){Console.Error.WriteLine(ex);return 1;}
         }

@@ -16,7 +16,7 @@ namespace Vpet
             arcadeWindow.FormClosed+=delegate
             {
                 arcadeWindow=null;if(closing)return;
-                Toys.Model.LeaveArcade(Now);Model.Paused=false;Show();ApplyLayer();Render();Save();
+                Model.Place(Toys.Model.JoystickApproach);Toys.Model.LeaveArcade(Now);Model.Paused=false;Show();ApplyLayer();Render();Save();
             };
             FindPet.Spotlight.Hide();HideDesktopPet();arcadeWindow.Show();arcadeWindow.Activate();
         }

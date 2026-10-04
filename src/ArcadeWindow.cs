@@ -32,7 +32,7 @@ namespace Vpet
         internal ArcadeDifficulty Difficulty {get;private set;}
         internal DanceGame Dance {get;private set;}
         internal SimonGame Simon {get;private set;}
-        internal Func<double> Time;
+        internal Func<double> Time {get;set;}
         bool updating,showingHigh,resultHandled,disposed;
         double resultAt=-100,hopAt=-100,lastHop;
         int resultReaction=-1,facing=2;
