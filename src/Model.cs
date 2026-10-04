@@ -41,6 +41,8 @@ namespace Vpet
         [DataMember] public ToyPreferences Toys = new ToyPreferences();
         [DataMember] public PlatePreferences Plate = new PlatePreferences();
         [DataMember] public FindPetPreferences FindPet = new FindPetPreferences();
+        [DataMember] public JoystickPreferences Joystick = new JoystickPreferences();
+        [DataMember] public ArcadePreferences Arcade = new ArcadePreferences();
 
         [OnDeserializing]
         void InitializeDefaults(StreamingContext context)
@@ -50,6 +52,7 @@ namespace Vpet
             X=Y=AnchorX=AnchorY=float.NaN;Frequency=Frequency.Sometimes;
             PetName="";NameDisplay=NameVisibility.Always;LaunchOnStartup=false;AutoUpdate=false;LastSpriteProject="";
             Toys=new ToyPreferences();Plate=new PlatePreferences();FindPet=new FindPetPreferences();
+            Joystick=new JoystickPreferences();Arcade=new ArcadePreferences();
         }
 
         public void Validate()
@@ -68,6 +71,8 @@ namespace Vpet
             if(Toys==null)Toys=new ToyPreferences();Toys.Validate();
             if(Plate==null)Plate=new PlatePreferences();Plate.Validate();
             if(FindPet==null)FindPet=new FindPetPreferences();FindPet.Validate();
+            if(Joystick==null)Joystick=new JoystickPreferences();
+            if(Arcade==null)Arcade=new ArcadePreferences();Arcade.Validate();
         }
         public static string CleanName(string name)
         {
