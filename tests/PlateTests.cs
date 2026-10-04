@@ -150,7 +150,7 @@ namespace Vpet
                     pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
                     using(var g=Graphics.FromImage(solid))g.Clear(Color.White);app.Present(solid,new Point(40,40));app.Show();
                     var menu=pet.ContextMenuStrip;var display=(ToolStripMenuItem)menu.Items[0];
-                    Check(display.Text=="Display Items"&&display.DropDownItems.Cast<ToolStripItem>().Select(i=>i.Text).SequenceEqual(new[]{"Toy Chest","Plate"}),"Display Items is first and contains Toy Chest and Plate");
+                    Check(display.Text=="Display Items"&&display.DropDownItems.Cast<ToolStripItem>().Select(i=>i.Text).SequenceEqual(new[]{"Toy Chest","Plate","Joystick"}),"Display Items is first and contains Toy Chest, Plate, and Joystick");
                     var toggle=(ToolStripMenuItem)display.DropDownItems[1];toggle.PerformClick();Application.DoEvents();
                     var plate=pet.Plate;var model=pet.Toys.Model;
                     Check(plate.Visible&&!model.Settings.DisplayChest&&model.HasPlate&&model.FoodRemaining==0,"Plate toggle works with chest hidden and starts empty");
