@@ -1,4 +1,13 @@
-# Vpet 1.10.0
+# Vpet 1.11.0
+
+- Add Joystick to Display Items. Drag it independently of movement fences; click it to send the pet behind it, even in Static mode or at zero walking speed. On arrival, Arcade Window opens and the desktop pet hides. Closing Arcade restores the pet behind the joystick and resumes its normal movement rules.
+- Add an arcade lobby with the active Dance Time and Simon Says cabinets, three grey reserved cabinets, and your current pet walking in front of them. Close Game returns to the lobby; closing the window returns to the desktop.
+- Add Dance Time with the supplied Easy, Normal, and Hard songs, inward-moving targets, 1x/1.5x/2x target speeds, and three/two/one miss counters. Score Good, Great, or Excellent for at least 1%, 50%, or 90% target overlap. Five consecutive Excellents start a streak multiplier; additional Excellents increase it by 0.1. Misses bank pending points and reset the streak; the final miss discards the entire game score. Completing the song banks the remaining points and can set a new high score.
+- Add Simon Says with red/up, blue/down, green/left, and yellow/right squares. Repeat increasingly long sequences within five seconds, with faster demonstrations on Normal and Hard. Each completed round earns 50 points; a wrong key or timeout ends the game and banks the score.
+- Both games offer Easy, Normal, and Hard difficulty, a three-second countdown, WASD or arrow-key controls, and Start to replay after a result. Click the score box to view the selected game's difficulty high score. Save separate high scores for each game and difficulty, the selected key controls, and Dance Time's music volume.
+- Bundle all three arcade songs for offline play. Joystick visibility and position are saved, and disconnected-display recovery keeps it on a connected screen.
+
+## Vpet 1.10.0
 
 - Add Find My Vpet under Advanced settings, off by default. Choose ALT or CTRL, click the key box to clear its old mapping, then press a key to assign it with confirmation. The default ALT + ALT shortcut uses a double tap; CTRL + CTRL also uses two taps.
 - Find My Vpet circles the pet and dims the surrounding displays, follows the pet as it moves, and fades away over one second. It can reveal the pet beneath other windows without changing Window Location, taking keyboard focus, or blocking mouse clicks.
