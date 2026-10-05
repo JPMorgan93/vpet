@@ -73,9 +73,10 @@ namespace Vpet
             {
                 int lives=3-(int)Difficulty,misses=Dance==null?0:Dance.Misses;
                 TextAt(g,"Misses",137,52,16,Color.FromArgb(211,203,229));
-                for(int i=0;i<lives;i++){using(var fill=new SolidBrush(i<misses?Color.Crimson:Color.FromArgb(207,199,223)))g.FillEllipse(fill,88+i*32,73,20,20);}
+                if(prefs.Practice)TextAt(g,misses.ToString(),137,82,24,Color.White,true);
+                else for(int i=0;i<lives;i++){using(var fill=new SolidBrush(i<misses?Color.Crimson:Color.FromArgb(207,199,223)))g.FillEllipse(fill,88+i*32,73,20,20);}
                 if(Dance!=null&&Dance.Streak&&Dance.State==DanceState.Running)
-                    TextAt(g,"Streak Combo "+Dance.Multiplier.ToString("0.0")+"x",210,129,22,Color.FromArgb((int)(now*3)%2==0?255:90,Color.Gold),true);
+                    TextAt(g,"Streak Combo "+Dance.Multiplier.ToString("0.0")+"x",790,129,22,Color.FromArgb((int)(now*3)%2==0?255:90,Color.Gold),true);
             }
             ArcadeLane? lit=Game==ArcadeGame.Simon&&Simon!=null?Simon.Lit(now):null;
             foreach(ArcadeLane lane in Enum.GetValues(typeof(ArcadeLane)))DrawSquare(g,LanePoint(lane,DanceGame.SquareDistance),lane,false,lit==lane);
