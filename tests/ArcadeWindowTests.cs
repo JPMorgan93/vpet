@@ -22,6 +22,8 @@ namespace Vpet
                     music.Play();Thread.Sleep(120);Check(music.Position>0,"Bundled "+song+" song advances on the playback clock while muted");music.SetVolume(0);music.Stop();music.Close();Check(!music.Opened,"Song device closes after "+song);
                 }
             }
+            using(var tones=new ArcadeTones(0))
+            {foreach(ArcadeLane lane in Enum.GetValues(typeof(ArcadeLane))){tones.Play(lane);Thread.Sleep(25);}tones.Stop();Check(true,"All four generated Simon tones dispatch and stop while muted");}
         }
         static void ArcadeWindows()
         {
@@ -45,14 +47,17 @@ namespace Vpet
                         pet.Model.Place(pet.Toys.Model.JoystickApproach);PetFrame(pet);Application.DoEvents();
                         Check(pet.ArcadeOpen&&!pet.Visible&&pet.arcadeWindow.Visible&&pet.Toys.Model.Fetch==FetchPhase.Arcade,"Arrival opens Arcade Window and hides desktop pet");
                         var arcade=pet.arcadeWindow;MakerField<Timer>(arcade,"timer").Stop();var canvas=MakerField<DoubleBufferedPanel>(arcade,"canvas");
+                        var tonesPlayed=new System.Collections.Generic.List<ArcadeLane>();arcade.PlayTone=tonesPlayed.Add;
+                        ArcadeLayerChecks(pet);
                         CaptureForm(arcade,"arcade-lobby");Check(arcade.Game==ArcadeGame.Lobby&&arcade.Text=="Arcade Window","Arcade opens to the five-cabinet lobby");
                         var left=MakerField<double>(arcade,"lobbyX");double now=arcade.Now;arcade.Time=()=>now;now+=.1;arcade.Step();Check(MakerField<double>(arcade,"lobbyX")!=left,"Lobby pet walks in front of cabinets");
                         ClickCabinet(arcade,4);Check(arcade.Game==ArcadeGame.Lobby,"Grey cabinet does not launch a game");
                         ClickCabinet(arcade,0);Check(arcade.Game==ArcadeGame.Dance&&arcade.Difficulty==ArcadeDifficulty.Easy&&arcade.Dance!=null,"Dance Time cabinet opens Easy with its bundled song");
-                        var score=MakerField<Button>(arcade,"score");Check(score.Text=="- -"&&FindButton(arcade,"Start").Visible,"Dance opens with blank scoreboard and Start");score.PerformClick();Check(score.Text=="High: 0","Score box shows the selected difficulty's zero default high score");
+                        var score=MakerField<Button>(arcade,"score");var volume=MakerField<TrackBar>(arcade,"volume");Check(score.Text=="- -"&&FindButton(arcade,"Start").Visible&&volume.Visible,"Dance opens with blank scoreboard, Start, and visible volume slider");score.PerformClick();Check(score.Text=="High: 0","Score box shows the selected difficulty's zero default high score");
                         var modes=MakerField<RadioButton[]>(arcade,"modes");modes[1].Checked=true;Check(arcade.Difficulty==ArcadeDifficulty.Normal&&arcade.Dance.Lives==2&&modes.Count(m=>m.Checked)==1,"Difficulty controls select only Normal and update song/model");
-                        FindButton(arcade,"Start").PerformClick();Check(arcade.Dance.State==DanceState.Countdown&&!FindButton(arcade,"Start").Visible&&!modes.Any(m=>m.Enabled),"Start gives countdown and locks difficulty during a round");
-                        now+=3.01;arcade.Step();var volume=MakerField<TrackBar>(arcade,"volume");Check(arcade.Dance.State==DanceState.Running&&volume.Visible&&volume.Orientation==Orientation.Vertical,"Song starts after countdown with vertical music volume");
+                        FindButton(arcade,"Start").PerformClick();Check(arcade.Dance.State==DanceState.Countdown&&FindButton(arcade,"Stop").Visible&&volume.Visible&&!modes.Any(m=>m.Enabled),"Start becomes Stop during countdown with visible volume and locked difficulty");
+                        FindButton(arcade,"Stop").PerformClick();now+=3.1;arcade.Step();Check(arcade.Dance.State==DanceState.Stopped&&FindButton(arcade,"Start").Visible&&score.Text=="- -"&&volume.Visible,"Stop cancels Dance countdown and restores Start without scoring");
+                        FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();Check(arcade.Dance.State==DanceState.Running&&volume.Visible&&volume.Orientation==Orientation.Vertical,"Song starts after countdown with vertical music volume");
                         // Send native key messages through the form, including an auto-repeat and release.
                         Native.SendMessage(arcade.Handle,0x100,new IntPtr((int)Keys.A),new IntPtr(1));Check(arcade.Dance.Misses==1,"Keyboard input outside a target overlap counts a miss");Native.SendMessage(arcade.Handle,0x100,new IntPtr((int)Keys.A),new IntPtr(0x40000001));Check(arcade.Dance.Misses==1,"Holding a mapped key does not generate repeat misses");Native.SendMessage(arcade.Handle,0x101,new IntPtr((int)Keys.A),IntPtr.Zero);
                         MakerField<Button>(arcade,"switchKeys").PerformClick();Check(pet.Model.Settings.Arcade.ArrowKeys,"Key switch changes WASD to arrows and persists preference");
@@ -63,26 +68,41 @@ namespace Vpet
                         foreach(var target in arcade.Dance.Chart)
                         {
                             songTime=target.HitTime;now+=.1;ArcadeKey(arcade,arrows[(int)target.Lane]);ArcadeKeyUp(arcade,arrows[(int)target.Lane]);
-                            if(++noteCount==5)CaptureForm(arcade,"dance-playing");
+                            if(++noteCount==6)
+                            {
+                                Check(MakerField<Label>(arcade,"calculated").Text.StartsWith("1.1x"),"Calculated multiplier uses the requested suffix format");
+                                CaptureForm(arcade,"dance-streak-pulse");Check(arcade.Dance.PulsingTargets(now).Any(),"A scored target remains visible for its pulse");
+                                using(var bright=ArcadeRegion(arcade,new Rectangle(70,110,280,35)))
+                                {
+                                    now+=.34;arcade.Step();using(var flash=ArcadeRegion(arcade,new Rectangle(70,110,280,35)))
+                                        Check(ArcadeDifferentPixels(bright,flash)>50,"Bold Streak Combo text visibly flashes at the top left");
+                                }
+                            }
                         }
                         songTime=arcade.Dance.Duration;now+=.1;arcade.Step();
                         Check(arcade.Dance.State==DanceState.Success&&arcade.Dance.Banked>0&&score.Text==arcade.Dance.Banked.ToString(),"Successful Dance song banks its streak-adjusted score in the UI");
                         Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.High(ArcadeGame.Dance,ArcadeDifficulty.Easy)==arcade.Dance.Banked,"Successful Dance high score persists independently");CaptureForm(arcade,"dance-success");
+                        long high=arcade.Dance.Banked;songTime=0;FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();songTime=arcade.Dance.Chart[0].HitTime;ArcadeKey(arcade,arrows[(int)arcade.Dance.Chart[0].Lane]);ArcadeKeyUp(arcade,arrows[(int)arcade.Dance.Chart[0].Lane]);
+                        FindButton(arcade,"Stop").PerformClick();now+=10;songTime=arcade.Dance.Duration;arcade.Step();Check(arcade.Dance.State==DanceState.Stopped&&arcade.Dance.Pending==0&&score.Text=="- -"&&pet.Model.Settings.Arcade.High(ArcadeGame.Dance,ArcadeDifficulty.Easy)==high,"Stopping a scored Dance round preserves the previous high score and prevents later scoring");
                         FindButton(arcade,"Close Game").PerformClick();Check(arcade.Game==ArcadeGame.Lobby&&pet.ArcadeOpen&&!pet.Visible,"Close Game returns to lobby while desktop pet stays hidden");
                         ClickCabinet(arcade,1);Check(arcade.Game==ArcadeGame.Simon&&!volume.Visible,"Simon Says cabinet opens without music/volume controls");
-                        FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();Check(arcade.Simon.State==SimonState.Showing&&arcade.Simon.Sequence.Count==1,"Simon begins by displaying one color");CaptureForm(arcade,"simon-watch");
-                        now+=.5+arcade.Simon.ShowStep+.01;arcade.Step();ArcadeLane lane=arcade.Simon.Sequence[0];ArcadeKey(arcade,arrows[(int)lane]);ArcadeKeyUp(arcade,arrows[(int)lane]);
-                        Check(arcade.Simon.Pending==50&&arcade.Simon.Sequence.Count==2,"Correct mapped key advances Simon and adds 50 pending points");
-                        now+=.5+2*arcade.Simon.ShowStep+.01;arcade.Step();Keys wrong=arrows[((int)arcade.Simon.Sequence[0]+1)%4];ArcadeKey(arcade,wrong);ArcadeKeyUp(arcade,wrong);
+                        FindButton(arcade,"Start").PerformClick();Check(FindButton(arcade,"Stop").Visible,"Simon Start also becomes Stop");FindButton(arcade,"Stop").PerformClick();now+=3.01;arcade.Step();Check(arcade.Simon.State==SimonState.Stopped&&tonesPlayed.Count==0,"Simon Stop during countdown prevents the first tone and sequence");
+                        FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();Check(arcade.Simon.State==SimonState.Showing&&arcade.Simon.Sequence.Count==1&&tonesPlayed.Last()==arcade.Simon.Sequence[0],"Simon begins by highlighting one color with its tone");CaptureForm(arcade,"simon-watch");
+                        now+=arcade.Simon.ShowStep+.01;arcade.Step();ArcadeLane lane=arcade.Simon.Sequence[0];ArcadeKey(arcade,arrows[(int)lane]);ArcadeKeyUp(arcade,arrows[(int)lane]);
+                        Check(arcade.Simon.Pending==50&&arcade.Simon.Sequence.Count==1&&arcade.Simon.State==SimonState.Waiting,"Correct mapped key adds 50 and waits before the next sequence");
+                        int beforeTone=tonesPlayed.Count;now+=.49;arcade.Step();Check(tonesPlayed.Count==beforeTone&&arcade.Simon.State==SimonState.Waiting,"Native preview remains quiet during the half-second pause");now+=.01;arcade.Step();Check(arcade.Simon.Sequence.Count==2&&tonesPlayed.Count==beforeTone+1,"Native preview starts its next sequence and tone after the pause");
+                        now+=2*arcade.Simon.ShowStep+.01;arcade.Step();Keys wrong=arrows[((int)arcade.Simon.Sequence[0]+1)%4];ArcadeKey(arcade,wrong);ArcadeKeyUp(arcade,wrong);
                         Check(arcade.Simon.State==SimonState.Finished&&score.Text=="50"&&FindButton(arcade,"Start").Visible,"Simon mistake banks completed rounds and offers replay");
                         Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.High(ArcadeGame.Simon,ArcadeDifficulty.Easy)==50,"Completed Simon high score persists to the pet's settings");
+                        CaptureForm(arcade,"simon-complete");FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();now+=arcade.Simon.ShowStep+.01;arcade.Step();ArcadeKey(arcade,arrows[(int)arcade.Simon.Sequence[0]]);ArcadeKeyUp(arcade,arrows[(int)arcade.Simon.Sequence[0]]);
+                        FindButton(arcade,"Stop").PerformClick();beforeTone=tonesPlayed.Count;now+=10;arcade.Step();Check(arcade.Simon.State==SimonState.Stopped&&FindButton(arcade,"Start").Visible&&tonesPlayed.Count==beforeTone&&score.Text=="- -"&&pet.Model.Settings.Arcade.High(ArcadeGame.Simon,ArcadeDifficulty.Easy)==50,"Stopping Simon during the wait cancels pending scoring and tones while preserving high scores");
                         foreach(var size in new[]{new Size(700,590),new Size(1150,830)})
                         {
                             arcade.ClientSize=size;Application.DoEvents();var footer=FindButton(arcade,"Close Game");Check(arcade.ClientRectangle.Contains(new Rectangle(arcade.PointToClient(footer.PointToScreen(Point.Empty)),footer.Size)),"Close Game remains accessible at "+size);
                             Check(canvas.ClientRectangle.Contains(new Rectangle(MakerField<Button>(arcade,"switchKeys").Location,MakerField<Button>(arcade,"switchKeys").Size)),"Key switch remains inside resized game canvas");
                         }
-                        CaptureForm(arcade,"simon-complete");pet.Toys.Model.DragJoystick(new PointF(old.X-45,old.Y+20));arcade.Close();PetFrame(pet);
-                        Check(!pet.ArcadeOpen&&pet.Visible&&Geometry.Distance(pet.Model.Position,pet.Toys.Model.JoystickApproach)<1&&!pet.Model.Playing,"Closing Arcade restores pet behind relocated joystick and resumes Static mode");
+                        CaptureForm(arcade,"simon-stopped");pet.Toys.Model.DragJoystick(new PointF(old.X-45,old.Y+20));arcade.Close();PetFrame(pet);
+                        Check(!pet.ArcadeOpen&&pet.Visible&&Native.ArcadeForeground==IntPtr.Zero&&Geometry.Distance(pet.Model.Position,pet.Toys.Model.JoystickApproach)<1&&!pet.Model.Playing,"Closing Arcade removes the stacking lock and restores pet behind relocated joystick in Static mode");
                         pet.Toys.Model.PressJoystick(pet.Now);pet.Model.Place(pet.Toys.Model.JoystickApproach);PetFrame(pet);Check(pet.ArcadeOpen,"Joystick can reopen Arcade after closing");Item(pet.Joystick.Menu,"Remove Joystick").PerformClick();Check(!pet.ArcadeOpen&&pet.Visible&&!pet.Joystick.Visible,"Removing joystick closes Arcade and restores desktop pet");
                         pet.Close();
                     }

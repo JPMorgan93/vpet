@@ -16,11 +16,12 @@ namespace Vpet
         readonly string musicDirectory;readonly Random random;
         readonly Stopwatch clock=Stopwatch.StartNew();readonly Timer timer=new Timer{Interval=16};
         readonly ArcadeMusic music=new ArcadeMusic();
+        readonly ArcadeTones tones=new ArcadeTones();
         readonly DoubleBufferedPanel canvas=new DoubleBufferedPanel{Dock=DockStyle.Fill,BackColor=Color.FromArgb(23,18,42)};
         readonly FlowLayoutPanel difficulties=new FlowLayoutPanel{AutoSize=true,Dock=DockStyle.Left,WrapContents=false,Padding=new Padding(8)};
         readonly RadioButton[] modes=new RadioButton[3];
         readonly Button score=new Button{Name="ArcadeScore",Width=170,Height=42,Text="- -",BackColor=Color.FromArgb(44,33,75),ForeColor=Color.White,FlatStyle=FlatStyle.Flat};
-        readonly Label calculated=new Label{Name="ArcadePending",AutoSize=true,ForeColor=Color.White,Text="x1   0"};
+        readonly Label calculated=new Label{Name="ArcadePending",AutoSize=true,ForeColor=Color.White,Text="1.0x   0"};
         readonly Button start=MakerUi.Button("Start",null),closeGame=MakerUi.Button("Close Game",null),switchKeys=MakerUi.Button("\u21bb",null);
         readonly TrackBar volume=new TrackBar{Name="ArcadeVolume",Orientation=Orientation.Vertical,Minimum=0,Maximum=100,TickFrequency=10,Width=44};
         readonly Label volumeLabel=new Label{Text="Volume",AutoSize=true,ForeColor=Color.White};
@@ -34,19 +35,20 @@ namespace Vpet
         internal SimonGame Simon {get;private set;}
         internal Func<double> Time {get;set;}
         internal Func<double> SongPosition {get;set;}
+        internal Action<ArcadeLane> PlayTone {get;set;}
         bool updating,showingHigh,resultHandled,disposed;
         double resultAt=-100,hopAt=-100,lastHop;
         int resultReaction=-1,facing=2;
         double lobbyX=140;int lobbyDirection=1;
         double previous;
         internal double Now {get{return Time==null?clock.Elapsed.TotalSeconds:Time();}}
-        internal bool Busy {get{return Game==ArcadeGame.Dance?Dance!=null&&(Dance.State==DanceState.Countdown||Dance.State==DanceState.Running):Game==ArcadeGame.Simon&&Simon!=null&&Simon.State!=SimonState.Ready&&Simon.State!=SimonState.Finished;}}
+        internal bool Busy {get{return Game==ArcadeGame.Dance?Dance!=null&&(Dance.State==DanceState.Countdown||Dance.State==DanceState.Running):Game==ArcadeGame.Simon&&Simon!=null&&Simon.State!=SimonState.Ready&&Simon.State!=SimonState.Finished&&Simon.State!=SimonState.Stopped;}}
         public ArcadeWindow(Func<SpriteSet> sprites,Func<int,Bitmap> emote,ArcadePreferences prefs,Action save,string musicDirectory,Random random)
         {
             this.sprites=sprites;this.emote=emote;this.prefs=prefs;this.save=save;this.musicDirectory=musicDirectory;this.random=random;
             Text="Arcade Window";Font=new Font("Segoe UI",10);AutoScaleMode=AutoScaleMode.Dpi;BackColor=Color.FromArgb(36,27,58);
             ClientSize=new Size(1040,790);MinimumSize=new Size(700,620);StartPosition=FormStartPosition.CenterScreen;KeyPreview=true;
-            SongPosition=()=>music.Position;score.Font=new Font("Consolas",16,FontStyle.Bold);
+            SongPosition=()=>music.Position;PlayTone=tones.Play;score.Font=new Font("Consolas",16,FontStyle.Bold);
             var top=new Panel{Dock=DockStyle.Top,Height=92,BackColor=Color.FromArgb(241,236,249)};lobbyHeading.ForeColor=MakerUi.Purple;
             var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};calculated.ForeColor=MakerUi.Purple;
             scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficulties);top.Controls.Add(lobbyHeading);
@@ -65,7 +67,7 @@ namespace Vpet
             tips.SetToolTip(switchKeys,"Switch between WASD and arrow keys");tips.SetToolTip(score,"Click to show the high score for this game and difficulty");
             switchKeys.Click+=delegate{prefs.ArrowKeys=!prefs.ArrowKeys;held.Clear();save();Focus();canvas.Invalidate();};
             score.Click+=delegate{showingHigh=!showingHigh;RefreshControls();Focus();};
-            start.Click+=delegate{StartGame();};closeGame.Click+=delegate{ShowLobby();};
+            start.Click+=delegate{if(Busy)StopGame();else StartGame();};closeGame.Click+=delegate{ShowLobby();};
             volume.Value=prefs.Volume;volume.ValueChanged+=delegate{prefs.Volume=volume.Value;try{music.SetVolume(prefs.Volume);}catch(Exception ex){MusicError(ex);}save();};
             canvas.Resize+=delegate{PositionControls();};canvas.Paint+=PaintArcade;canvas.MouseClick+=CabinetClick;
             Resize+=delegate{guidance.MaximumSize=new Size(Math.Max(1,ClientSize.Width-32),0);};guidance.MaximumSize=new Size(ClientSize.Width-32,0);
@@ -77,7 +79,7 @@ namespace Vpet
         void MusicError(Exception ex){music.Close();if(Dance!=null)Dance=null;guidance.Text=ex.Message;RefreshControls();}
         internal void ShowLobby()
         {
-            music.Close();Game=ArcadeGame.Lobby;Dance=null;Simon=null;held.Clear();resultReaction=-1;Text="Arcade Window";guidance.Text="Click a lit cabinet to play. Close this window to return your pet to the desktop.";RefreshControls();canvas.Invalidate();
+            tones.Stop();music.Close();Game=ArcadeGame.Lobby;Dance=null;Simon=null;held.Clear();resultReaction=-1;Text="Arcade Window";guidance.Text="Click a lit cabinet to play. Close this window to return your pet to the desktop.";RefreshControls();canvas.Invalidate();
         }
         internal void OpenGame(ArcadeGame game)
         {
@@ -88,13 +90,13 @@ namespace Vpet
         {if(Busy)return;Difficulty=value;showingHigh=false;resultReaction=-1;CreateGame();RefreshControls();canvas.Invalidate();}
         void CreateGame()
         {
-            held.Clear();resultHandled=false;Dance=null;Simon=null;music.Close();
+            tones.Stop();held.Clear();resultHandled=false;Dance=null;Simon=null;music.Close();
             if(Game==ArcadeGame.Dance)
             {
                 try{music.Open(Path.Combine(musicDirectory,Difficulty+".mp3"),prefs.Volume);Dance=new DanceGame(Difficulty,music.Duration);Dance.MusicStarted+=delegate{music.Play();lastHop=0;hopAt=Now;};guidance.Text="Hit matching keys while a target overlaps its square. Five Excellents start a streak.";}
                 catch(Exception ex){MusicError(ex);}
             }
-            else if(Game==ArcadeGame.Simon){Simon=new SimonGame(Difficulty,random);guidance.Text="Watch the lights, then repeat the entire sequence within five seconds.";}
+            else if(Game==ArcadeGame.Simon){Simon=new SimonGame(Difficulty,random);Simon.TonePlayed+=delegate(ArcadeLane lane){PlayTone(lane);};guidance.Text="Watch the lights and listen, then repeat the entire sequence within five seconds.";}
         }
         internal void StartGame()
         {
@@ -102,6 +104,13 @@ namespace Vpet
             if(Game==ArcadeGame.Dance&&Dance==null)return;
             resultReaction=-1;resultHandled=false;showingHigh=false;held.Clear();facing=2;
             if(Game==ArcadeGame.Dance)Dance.Start(Now);else Simon.Start(Now);
+            RefreshControls();Focus();canvas.Invalidate();
+        }
+        internal void StopGame()
+        {
+            if(!Busy)return;
+            if(Game==ArcadeGame.Dance){Dance.Stop(Now);music.Stop();}else Simon.Stop(Now);
+            tones.Stop();held.Clear();showingHigh=false;resultReaction=-1;resultHandled=true;
             RefreshControls();Focus();canvas.Invalidate();
         }
         internal void Step()
@@ -124,7 +133,7 @@ namespace Vpet
             else if(Game==ArcadeGame.Simon&&Simon!=null)
             {
                 Simon.Update(now);var lit=Simon.Lit(now);if(lit.HasValue)facing=Facing(lit.Value);
-                if(!resultHandled&&Simon.State==SimonState.Finished){resultHandled=true;resultAt=now;resultReaction=4;prefs.Record(Game,Difficulty,Simon.Banked);save();}
+                if(!resultHandled&&Simon.State==SimonState.Finished){tones.Stop();resultHandled=true;resultAt=now;resultReaction=4;prefs.Record(Game,Difficulty,Simon.Banked);save();}
             }
             RefreshControls();canvas.Invalidate();
         }
@@ -144,14 +153,14 @@ namespace Vpet
         {
             bool game=Game!=ArcadeGame.Lobby;updating=true;for(int i=0;i<3;i++){modes[i].Checked=i==(int)Difficulty;modes[i].Enabled=!Busy;}updating=false;
             difficulties.Visible=score.Visible=calculated.Visible=closeGame.Visible=switchKeys.Visible=game;lobbyHeading.Visible=!game;
-            start.Visible=game&&!Busy;start.Enabled=Game==ArcadeGame.Simon||Dance!=null;
-            volume.Visible=volumeLabel.Visible=Game==ArcadeGame.Dance&&Dance!=null&&(Dance.State==DanceState.Running||Dance.State==DanceState.Success||Dance.State==DanceState.Failed);
+            start.Visible=game;start.Text=Busy?"Stop":"Start";start.Enabled=Game==ArcadeGame.Simon||Dance!=null;
+            volume.Visible=volumeLabel.Visible=Game==ArcadeGame.Dance;
             if(game)
             {
                 long banked=Game==ArcadeGame.Dance?Dance==null?0:Dance.Banked:Simon==null?0:Simon.Banked;
-                bool blank=Game==ArcadeGame.Dance?Dance==null||Dance.State==DanceState.Ready||Dance.State==DanceState.Countdown||Dance.State==DanceState.Failed:Simon==null||Simon.State==SimonState.Ready||Simon.State==SimonState.Countdown;
+                bool blank=Game==ArcadeGame.Dance?Dance==null||Dance.State==DanceState.Ready||Dance.State==DanceState.Countdown||Dance.State==DanceState.Failed||Dance.State==DanceState.Stopped:Simon==null||Simon.State==SimonState.Ready||Simon.State==SimonState.Countdown||Simon.State==SimonState.Stopped;
                 score.Text=showingHigh?"High: "+prefs.High(Game,Difficulty):blank?"- -":banked.ToString();
-                calculated.Text=Game==ArcadeGame.Dance?"x"+(Dance==null?1:Dance.Multiplier).ToString("0.0")+"   "+(Dance==null?0:Dance.Pending):"Ready to score: "+(Simon==null?0:Simon.Pending);
+                calculated.Text=Game==ArcadeGame.Dance?(Dance==null?1:Dance.Multiplier).ToString("0.0")+"x   "+(Dance==null?0:Dance.Pending):"Ready to score: "+(Simon==null?0:Simon.Pending);
             }
             PositionControls();
         }
@@ -164,7 +173,7 @@ namespace Vpet
         float SceneScale {get{return Math.Max(.1f,Math.Min(canvas.Width/1000f,canvas.Height/660f));}}
         PointF SceneOrigin {get{return new PointF((canvas.Width-1000*SceneScale)/2,(canvas.Height-660*SceneScale)/2);}}
         protected override void Dispose(bool disposing)
-        {if(disposing&&!disposed){disposed=true;timer.Stop();timer.Dispose();music.Dispose();tips.Dispose();switchKeys.Image.Dispose();save();}base.Dispose(disposing);}
+        {if(disposing&&!disposed){disposed=true;timer.Stop();timer.Dispose();music.Dispose();tones.Dispose();tips.Dispose();switchKeys.Image.Dispose();save();}base.Dispose(disposing);}
     }
     internal static class ArcadeControls
     {
