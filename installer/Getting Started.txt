@@ -204,16 +204,23 @@ points accumulate in a separate Streak total below the score box. When Good,
 Great, a miss, or song completion ends the streak, only these points receive the
 multiplier and join Calculated points. Earlier points and bonuses remain unchanged.
 A miss banks the calculated total and resets the streak.
-A bold, flashing Streak Combo indicator shows the multiplier at the top left.
+A bold, flashing Streak Combo indicator shows the multiplier at the top right.
 Good or Great ends it and resets the multiplier to 1.0x after adding the bonus.
 Successfully scored targets pulse briefly before disappearing.
 An unmatched press or a target reaching the pet is a miss. Easy allows three
 misses, Normal two, and Hard one; target speeds are 1x, 1.5x, and 2x.
 The final miss ends the game and discards all its points. Finish the song to
 bank remaining points and record a new high score if greater. The vertical
-slider always controls music volume, including before starting. New preferences
-default to 53%; saved levels remain. Base playback volume is halved at every
-slider setting for all songs, including existing saved volume choices.
+slider always controls music volume, including before starting, with its percentage
+displayed below it. At 100%, music plays at the normal Windows/device-controlled
+level. Lower settings progressively attenuate the music, with useful quiet levels
+near the bottom; 0% is mute. Device master volume is unchanged. New preferences
+default to 53%; saved levels remain.
+
+Practice mode, below Difficulty, is off by default and saved across sessions.
+Turn it on between rounds to play the full song without scoring or a miss limit.
+A numeric miss total replaces the miss-limit circles at the top left. Hits keep
+their visual feedback; misses never end the song. High scores remain unchanged.
 
 Simon Says has no music. Watch the red/up, blue/down, green/left, and yellow/right
 squares light up and play their unique tones, then repeat within five seconds.
@@ -222,7 +229,7 @@ correct round adds 50 pending points and one square to the sequence. Difficulty
 changes the display speed: 0.9, 0.6, or 0.4 seconds per step. A wrong key or
 timeout ends the game, banks your points, and records a new high score if greater.
 The final correct input stays highlighted, then the pet looks down for a full
-half-second pause before starting the next sequence.
+one-second pause before starting the next sequence.
 Both games replace Start with Stop during countdowns and play. Stop cancels the
 round, playback, and its score without changing high scores. Start returns after
 stopping or finishing so you can replay.
