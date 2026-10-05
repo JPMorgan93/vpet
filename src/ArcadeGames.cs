@@ -46,6 +46,7 @@ namespace Vpet
         public int Lives {get{return 3-(int)Difficulty;}}
         public long Banked {get;private set;}
         public long Pending {get;private set;}
+        public long StreakScore {get;private set;}
         public int ExcellentRun {get;private set;}
         int bonusTenths=10;
         public double Multiplier {get{return bonusTenths/10.0;}}
@@ -78,7 +79,7 @@ namespace Vpet
         public void Start(double now)
         {
             foreach(var target in Chart){target.Resolved=false;target.ScoredAt=double.NaN;}
-            State=DanceState.Countdown;countdownAt=now;Elapsed=0;Misses=0;Banked=Pending=0;ExcellentRun=0;bonusTenths=10;Streak=false;Feedback="";
+            State=DanceState.Countdown;countdownAt=now;Elapsed=0;Misses=0;Banked=Pending=StreakScore=0;ExcellentRun=0;bonusTenths=10;Streak=false;Feedback="";
         }
         public void Update(double now,double? musicPosition=null)
         {
@@ -94,18 +95,24 @@ namespace Vpet
             if(State!=DanceState.Running)return;
             var target=VisibleTargets.Where(t=>t.Lane==lane&&Points(Overlap(Distance(t)))>0).OrderBy(t=>Math.Abs(Distance(t)-SquareDistance)).FirstOrDefault();
             if(target==null){Miss(now);return;}
-            target.Resolved=true;target.ScoredAt=now;target.ScoredDistance=Distance(target);int points=Points(Overlap(target.ScoredDistance));Pending+=points;
+            target.Resolved=true;target.ScoredAt=now;target.ScoredDistance=Distance(target);int points=Points(Overlap(target.ScoredDistance));
             Feedback=points==30?"Excellent!":points==20?"Great!":"Good!";FeedbackAt=now;
-            if(points==30){ExcellentRun++;if(Streak)bonusTenths++;else if(ExcellentRun>=5)Streak=true;}else ResetStreak();
+            if(points==30)
+            {
+                ExcellentRun++;if(Streak)bonusTenths++;else if(ExcellentRun>=3)Streak=true;
+                if(Streak)StreakScore+=points;else Pending+=points;
+            }
+            else {CompleteStreak();Pending+=points;}
         }
-        void ResetStreak(){bonusTenths=10;Streak=false;ExcellentRun=0;}
+        void ResetStreak(){bonusTenths=10;Streak=false;ExcellentRun=0;StreakScore=0;}
+        void CompleteStreak(){Pending+=(StreakScore*bonusTenths+5)/10;ResetStreak();}
         void ClearTargets(){foreach(var target in Chart){target.Resolved=true;target.ScoredAt=double.NaN;}}
         public void Stop(double now)
         {
             if(State!=DanceState.Countdown&&State!=DanceState.Running)return;
             State=DanceState.Stopped;FinishedAt=FeedbackAt=now;Feedback="Stopped";Banked=Pending=0;ResetStreak();ClearTargets();
         }
-        void CashIn(){Banked+=(Pending*bonusTenths+5)/10;Pending=0;ResetStreak();}
+        void CashIn(){CompleteStreak();Banked+=Pending;Pending=0;}
         void Miss(double now)
         {
             CashIn();Misses++;Feedback="Miss!";FeedbackAt=now;
@@ -114,6 +121,7 @@ namespace Vpet
     }
     internal sealed class SimonGame
     {
+        internal const double InputHighlightDuration=.18,RestDuration=.5;
         readonly Random random;
         public readonly ArcadeDifficulty Difficulty;
         public readonly List<ArcadeLane> Sequence=new List<ArcadeLane>();
@@ -141,7 +149,7 @@ namespace Vpet
         public void Update(double now)
         {
             if(State==SimonState.Countdown&&now-phaseAt+1e-9>=3)NewRound(now);
-            else if(State==SimonState.Waiting&&now-phaseAt+1e-9>=.5)NewRound(now);
+            else if(State==SimonState.Waiting&&now-phaseAt+1e-9>=RestDuration)NewRound(now);
             else if(State==SimonState.Showing&&now-phaseAt+1e-9>=Sequence.Count*ShowStep){State=SimonState.Replaying;phaseAt=now;}
             else if(State==SimonState.Replaying&&now-phaseAt+1e-9>=5)Finish(now);
             if(State==SimonState.Showing&&Lit(now).HasValue)
@@ -150,10 +158,10 @@ namespace Vpet
         public void Press(ArcadeLane lane,double now)
         {
             Update(now);if(State!=SimonState.Replaying)return;
-            inputFlash=lane;inputFlashUntil=now+.18;
+            inputFlash=lane;inputFlashUntil=now+InputHighlightDuration;if(TonePlayed!=null)TonePlayed(lane);
             if(lane!=Sequence[InputIndex]){Finish(now);return;}
             InputIndex++;
-            if(InputIndex==Sequence.Count){Pending+=50;Feedback="Correct!";FeedbackAt=now;State=SimonState.Waiting;phaseAt=now;inputFlash=null;}
+            if(InputIndex==Sequence.Count){Pending+=50;Feedback="Correct!";FeedbackAt=now;State=SimonState.Waiting;phaseAt=inputFlashUntil;}
         }
         public void Stop(double now)
         {

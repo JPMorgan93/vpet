@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Vpet
 {
@@ -18,10 +19,15 @@ namespace Vpet
                 Native.ArcadeForeground=IntPtr.Zero;
                 arcadeWindow=null;if(closing)return;
                 Model.Place(Toys.Model.JoystickApproach);Toys.Model.LeaveArcade(Now);Model.Paused=false;Show();ApplyLayer();Render();Save();
+                RefreshDesktopAssetLayers();
             };
-            arcadeWindow.TopMost=Model.Settings.Layer==LayerMode.OverEverything;
             Native.ArcadeForeground=arcadeWindow.Handle;
-            FindPet.Spotlight.Hide();HideDesktopPet();arcadeWindow.Show();arcadeWindow.Activate();
+            FindPet.Spotlight.Hide();HideDesktopPet();arcadeWindow.Show();arcadeWindow.Activate();RefreshDesktopAssetLayers();
+        }
+        void RefreshDesktopAssetLayers()
+        {
+            foreach(var handle in Native.BackgroundAdornments.ToArray())
+                Native.SetWindowPos(handle,Model.Settings.Layer==LayerMode.OverEverything?new IntPtr(-1):new IntPtr(-2),0,0,0,0,0x213);
         }
         internal void CloseArcade(){if(ArcadeOpen)arcadeWindow.Close();}
         void HideDesktopPet()
@@ -29,7 +35,6 @@ namespace Vpet
         void ArcadeDesktopTick(double now)
         {
             Model.Paused=true;Model.Walking=false;FindPet.Spotlight.Hide();
-            arcadeWindow.TopMost=Model.Settings.Layer==LayerMode.OverEverything;
             restrictedOverlay.Update();Toys.Update();Plate.UpdatePlate();Joystick.UpdateJoystick();
             if(now>=nextReminderPoll){nextReminderPoll=now+1;CheckReminders();}
             HideDesktopPet();if(now>=nextSave){Save();nextSave=now+15;}

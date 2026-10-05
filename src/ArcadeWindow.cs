@@ -49,7 +49,7 @@ namespace Vpet
             Text="Arcade Window";Font=new Font("Segoe UI",10);AutoScaleMode=AutoScaleMode.Dpi;BackColor=Color.FromArgb(36,27,58);
             ClientSize=new Size(1040,790);MinimumSize=new Size(700,620);StartPosition=FormStartPosition.CenterScreen;KeyPreview=true;
             SongPosition=()=>music.Position;PlayTone=tones.Play;score.Font=new Font("Consolas",16,FontStyle.Bold);
-            var top=new Panel{Dock=DockStyle.Top,Height=92,BackColor=Color.FromArgb(241,236,249)};lobbyHeading.ForeColor=MakerUi.Purple;
+            var top=new Panel{Dock=DockStyle.Top,Height=110,BackColor=Color.FromArgb(241,236,249)};lobbyHeading.ForeColor=MakerUi.Purple;
             var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};calculated.ForeColor=MakerUi.Purple;
             scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficulties);top.Controls.Add(lobbyHeading);
             var difficultyLabel=MakerUi.Label("Difficulty:");difficultyLabel.ForeColor=MakerUi.Purple;difficulties.Controls.Add(difficultyLabel);
@@ -93,7 +93,7 @@ namespace Vpet
             tones.Stop();held.Clear();resultHandled=false;Dance=null;Simon=null;music.Close();
             if(Game==ArcadeGame.Dance)
             {
-                try{music.Open(Path.Combine(musicDirectory,Difficulty+".mp3"),prefs.Volume);Dance=new DanceGame(Difficulty,music.Duration);Dance.MusicStarted+=delegate{music.Play();lastHop=0;hopAt=Now;};guidance.Text="Hit matching keys while a target overlaps its square. Five Excellents start a streak.";}
+                try{music.Open(Path.Combine(musicDirectory,Difficulty+".mp3"),prefs.Volume);Dance=new DanceGame(Difficulty,music.Duration);Dance.MusicStarted+=delegate{music.Play();lastHop=0;hopAt=Now;};guidance.Text="Hit matching keys while a target overlaps its square. Three Excellents start a streak.";}
                 catch(Exception ex){MusicError(ex);}
             }
             else if(Game==ArcadeGame.Simon){Simon=new SimonGame(Difficulty,random);Simon.TonePlayed+=delegate(ArcadeLane lane){PlayTone(lane);};guidance.Text="Watch the lights and listen, then repeat the entire sequence within five seconds.";}
@@ -132,8 +132,8 @@ namespace Vpet
             }
             else if(Game==ArcadeGame.Simon&&Simon!=null)
             {
-                Simon.Update(now);var lit=Simon.Lit(now);if(lit.HasValue)facing=Facing(lit.Value);
-                if(!resultHandled&&Simon.State==SimonState.Finished){tones.Stop();resultHandled=true;resultAt=now;resultReaction=4;prefs.Record(Game,Difficulty,Simon.Banked);save();}
+                Simon.Update(now);var lit=Simon.Lit(now);if(lit.HasValue)facing=Facing(lit.Value);else if(Simon.State==SimonState.Waiting)facing=2;
+                if(!resultHandled&&Simon.State==SimonState.Finished){resultHandled=true;resultAt=now;resultReaction=4;prefs.Record(Game,Difficulty,Simon.Banked);save();}
             }
             RefreshControls();canvas.Invalidate();
         }
@@ -160,7 +160,7 @@ namespace Vpet
                 long banked=Game==ArcadeGame.Dance?Dance==null?0:Dance.Banked:Simon==null?0:Simon.Banked;
                 bool blank=Game==ArcadeGame.Dance?Dance==null||Dance.State==DanceState.Ready||Dance.State==DanceState.Countdown||Dance.State==DanceState.Failed||Dance.State==DanceState.Stopped:Simon==null||Simon.State==SimonState.Ready||Simon.State==SimonState.Countdown||Simon.State==SimonState.Stopped;
                 score.Text=showingHigh?"High: "+prefs.High(Game,Difficulty):blank?"- -":banked.ToString();
-                calculated.Text=Game==ArcadeGame.Dance?(Dance==null?1:Dance.Multiplier).ToString("0.0")+"x   "+(Dance==null?0:Dance.Pending):"Ready to score: "+(Simon==null?0:Simon.Pending);
+                calculated.Text=Game==ArcadeGame.Dance?"Calculated: "+(Dance==null?0:Dance.Pending)+"\n"+(Dance==null?1:Dance.Multiplier).ToString("0.0")+"x   Streak: "+(Dance==null?0:Dance.StreakScore):"Ready to score: "+(Simon==null?0:Simon.Pending);
             }
             PositionControls();
         }

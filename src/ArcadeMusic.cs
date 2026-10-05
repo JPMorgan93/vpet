@@ -27,7 +27,8 @@ namespace Vpet
             catch{Close();throw;}
         }
         public double Position {get{return opened?double.Parse(Command("status "+alias+" position"),CultureInfo.InvariantCulture)/1000:0;}}
-        public void SetVolume(int volume){if(opened)Command("setaudio "+alias+" volume to "+Math.Max(0,Math.Min(100,volume))*10);}
+        internal static int DeviceVolume(int volume){return Math.Max(0,Math.Min(100,volume))*5;}
+        public void SetVolume(int volume){if(opened)Command("setaudio "+alias+" volume to "+DeviceVolume(volume));}
         public void Play(){if(opened)Command("play "+alias+" from 0");}
         public void Stop(){if(opened)Command("stop "+alias);}
         public void Close(){if(!opened)return;mciSendString("close "+alias,null,0,IntPtr.Zero);opened=false;}
