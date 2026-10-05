@@ -19,7 +19,12 @@ namespace Vpet
                 foreach(string song in new[]{"Easy","Normal","Hard"})
                 {
                     music.Open(Path.Combine(root,song+".mp3"),0);Check(music.Opened&&music.Duration>10,"Bundled "+song+" MP3 opens and has a valid duration");
-                    music.Play();Thread.Sleep(120);Check(music.Position>0,"Bundled "+song+" song advances on the playback clock while muted");music.SetVolume(0);music.Stop();music.Close();Check(!music.Opened,"Song device closes after "+song);
+                    foreach(int value in new[]{100,70,53,50,10,1,0})
+                    {music.SetVolume(value);Check(Math.Abs(music.PlaybackAttenuation-ArcadeMusic.Attenuation(value))<=1,"Actual "+song+" renderer gain follows slider "+value+"% before playback");}
+                    music.Play();Thread.Sleep(120);Check(music.Position>0&&music.PlaybackAttenuation==-10000,"Bundled "+song+" advances while preserving true mute on playback");
+                    music.Stop();double stopped=music.Position;Thread.Sleep(40);Check(Math.Abs(music.Position-stopped)<.01,"Stop holds the "+song+" playback clock");
+                    music.Play();Thread.Sleep(30);Check(music.Position<stopped&&music.PlaybackAttenuation==-10000,"Replay seeks to the beginning and preserves mute for "+song);
+                    music.Stop();music.Close();Check(!music.Opened,"Song device closes after "+song);
                 }
             }
             using(var tones=new ArcadeTones(0))
@@ -74,10 +79,10 @@ namespace Vpet
                                 arcade.ClientSize=new Size(700,590);Application.DoEvents();var pending=MakerField<Label>(arcade,"calculated");
                                 Check(pending.Parent.ClientRectangle.Contains(pending.Bounds),"Both calculated and streak score lines fit at the minimum window size");CaptureForm(arcade,"dance-minimum-streak");arcade.ClientSize=new Size(1040,790);Application.DoEvents();
                                 CaptureForm(arcade,"dance-streak-pulse");Check(arcade.Dance.PulsingTargets(now).Any(),"A scored target remains visible for its pulse");
-                                using(var bright=ArcadeRegion(arcade,new Rectangle(70,110,280,35)))
+                                using(var bright=ArcadeRegion(arcade,new Rectangle(650,110,280,35)))
                                 {
-                                    now+=.34;arcade.Step();using(var flash=ArcadeRegion(arcade,new Rectangle(70,110,280,35)))
-                                        Check(ArcadeDifferentPixels(bright,flash)>50,"Bold Streak Combo text visibly flashes at the top left");
+                                    now+=.34;arcade.Step();using(var flash=ArcadeRegion(arcade,new Rectangle(650,110,280,35)))
+                                        Check(ArcadeDifferentPixels(bright,flash)>50,"Bold Streak Combo text visibly flashes at the top right");
                                 }
                             }
                         }
@@ -86,6 +91,7 @@ namespace Vpet
                         Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.High(ArcadeGame.Dance,ArcadeDifficulty.Easy)==arcade.Dance.Banked,"Successful Dance high score persists independently");CaptureForm(arcade,"dance-success");
                         long high=arcade.Dance.Banked;songTime=0;FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();songTime=arcade.Dance.Chart[0].HitTime;ArcadeKey(arcade,arrows[(int)arcade.Dance.Chart[0].Lane]);ArcadeKeyUp(arcade,arrows[(int)arcade.Dance.Chart[0].Lane]);
                         FindButton(arcade,"Stop").PerformClick();now+=10;songTime=arcade.Dance.Duration;arcade.Step();Check(arcade.Dance.State==DanceState.Stopped&&arcade.Dance.Pending==0&&score.Text=="- -"&&pet.Model.Settings.Arcade.High(ArcadeGame.Dance,ArcadeDifficulty.Easy)==high,"Stopping a scored Dance round preserves the previous high score and prevents later scoring");
+                        PracticeWindows(pet,arcade,ref now,ref songTime,arrows);
                         FindButton(arcade,"Close Game").PerformClick();Check(arcade.Game==ArcadeGame.Lobby&&pet.ArcadeOpen&&!pet.Visible,"Close Game returns to lobby while desktop pet stays hidden");
                         ClickCabinet(arcade,1);Check(arcade.Game==ArcadeGame.Simon&&!volume.Visible,"Simon Says cabinet opens without music/volume controls");
                         FindButton(arcade,"Start").PerformClick();Check(FindButton(arcade,"Stop").Visible,"Simon Start also becomes Stop");FindButton(arcade,"Stop").PerformClick();now+=3.01;arcade.Step();Check(arcade.Simon.State==SimonState.Stopped&&tonesPlayed.Count==0,"Simon Stop during countdown prevents the first tone and sequence");
@@ -94,7 +100,7 @@ namespace Vpet
                         Check(arcade.Simon.Pending==50&&arcade.Simon.Sequence.Count==1&&arcade.Simon.State==SimonState.Waiting,"Correct mapped key adds 50 and waits before the next sequence");
                         int beforeTone=tonesPlayed.Count;Check(beforeTone==2&&tonesPlayed[0]==lane&&tonesPlayed[1]==lane&&arcade.Simon.Lit(now)==lane,"Final player input highlights and plays the exact same tone as the pet's cue");CaptureForm(arcade,"simon-final-input");
                         now+=.18;arcade.Step();Check(!arcade.Simon.Lit(now).HasValue&&MakerField<int>(arcade,"facing")==2,"After its final input highlight, the pet faces down for the rest");CaptureForm(arcade,"simon-rest");
-                        now+=.499;arcade.Step();Check(tonesPlayed.Count==beforeTone&&arcade.Simon.State==SimonState.Waiting,"Native preview remains quiet for the full half-second rest");now+=.001;arcade.Step();Check(arcade.Simon.Sequence.Count==2&&tonesPlayed.Count==beforeTone+1,"Native preview starts its next sequence and tone after the rest");
+                        now+=.999;arcade.Step();Check(tonesPlayed.Count==beforeTone&&arcade.Simon.State==SimonState.Waiting,"Native preview remains quiet for the full one-second rest");now+=.001;arcade.Step();Check(arcade.Simon.Sequence.Count==2&&tonesPlayed.Count==beforeTone+1,"Native preview starts its next sequence and tone after the rest");
                         now+=2*arcade.Simon.ShowStep+.01;arcade.Step();Keys wrong=arrows[((int)arcade.Simon.Sequence[0]+1)%4];ArcadeKey(arcade,wrong);ArcadeKeyUp(arcade,wrong);
                         Check(arcade.Simon.State==SimonState.Finished&&score.Text=="50"&&FindButton(arcade,"Start").Visible,"Simon mistake banks completed rounds and offers replay");
                         Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.High(ArcadeGame.Simon,ArcadeDifficulty.Easy)==50,"Completed Simon high score persists to the pet's settings");

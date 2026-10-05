@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace Vpet
 {
@@ -29,6 +31,30 @@ namespace Vpet
                 var scored=new DanceGame(difficulty,30);scored.Start(0);scored.Update(3);for(int i=0;i<scored.Lives;i++)scored.Press(ArcadeLane.Left,4);
                 Check(!scored.Practice&&scored.State==DanceState.Failed,"Returning to standard mode restores the difficulty's miss limit on "+difficulty);
             }
+        }
+        static void PracticeWindows(PetWindow pet,ArcadeWindow arcade,ref double now,ref double songTime,Keys[] keys)
+        {
+            var option=MakerField<CheckBox>(arcade,"practice");var modes=MakerField<RadioButton[]>(arcade,"modes");var difficulty=MakerField<FlowLayoutPanel>(arcade,"difficulties");
+            var score=MakerField<Button>(arcade,"score");var calculated=MakerField<Label>(arcade,"calculated");long[] high=(long[])pet.Model.Settings.Arcade.DanceHigh.Clone();
+            Check(option.Visible&&option.Enabled&&option.Top>=difficulty.Bottom,"Practice mode is available directly below Difficulty");
+            using(var counters=ArcadeRegion(arcade,new Rectangle(75,68,125,32)))
+            {
+                option.Checked=true;modes[2].Checked=true;Check(arcade.Dance.Practice&&!score.Visible&&!calculated.Visible,"Practice hides scoring and rebuilds the selected difficulty without scoring");
+                using(var total=ArcadeRegion(arcade,new Rectangle(75,68,125,32)))Check(ArcadeDifferentPixels(counters,total)>50,"Practice replaces the miss-limit circles with a numerical count");
+            }
+            Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.Practice,"Practice selection is saved immediately");
+            songTime=0;FindButton(arcade,"Start").PerformClick();Check(!option.Enabled,"Practice choice is locked during a round");now+=3.01;arcade.Step();
+            foreach(var target in arcade.Dance.Chart.Take(6)){songTime=target.HitTime;now+=.1;ArcadeKey(arcade,keys[(int)target.Lane]);ArcadeKeyUp(arcade,keys[(int)target.Lane]);}
+            Check(arcade.Dance.Pending==0&&arcade.Dance.Banked==0&&arcade.Dance.StreakScore==0&&!arcade.Dance.Streak,"Practice hits give visual feedback without any score or combo");
+            songTime=arcade.Dance.Chart[5].HitTime+.45;now+=.1;arcade.Step();int before=arcade.Dance.Misses;
+            for(int i=0;i<8;i++){ArcadeKey(arcade,keys[0]);ArcadeKeyUp(arcade,keys[0]);}
+            Check(arcade.Dance.Misses>=before+8&&arcade.Dance.State==DanceState.Running&&FindButton(arcade,"Stop").Visible,"Repeated practice misses keep the Hard song running beyond its normal single-miss limit");
+            arcade.ClientSize=new Size(700,590);Application.DoEvents();Check(option.Parent.ClientRectangle.Contains(option.Bounds),"Practice option fits the minimum arcade window size");CaptureForm(arcade,"dance-practice-minimum");arcade.ClientSize=new Size(1040,790);
+            songTime=arcade.Dance.Duration;now+=.1;arcade.Step();
+            Check(arcade.Dance.State==DanceState.Success&&arcade.Dance.Banked==0&&pet.Model.Settings.Arcade.DanceHigh.SequenceEqual(high),"Practice completes without adding or replacing any high scores");CaptureForm(arcade,"dance-practice-complete");
+            FindButton(arcade,"Start").PerformClick();Check(arcade.Dance.Misses==0,"Practice replay clears the displayed miss count");FindButton(arcade,"Stop").PerformClick();
+            option.Checked=false;Check(!arcade.Dance.Practice&&score.Visible&&calculated.Visible,"Turning practice off restores scored mode and its scoreboard");
+            Check(!Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.Practice,"Turning practice off persists for future sessions");
         }
     }
 }
