@@ -179,12 +179,14 @@ menus do not trigger it. It is
 not a replaceable reaction. Try It Out previews temporarily replace this symbol.
 
 JOYSTICK AND ARCADE
-Display Items > Joystick adds an independent desktop joystick. Left-drag it
+Display Items > Joystick adds the supplied Joystick.png artwork. Left-drag it
 outside either fence; it follows Window Location. Click it to send the pet
 behind it, even in Static mode or outside its restricted area. On arrival,
 Arcade Window opens and the desktop pet hides. Closing Arcade returns the pet
 behind the joystick and resumes normal rules. Right-click > Remove Joystick
 puts it away. Closing the toy chest does not remove it.
+Arcade Window stays above all Vpet desktop assets. Dynamic still permits other
+applications above the arcade; Over Everything uses the topmost window band.
 
 Click Dance Time or Simon Says in the arcade lobby. The other three cabinets
 are unavailable. Both games have Easy (default), Normal, and Hard, a three-second
@@ -195,21 +197,28 @@ music volume are saved across restarts.
 
 Dance Time uses the supplied song for each difficulty. Hit matching keys while
 incoming targets overlap their squares: Good (1%) earns 10, Great (50%) earns
-20, and Excellent (90%) earns 30. Five consecutive Excellents start a x1.0
+20, and Excellent (90%) earns 30. Five consecutive Excellents start a 1.0x
 streak; further Excellents increase it by 0.1. Pending points appear below the
 score box. A miss banks them with the multiplier and resets the streak.
+A bold, flashing Streak Combo indicator shows the multiplier at the top left.
+Good or Great ends it and resets the multiplier to 1.0x, keeping pending points.
+Successfully scored targets pulse briefly before disappearing.
 An unmatched press or a target reaching the pet is a miss. Easy allows three
 misses, Normal two, and Hard one; target speeds are 1x, 1.5x, and 2x.
 The final miss ends the game and discards all its points. Finish the song to
 bank remaining points and record a new high score if greater. The vertical
-slider controls music volume. Start reappears after Success or Failed.
+slider always controls music volume, including before starting. New preferences
+default to 53%, one quarter below the old 70% after rounding; saved levels remain.
 
 Simon Says has no music. Watch the red/up, blue/down, green/left, and yellow/right
-squares light up, then repeat the whole sequence within five seconds. Each
+squares light up and play their unique tones, then repeat within five seconds. Each
 correct round adds 50 pending points and one square to the sequence. Difficulty
 changes the display speed: 0.9, 0.6, or 0.4 seconds per step. A wrong key or
 timeout ends the game, banks your points, and records a new high score if greater.
-Start lets you replay.
+After a correct reply, the next sequence starts after a half-second pause.
+Both games replace Start with Stop during countdowns and play. Stop cancels the
+round, playback, and its score without changing high scores. Start returns after
+stopping or finishing so you can replay.
 
 REMINDERS
 Right-click the pet > Reminders, between Settings and Check for Updates with

@@ -1,4 +1,14 @@
-# Vpet 1.11.0
+# Vpet 1.11.1
+
+- Use the supplied Joystick.png for the desktop joystick, retaining transparent corners and its existing size. Bundle the image in the installer.
+- Keep Arcade Window above all other Vpet desktop assets in every window-location mode. Dynamic still allows other applications above the arcade. Display all four directional arrows on the Dance Time cabinet.
+- Reduce the default music volume by one quarter, from 70% to 53% after rounding. Preserve saved volume choices. Keep Dance Time's volume slider visible before, during, and after a round.
+- Replace Start with Stop during countdowns and active rounds in both games. Stop immediately cancels the round, playback, effects, and pending scoring without changing high scores; Start returns for replay.
+- Display a bold, flashing Streak Combo indicator at the top left during Dance Time streaks. Good or Great now ends the streak and resets the multiplier to 1.0x while retaining pending points. Display calculated-score multipliers as 1.0x rather than x1.0.
+- Pulse successfully hit Dance Time targets briefly before removing them, without allowing duplicate scoring or counting them as misses.
+- Play a distinct short tone for each direction highlighted by the pet in Simon Says. Wait half a second after a correct reply before beginning the next, longer sequence.
+
+## Vpet 1.11.0
 
 - Add Joystick to Display Items. Drag it independently of movement fences; click it to send the pet behind it, even in Static mode or at zero walking speed. On arrival, Arcade Window opens and the desktop pet hides. Closing Arcade restores the pet behind the joystick and resumes its normal movement rules.
 - Add an arcade lobby with the active Dance Time and Simon Says cabinets, three grey reserved cabinets, and your current pet walking in front of them. Close Game returns to the lobby; closing the window returns to the desktop.

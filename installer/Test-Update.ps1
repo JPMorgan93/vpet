@@ -31,9 +31,9 @@ try {
  if((Get-FileHash -LiteralPath $iconPath).Hash -ne (Get-FileHash -LiteralPath (Join-Path $root 'assets\reference\Vpet.ico')).Hash){throw 'Installed shortcut icon differs from supplied icon'}
  foreach($asset in @('Heads.png','Tails.png','Joystick.png','Easy.mp3','Normal.mp3','Hard.mp3')){
   $relative='assets\reference\'+$asset
-  if((Get-FileHash -LiteralPath (Join-Path $app $relative)).Hash -ne (Get-FileHash -LiteralPath (Join-Path $root $relative)).Hash){throw ('Installed coin artwork differs: '+$asset)}
+  if((Get-FileHash -LiteralPath (Join-Path $app $relative)).Hash -ne (Get-FileHash -LiteralPath (Join-Path $root $relative)).Hash){throw ('Installed reference asset differs: '+$asset)}
  }
- Write-Output 'PASS: installed coin artwork and arcade songs match the supplied reference assets'
+ Write-Output 'PASS: installed reference artwork and arcade songs match the supplied assets'
  $links=New-Object -ComObject WScript.Shell
  if($links.CreateShortcut($shortcut).IconLocation -notlike '*Vpet-Pixel.ico*'){throw 'Start menu shortcut did not switch to the new icon path'}
  if(Test-Path (Join-Path $app 'pending-update.txt')){throw 'Fresh install incorrectly requested update notes'}
