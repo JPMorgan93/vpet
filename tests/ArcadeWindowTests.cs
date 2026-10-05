@@ -70,7 +70,9 @@ namespace Vpet
                             songTime=target.HitTime;now+=.1;ArcadeKey(arcade,arrows[(int)target.Lane]);ArcadeKeyUp(arcade,arrows[(int)target.Lane]);
                             if(++noteCount==6)
                             {
-                                Check(MakerField<Label>(arcade,"calculated").Text.StartsWith("1.1x"),"Calculated multiplier uses the requested suffix format");
+                                Check(MakerField<Label>(arcade,"calculated").Text=="Calculated: 60\n1.3x   Streak: 120","Score display separates calculated and active streak points with the multiplier suffix");
+                                arcade.ClientSize=new Size(700,590);Application.DoEvents();var pending=MakerField<Label>(arcade,"calculated");
+                                Check(pending.Parent.ClientRectangle.Contains(pending.Bounds),"Both calculated and streak score lines fit at the minimum window size");CaptureForm(arcade,"dance-minimum-streak");arcade.ClientSize=new Size(1040,790);Application.DoEvents();
                                 CaptureForm(arcade,"dance-streak-pulse");Check(arcade.Dance.PulsingTargets(now).Any(),"A scored target remains visible for its pulse");
                                 using(var bright=ArcadeRegion(arcade,new Rectangle(70,110,280,35)))
                                 {
@@ -90,7 +92,9 @@ namespace Vpet
                         FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();Check(arcade.Simon.State==SimonState.Showing&&arcade.Simon.Sequence.Count==1&&tonesPlayed.Last()==arcade.Simon.Sequence[0],"Simon begins by highlighting one color with its tone");CaptureForm(arcade,"simon-watch");
                         now+=arcade.Simon.ShowStep+.01;arcade.Step();ArcadeLane lane=arcade.Simon.Sequence[0];ArcadeKey(arcade,arrows[(int)lane]);ArcadeKeyUp(arcade,arrows[(int)lane]);
                         Check(arcade.Simon.Pending==50&&arcade.Simon.Sequence.Count==1&&arcade.Simon.State==SimonState.Waiting,"Correct mapped key adds 50 and waits before the next sequence");
-                        int beforeTone=tonesPlayed.Count;now+=.49;arcade.Step();Check(tonesPlayed.Count==beforeTone&&arcade.Simon.State==SimonState.Waiting,"Native preview remains quiet during the half-second pause");now+=.01;arcade.Step();Check(arcade.Simon.Sequence.Count==2&&tonesPlayed.Count==beforeTone+1,"Native preview starts its next sequence and tone after the pause");
+                        int beforeTone=tonesPlayed.Count;Check(beforeTone==2&&tonesPlayed[0]==lane&&tonesPlayed[1]==lane&&arcade.Simon.Lit(now)==lane,"Final player input highlights and plays the exact same tone as the pet's cue");CaptureForm(arcade,"simon-final-input");
+                        now+=.18;arcade.Step();Check(!arcade.Simon.Lit(now).HasValue&&MakerField<int>(arcade,"facing")==2,"After its final input highlight, the pet faces down for the rest");CaptureForm(arcade,"simon-rest");
+                        now+=.499;arcade.Step();Check(tonesPlayed.Count==beforeTone&&arcade.Simon.State==SimonState.Waiting,"Native preview remains quiet for the full half-second rest");now+=.001;arcade.Step();Check(arcade.Simon.Sequence.Count==2&&tonesPlayed.Count==beforeTone+1,"Native preview starts its next sequence and tone after the rest");
                         now+=2*arcade.Simon.ShowStep+.01;arcade.Step();Keys wrong=arrows[((int)arcade.Simon.Sequence[0]+1)%4];ArcadeKey(arcade,wrong);ArcadeKeyUp(arcade,wrong);
                         Check(arcade.Simon.State==SimonState.Finished&&score.Text=="50"&&FindButton(arcade,"Start").Visible,"Simon mistake banks completed rounds and offers replay");
                         Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.High(ArcadeGame.Simon,ArcadeDifficulty.Easy)==50,"Completed Simon high score persists to the pet's settings");
@@ -100,8 +104,14 @@ namespace Vpet
                         {
                             arcade.ClientSize=size;Application.DoEvents();var footer=FindButton(arcade,"Close Game");Check(arcade.ClientRectangle.Contains(new Rectangle(arcade.PointToClient(footer.PointToScreen(Point.Empty)),footer.Size)),"Close Game remains accessible at "+size);
                             Check(canvas.ClientRectangle.Contains(new Rectangle(MakerField<Button>(arcade,"switchKeys").Location,MakerField<Button>(arcade,"switchKeys").Size)),"Key switch remains inside resized game canvas");
+                            var pending=MakerField<Label>(arcade,"calculated");Check(pending.Parent.ClientRectangle.Contains(pending.Bounds),"Calculated score text fits the header at "+size);
                         }
-                        CaptureForm(arcade,"simon-stopped");pet.Toys.Model.DragJoystick(new PointF(old.X-45,old.Y+20));arcade.Close();PetFrame(pet);
+                        CaptureForm(arcade,"simon-stopped");pet.Toys.Model.DragJoystick(new PointF(old.X-45,old.Y+20));
+                        pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();pet.Toys.SetVisible(true);pet.Toys.Model.SpawnBall(pet.Now);pet.Toys.Model.SpawnTriangle();pet.Toys.Model.SpawnCoin();pet.Toys.Model.SpawnCard();pet.Toys.Model.SpawnDie();pet.Plate.SetVisible(true);PetFrame(pet);
+                        var desktopAssets=pet.Toys.Windows.Where(w=>w.Visible).Concat(new LayeredWindow[]{pet.Plate,pet.Joystick}).ToArray();
+                        foreach(var asset in desktopAssets)Check((Native.GetWindowLongPtr(asset.Handle,-20).ToInt64()&8)==0,"Arcade temporarily keeps Over Everything asset in the normal band: "+asset.Text);
+                        arcade.Close();PetFrame(pet);
+                        foreach(var asset in desktopAssets)Check((Native.GetWindowLongPtr(asset.Handle,-20).ToInt64()&8)!=0,"Closing Arcade restores Over Everything for "+asset.Text);
                         Check(!pet.ArcadeOpen&&pet.Visible&&Native.ArcadeForeground==IntPtr.Zero&&Geometry.Distance(pet.Model.Position,pet.Toys.Model.JoystickApproach)<1&&!pet.Model.Playing,"Closing Arcade removes the stacking lock and restores pet behind relocated joystick in Static mode");
                         pet.Toys.Model.PressJoystick(pet.Now);pet.Model.Place(pet.Toys.Model.JoystickApproach);PetFrame(pet);Check(pet.ArcadeOpen,"Joystick can reopen Arcade after closing");Item(pet.Joystick.Menu,"Remove Joystick").PerformClick();Check(!pet.ArcadeOpen&&pet.Visible&&!pet.Joystick.Visible,"Removing joystick closes Arcade and restores desktop pet");
                         pet.Close();
