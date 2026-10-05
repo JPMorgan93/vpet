@@ -29,6 +29,22 @@ namespace Vpet
             }
             using(var tones=new ArcadeTones(0))
             {foreach(ArcadeLane lane in Enum.GetValues(typeof(ArcadeLane))){tones.Play(lane);Thread.Sleep(25);}tones.Stop();Check(true,"All four generated Simon tones dispatch and stop while muted");}
+            string silence=Path.Combine(artifacts,"arcade-volume-silence.wav");
+            using(var writer=new BinaryWriter(File.Create(silence)))
+            {
+                const int rate=22050,bytes=rate*2*2;writer.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));writer.Write(bytes+36);writer.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "));
+                writer.Write(16);writer.Write((short)1);writer.Write((short)1);writer.Write(rate);writer.Write(rate*2);writer.Write((short)2);writer.Write((short)16);writer.Write(System.Text.Encoding.ASCII.GetBytes("data"));writer.Write(bytes);writer.Write(new byte[bytes]);
+            }
+            using(var music=new ArcadeMusic())
+            {
+                music.Open(silence,0);music.Play();
+                foreach(int value in new[]{1,5,10,50,100,0})
+                {music.SetVolume(value);Check(music.PlaybackAttenuation==ArcadeMusic.Attenuation(value),"Live renderer updates to "+value+"% while playing silent PCM");}
+                music.Stop();music.Close();Check(!music.Opened,"Live volume probe releases its playback graph");
+                bool failed=false;try{music.Open(Path.Combine(artifacts,"missing-arcade-song.mp3"),0);}catch(IOException){failed=true;}
+                Check(failed&&!music.Opened,"A missing song leaves no open playback graph");
+                music.Open(silence,0);Check(music.Opened&&music.PlaybackAttenuation==-10000,"Playback can reopen safely after a failed song load");
+            }
         }
         static void ArcadeWindows()
         {
