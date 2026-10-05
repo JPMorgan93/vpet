@@ -1,5 +1,13 @@
 # Vpet validation
 
+## Pending release: Practice mode and music volume
+
+6,250 automated assertions passed. New coverage verifies Practice mode's default/migration/persistence, countdown and song completion in all three difficulties, unlimited miss counting, one count per expired target, no hit/streak/banked points, clean replay/Stop, and restored miss limits in standard mode. Volume checks span normal gain to mute with a monotonic attenuation curve, and Simon waits a full second after its final input highlight.
+
+165 arcade/music/joystick native UI checks passed. Each bundled MP3 opens, advances while muted, stops, restarts at the beginning, and releases its playback graph. Actual renderer readback verified 100%, 70%, 53%, 50%, 10%, 1%, and 0% before playback. A silent PCM fixture verified volume changes during playback without audible music; the actual UI slider also reached normal gain at 100%, substantial attenuation at 5%, and mute at 0%, with matching percentage labels. No device master-volume control is used. The playback API uses [IBasicAudio's documented decibel range](https://learn.microsoft.com/en-us/windows/win32/api/control/nf-control-ibasicaudio-put_volume): 0 is full gain and -10000 is silence. Low slider settings use stronger attenuation; 10% is -40 dB and 1% is -80 dB. This replaces scaled MCI requests, whose readback only confirmed accepted values. Loudspeaker quality and subjective loudness were not assessed.
+
+Practice UI checks verify placement below Difficulty, saved choices, numeric misses replacing limit circles, hidden scores, disabled mode changes during a round, continued Hard-mode play beyond its usual miss limit, completion/replay/Stop, and unchanged high scores. The top-right flashing streak indicator, Practice mode at minimum window size, and completed-round screenshots were visually inspected. Simon's last input still highlights and plays its tone, followed by exactly one second facing down. Existing asset stacking and arcade restoration checks passed. Validated on 2026-10-05; release version awaits the owner's choice under AGENTS.md.
+
 ## Version 1.11.2
 
 6,223 automated assertions passed. New coverage verifies the three-Excellent threshold, separate streak points, multiplier application on Good/Great, miss, and song completion, multiple streaks without reapplying earlier bonuses, stopped-round discard, and half-volume playback mapping for default, saved, maximum, and muted levels. Simon checks retain the final input's full highlight, wait another half second before extending the sequence, and emit matching tones for accepted player inputs, including mistakes.
