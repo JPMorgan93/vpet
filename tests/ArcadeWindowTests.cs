@@ -71,6 +71,8 @@ namespace Vpet
                             if(++noteCount==6)
                             {
                                 Check(MakerField<Label>(arcade,"calculated").Text=="Calculated: 60\n1.3x   Streak: 120","Score display separates calculated and active streak points with the multiplier suffix");
+                                arcade.ClientSize=new Size(700,590);Application.DoEvents();var pending=MakerField<Label>(arcade,"calculated");
+                                Check(pending.Parent.ClientRectangle.Contains(pending.Bounds),"Both calculated and streak score lines fit at the minimum window size");CaptureForm(arcade,"dance-minimum-streak");arcade.ClientSize=new Size(1040,790);Application.DoEvents();
                                 CaptureForm(arcade,"dance-streak-pulse");Check(arcade.Dance.PulsingTargets(now).Any(),"A scored target remains visible for its pulse");
                                 using(var bright=ArcadeRegion(arcade,new Rectangle(70,110,280,35)))
                                 {

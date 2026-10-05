@@ -126,7 +126,9 @@ namespace Vpet
                 using(var pet=new PetWindow(Path.Combine(artifacts,"toys-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"toy-smoke")))
                 using(var application=new LayeredWindow(false))using(var image=new Bitmap(30,30))
                 {
-                    pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
+                    pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();
+                    typeof(PetWindow).GetField("smokeStep",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(pet,99);
+                    pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.Frequency=Frequency.Off;
                     using(var g=Graphics.FromImage(image))g.Clear(Color.White);application.Present(image,new Point(50,50));application.Show();
                     var windows=pet.Toys;var toys=windows.Model;
                     var items=(ToolStripMenuItem)pet.ContextMenuStrip.Items[0];
