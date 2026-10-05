@@ -1,4 +1,11 @@
-# Vpet 1.11.1
+# Vpet 1.11.2
+
+- Use normal window stacking for Arcade Window in every Window Location mode while keeping Vpet toys and desktop assets beneath it. Restore their configured stacking when the arcade closes.
+- Halve Dance Time's base music playback volume for all songs and slider levels, including previously saved settings. Retain the volume slider and saved choices.
+- Start Excellent streaks at three consecutive Excellents. Track active streak points separately; when a streak ends, apply its multiplier only to those points and add the result to the calculated score. Show calculated points, streak points, and the multiplier separately.
+- Keep Simon Says' last correct input highlighted, then face the pet down for a full half-second pause before the next sequence. Play the same directional tones for player inputs as for the pet's demonstration.
+
+## Vpet 1.11.1
 
 - Use the supplied Joystick.png for the desktop joystick, retaining transparent corners and its existing size. Bundle the image in the installer.
 - Keep Arcade Window above all other Vpet desktop assets in every window-location mode. Dynamic still allows other applications above the arcade. Display all four directional arrows on the Dance Time cabinet.

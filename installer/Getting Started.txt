@@ -185,8 +185,9 @@ behind it, even in Static mode or outside its restricted area. On arrival,
 Arcade Window opens and the desktop pet hides. Closing Arcade returns the pet
 behind the joystick and resumes normal rules. Right-click > Remove Joystick
 puts it away. Closing the toy chest does not remove it.
-Arcade Window stays above all Vpet desktop assets. Dynamic still permits other
-applications above the arcade; Over Everything uses the topmost window band.
+Arcade Window always uses normal window stacking, allowing other applications
+above it while keeping all Vpet desktop assets beneath it in every Window Location.
+Closing the arcade restores the assets' configured window stacking.
 
 Click Dance Time or Simon Says in the arcade lobby. The other three cabinets
 are unavailable. Both games have Easy (default), Normal, and Hard, a three-second
@@ -197,25 +198,31 @@ music volume are saved across restarts.
 
 Dance Time uses the supplied song for each difficulty. Hit matching keys while
 incoming targets overlap their squares: Good (1%) earns 10, Great (50%) earns
-20, and Excellent (90%) earns 30. Five consecutive Excellents start a 1.0x
-streak; further Excellents increase it by 0.1. Pending points appear below the
-score box. A miss banks them with the multiplier and resets the streak.
+20, and Excellent (90%) earns 30. Three consecutive Excellents start a 1.0x
+streak; further Excellents increase it by 0.1. Starting with the third Excellent,
+points accumulate in a separate Streak total below the score box. When Good,
+Great, a miss, or song completion ends the streak, only these points receive the
+multiplier and join Calculated points. Earlier points and bonuses remain unchanged.
+A miss banks the calculated total and resets the streak.
 A bold, flashing Streak Combo indicator shows the multiplier at the top left.
-Good or Great ends it and resets the multiplier to 1.0x, keeping pending points.
+Good or Great ends it and resets the multiplier to 1.0x after adding the bonus.
 Successfully scored targets pulse briefly before disappearing.
 An unmatched press or a target reaching the pet is a miss. Easy allows three
 misses, Normal two, and Hard one; target speeds are 1x, 1.5x, and 2x.
 The final miss ends the game and discards all its points. Finish the song to
 bank remaining points and record a new high score if greater. The vertical
 slider always controls music volume, including before starting. New preferences
-default to 53%, one quarter below the old 70% after rounding; saved levels remain.
+default to 53%; saved levels remain. Base playback volume is halved at every
+slider setting for all songs, including existing saved volume choices.
 
 Simon Says has no music. Watch the red/up, blue/down, green/left, and yellow/right
-squares light up and play their unique tones, then repeat within five seconds. Each
+squares light up and play their unique tones, then repeat within five seconds.
+Your inputs play the same directional tones. Each
 correct round adds 50 pending points and one square to the sequence. Difficulty
 changes the display speed: 0.9, 0.6, or 0.4 seconds per step. A wrong key or
 timeout ends the game, banks your points, and records a new high score if greater.
-After a correct reply, the next sequence starts after a half-second pause.
+The final correct input stays highlighted, then the pet looks down for a full
+half-second pause before starting the next sequence.
 Both games replace Start with Stop during countdowns and play. Stop cancels the
 round, playback, and its score without changing high scores. Start returns after
 stopping or finishing so you can replay.
