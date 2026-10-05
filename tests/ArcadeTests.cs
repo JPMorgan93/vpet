@@ -54,15 +54,16 @@ namespace Vpet
                 Check(game.Lit(3.01)==game.Sequence[0]&&game.Lit(3+game.ShowStep*.8)==null,"Simon lights the indicated square then leaves a gap");
                 double now=3+game.ShowStep;game.Update(now);Check(game.State==SimonState.Replaying,"Simon waits for player until the entire sequence is displayed");game.Press(game.Sequence[0],now+.1);Check(game.Pending==50&&game.Sequence.Count==1&&game.State==SimonState.Waiting,"Completed combination earns 50 and waits before extending sequence");
                 Check(game.Lit(now+.1)==game.Sequence[0]&&game.Lit(now+.279)==game.Sequence[0],"Final correct input retains its full highlight");
-                game.Update(now+.779);Check(game.State==SimonState.Waiting&&!game.Lit(now+.779).HasValue,"No next highlight until the final flash and full half-second rest finish");now+=.78;game.Update(now);Check(game.Sequence.Count==2&&game.State==SimonState.Showing&&game.Lit(now)==game.Sequence[0],"Next sequence starts after the highlight followed by exactly half a second");
+                game.Update(now+1.279);Check(game.State==SimonState.Waiting&&!game.Lit(now+1.279).HasValue,"No next highlight until the final flash and full one-second rest finish");now+=1.28;game.Update(now);Check(game.Sequence.Count==2&&game.State==SimonState.Showing&&game.Lit(now)==game.Sequence[0],"Next sequence starts after the highlight followed by exactly one second");
                 now+=2*game.ShowStep;game.Update(now);for(int i=0;i<2;i++)game.Press(game.Sequence[i],now+.1+i*.1);
                 Check(game.Pending==100&&game.State==SimonState.Waiting,"Simon scores 50 per completed sequence without a multiplier");
-                now+=.88;game.Update(now);Check(game.Sequence.Count==3,"Third Simon sequence grows after the wait");now+=3*game.ShowStep;game.Update(now);game.Press((ArcadeLane)(((int)game.Sequence[0]+1)%4),now+.1);Check(game.State==SimonState.Finished&&game.Banked==100&&game.Pending==0,"Wrong Simon key banks the completed rounds at "+difficulty);
+                now+=1.38;game.Update(now);Check(game.Sequence.Count==3,"Third Simon sequence grows after the wait");now+=3*game.ShowStep;game.Update(now);game.Press((ArcadeLane)(((int)game.Sequence[0]+1)%4),now+.1);Check(game.State==SimonState.Finished&&game.Banked==100&&game.Pending==0,"Wrong Simon key banks the completed rounds at "+difficulty);
                 game.Start(now+1);game.Update(now+4);game.Update(now+4+game.ShowStep);double expiry=now+4+game.ShowStep+5;game.Update(expiry-.01);Check(game.State==SimonState.Replaying,"Simon allows the full five-second replay window");game.Update(expiry);Check(game.State==SimonState.Finished&&game.Banked==0,"Simon timeout ends the game without adding incomplete-round points");
             }
             Check(new SimonGame(ArcadeDifficulty.Easy,new Random()).ShowStep>new SimonGame(ArcadeDifficulty.Normal,new Random()).ShowStep&&new SimonGame(ArcadeDifficulty.Normal,new Random()).ShowStep>new SimonGame(ArcadeDifficulty.Hard,new Random()).ShowStep,"Simon display speed increases across difficulties");
             Check(ArcadeWindow.LaneFor(Keys.W,false)==ArcadeLane.Up&&ArcadeWindow.LaneFor(Keys.Left,true)==ArcadeLane.Left&&ArcadeWindow.LaneFor(Keys.W,true)==null&&ArcadeWindow.LaneFor(Keys.Up,false)==null,"WASD/arrow switching maps directions exclusively");
             ArcadeAdjustmentChecks();
+            PracticeFeatures();
         }
     }
 }

@@ -20,11 +20,13 @@ namespace Vpet
         readonly DoubleBufferedPanel canvas=new DoubleBufferedPanel{Dock=DockStyle.Fill,BackColor=Color.FromArgb(23,18,42)};
         readonly FlowLayoutPanel difficulties=new FlowLayoutPanel{AutoSize=true,Dock=DockStyle.Left,WrapContents=false,Padding=new Padding(8)};
         readonly RadioButton[] modes=new RadioButton[3];
+        readonly CheckBox practice=new CheckBox{Name="ArcadePractice",Text="Practice mode",AutoSize=true,ForeColor=MakerUi.Purple,Location=new Point(16,67)};
         readonly Button score=new Button{Name="ArcadeScore",Width=170,Height=42,Text="- -",BackColor=Color.FromArgb(44,33,75),ForeColor=Color.White,FlatStyle=FlatStyle.Flat};
         readonly Label calculated=new Label{Name="ArcadePending",AutoSize=true,ForeColor=Color.White,Text="1.0x   0"};
         readonly Button start=MakerUi.Button("Start",null),closeGame=MakerUi.Button("Close Game",null),switchKeys=MakerUi.Button("\u21bb",null);
         readonly TrackBar volume=new TrackBar{Name="ArcadeVolume",Orientation=Orientation.Vertical,Minimum=0,Maximum=100,TickFrequency=10,Width=44};
         readonly Label volumeLabel=new Label{Text="Volume",AutoSize=true,ForeColor=Color.White};
+        readonly Label volumeValue=new Label{Name="ArcadeVolumeValue",AutoSize=true,ForeColor=Color.White};
         readonly Label guidance=new Label{AutoSize=true,ForeColor=Color.FromArgb(225,216,245),Text="Choose Dance Time or Simon Says"};
         readonly Label lobbyHeading=new Label{AutoSize=true,Font=new Font("Segoe UI",19,FontStyle.Bold),Text="Vpet Arcade",ForeColor=Color.White,Padding=new Padding(12)};
         readonly HashSet<Keys> held=new HashSet<Keys>();
@@ -51,24 +53,28 @@ namespace Vpet
             SongPosition=()=>music.Position;PlayTone=tones.Play;score.Font=new Font("Consolas",16,FontStyle.Bold);
             var top=new Panel{Dock=DockStyle.Top,Height=110,BackColor=Color.FromArgb(241,236,249)};lobbyHeading.ForeColor=MakerUi.Purple;
             var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};calculated.ForeColor=MakerUi.Purple;
-            scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficulties);top.Controls.Add(lobbyHeading);
+            var difficultyArea=new Panel{Dock=DockStyle.Left,Width=440};difficulties.Dock=DockStyle.Top;difficultyArea.Controls.Add(difficulties);difficultyArea.Controls.Add(practice);
+            scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficultyArea);top.Controls.Add(lobbyHeading);
             var difficultyLabel=MakerUi.Label("Difficulty:");difficultyLabel.ForeColor=MakerUi.Purple;difficulties.Controls.Add(difficultyLabel);
             for(int i=0;i<3;i++)
             {
                 int index=i;modes[i]=new RadioButton{Text=((ArcadeDifficulty)i).ToString(),AutoSize=true,ForeColor=MakerUi.Purple,Margin=new Padding(6,15,6,8)};
                 difficulties.Controls.Add(modes[i]);modes[i].CheckedChanged+=delegate{if(!updating&&modes[index].Checked)ChooseDifficulty((ArcadeDifficulty)index);};
             }
+            practice.Checked=prefs.Practice;practice.CheckedChanged+=delegate
+            {if(updating||Busy)return;prefs.Practice=practice.Checked;showingHigh=false;resultReaction=-1;CreateGame();RefreshControls();save();};
+            tips.SetToolTip(practice,"Play the full song without scoring or a miss limit. Misses are counted for practice.");
             var footer=new TableLayoutPanel{Dock=DockStyle.Bottom,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=3,RowCount=2,Padding=new Padding(8)};
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,33));footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,34));footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,33));
             closeGame.Anchor=AnchorStyles.Left;start.Anchor=AnchorStyles.None;footer.Controls.Add(closeGame,0,0);footer.Controls.Add(start,1,0);footer.Controls.Add(guidance,0,1);footer.SetColumnSpan(guidance,3);
             Controls.Add(canvas);Controls.Add(top);Controls.Add(footer);
-            canvas.Controls.Add(switchKeys);canvas.Controls.Add(volume);canvas.Controls.Add(volumeLabel);
+            canvas.Controls.Add(switchKeys);canvas.Controls.Add(volume);canvas.Controls.Add(volumeLabel);canvas.Controls.Add(volumeValue);
             switchKeys.MinimumSize=new Size(36,34);switchKeys.Size=new Size(42,36);switchKeys.Name="ArcadeKeyBinding";switchKeys.Text="";switchKeys.Image=ArcadeControls.SwitchIcon();switchKeys.AccessibleName="Switch between WASD and arrow keys";
             tips.SetToolTip(switchKeys,"Switch between WASD and arrow keys");tips.SetToolTip(score,"Click to show the high score for this game and difficulty");
             switchKeys.Click+=delegate{prefs.ArrowKeys=!prefs.ArrowKeys;held.Clear();save();Focus();canvas.Invalidate();};
             score.Click+=delegate{showingHigh=!showingHigh;RefreshControls();Focus();};
             start.Click+=delegate{if(Busy)StopGame();else StartGame();};closeGame.Click+=delegate{ShowLobby();};
-            volume.Value=prefs.Volume;volume.ValueChanged+=delegate{prefs.Volume=volume.Value;try{music.SetVolume(prefs.Volume);}catch(Exception ex){MusicError(ex);}save();};
+            volume.Value=prefs.Volume;volumeValue.Text=prefs.Volume+"%";volume.ValueChanged+=delegate{prefs.Volume=volume.Value;volumeValue.Text=prefs.Volume+"%";try{music.SetVolume(prefs.Volume);}catch(Exception ex){MusicError(ex);}save();};
             canvas.Resize+=delegate{PositionControls();};canvas.Paint+=PaintArcade;canvas.MouseClick+=CabinetClick;
             Resize+=delegate{guidance.MaximumSize=new Size(Math.Max(1,ClientSize.Width-32),0);};guidance.MaximumSize=new Size(ClientSize.Width-32,0);
             KeyDown+=delegate(object sender,KeyEventArgs e){if(HandleGameKey(e.KeyData)){e.Handled=true;e.SuppressKeyPress=true;}};
@@ -93,7 +99,7 @@ namespace Vpet
             tones.Stop();held.Clear();resultHandled=false;Dance=null;Simon=null;music.Close();
             if(Game==ArcadeGame.Dance)
             {
-                try{music.Open(Path.Combine(musicDirectory,Difficulty+".mp3"),prefs.Volume);Dance=new DanceGame(Difficulty,music.Duration);Dance.MusicStarted+=delegate{music.Play();lastHop=0;hopAt=Now;};guidance.Text="Hit matching keys while a target overlaps its square. Three Excellents start a streak.";}
+                try{music.Open(Path.Combine(musicDirectory,Difficulty+".mp3"),prefs.Volume);Dance=new DanceGame(Difficulty,music.Duration,null,prefs.Practice);Dance.MusicStarted+=delegate{music.Play();lastHop=0;hopAt=Now;};guidance.Text=prefs.Practice?"Practice: play the full song without scoring or a miss limit. Misses are counted at the top left.":"Hit matching keys while a target overlaps its square. Three Excellents start a streak.";}
                 catch(Exception ex){MusicError(ex);}
             }
             else if(Game==ArcadeGame.Simon){Simon=new SimonGame(Difficulty,random);Simon.TonePlayed+=delegate(ArcadeLane lane){PlayTone(lane);};guidance.Text="Watch the lights and listen, then repeat the entire sequence within five seconds.";}
@@ -128,7 +134,7 @@ namespace Vpet
                     var target=Dance.VisibleTargets.OrderBy(t=>Dance.Distance(t)).FirstOrDefault();if(target!=null)facing=Facing(target.Lane);
                 }
                 if(Dance!=null&&!resultHandled&&(Dance.State==DanceState.Success||Dance.State==DanceState.Failed))
-                {resultHandled=true;resultAt=now;resultReaction=Dance.State==DanceState.Success?7:4;music.Stop();if(Dance.State==DanceState.Success){prefs.Record(Game,Difficulty,Dance.Banked);save();}}
+                {resultHandled=true;resultAt=now;resultReaction=Dance.State==DanceState.Success?7:4;music.Stop();if(Dance.State==DanceState.Success&&!Dance.Practice){prefs.Record(Game,Difficulty,Dance.Banked);save();}}
             }
             else if(Game==ArcadeGame.Simon&&Simon!=null)
             {
@@ -152,9 +158,11 @@ namespace Vpet
         void RefreshControls()
         {
             bool game=Game!=ArcadeGame.Lobby;updating=true;for(int i=0;i<3;i++){modes[i].Checked=i==(int)Difficulty;modes[i].Enabled=!Busy;}updating=false;
-            difficulties.Visible=score.Visible=calculated.Visible=closeGame.Visible=switchKeys.Visible=game;lobbyHeading.Visible=!game;
+            difficulties.Visible=closeGame.Visible=switchKeys.Visible=game;lobbyHeading.Visible=!game;
+            practice.Visible=Game==ArcadeGame.Dance;practice.Enabled=!Busy;
+            score.Visible=calculated.Visible=game&&!(Game==ArcadeGame.Dance&&prefs.Practice);
             start.Visible=game;start.Text=Busy?"Stop":"Start";start.Enabled=Game==ArcadeGame.Simon||Dance!=null;
-            volume.Visible=volumeLabel.Visible=Game==ArcadeGame.Dance;
+            volume.Visible=volumeLabel.Visible=volumeValue.Visible=Game==ArcadeGame.Dance;
             if(game)
             {
                 long banked=Game==ArcadeGame.Dance?Dance==null?0:Dance.Banked:Simon==null?0:Simon.Banked;
@@ -168,7 +176,7 @@ namespace Vpet
         {
             float scale=SceneScale;PointF origin=SceneOrigin;
             switchKeys.Location=new Point((int)(origin.X+552*scale),(int)(origin.Y+174*scale));
-            volume.Location=new Point(14,58);volume.Height=Math.Max(80,canvas.Height-110);volumeLabel.Location=new Point(8,32);
+            volume.Location=new Point(14,58);volume.Height=Math.Max(80,canvas.Height-110);volumeLabel.Location=new Point(8,32);volumeValue.Location=new Point(14,canvas.Height-44);
         }
         float SceneScale {get{return Math.Max(.1f,Math.Min(canvas.Width/1000f,canvas.Height/660f));}}
         PointF SceneOrigin {get{return new PointF((canvas.Width-1000*SceneScale)/2,(canvas.Height-660*SceneScale)/2);}}

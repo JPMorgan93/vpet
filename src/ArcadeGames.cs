@@ -17,6 +17,7 @@ namespace Vpet
         internal const int DefaultVolume=53;
         [DataMember] public int Volume=DefaultVolume;
         [DataMember] public bool ArrowKeys;
+        [DataMember] public bool Practice;
         [OnDeserializing] void Defaults(StreamingContext context){DanceHigh=new long[3];SimonHigh=new long[3];Volume=DefaultVolume;}
         public void Validate()
         {
@@ -38,6 +39,7 @@ namespace Vpet
     {
         public const double SquareDistance=136,SquareSize=58,PulseDuration=.22;
         public readonly ArcadeDifficulty Difficulty;
+        public readonly bool Practice;
         public readonly double Duration;
         public readonly List<DanceTarget> Chart;
         public DanceState State {get;private set;}
@@ -56,9 +58,9 @@ namespace Vpet
         public double FinishedAt {get;private set;}
         double countdownAt,runningAt;
         public event Action MusicStarted;
-        public DanceGame(ArcadeDifficulty difficulty,double duration,IEnumerable<DanceTarget> chart=null)
+        public DanceGame(ArcadeDifficulty difficulty,double duration,IEnumerable<DanceTarget> chart=null,bool practice=false)
         {
-            Difficulty=difficulty;Duration=duration;
+            Difficulty=difficulty;Duration=duration;Practice=practice;
             if(double.IsNaN(duration)||double.IsInfinity(duration)||duration<=0)throw new ArgumentException("Song duration must be positive.");
             Chart=chart==null?MakeChart(duration,difficulty):chart.Select(t=>new DanceTarget(t.Lane,t.HitTime)).OrderBy(t=>t.HitTime).ToList();
         }
@@ -97,6 +99,7 @@ namespace Vpet
             if(target==null){Miss(now);return;}
             target.Resolved=true;target.ScoredAt=now;target.ScoredDistance=Distance(target);int points=Points(Overlap(target.ScoredDistance));
             Feedback=points==30?"Excellent!":points==20?"Great!":"Good!";FeedbackAt=now;
+            if(Practice)return;
             if(points==30)
             {
                 ExcellentRun++;if(Streak)bonusTenths++;else if(ExcellentRun>=3)Streak=true;
@@ -115,13 +118,13 @@ namespace Vpet
         void CashIn(){CompleteStreak();Banked+=Pending;Pending=0;}
         void Miss(double now)
         {
-            CashIn();Misses++;Feedback="Miss!";FeedbackAt=now;
+            Misses++;Feedback="Miss!";FeedbackAt=now;if(Practice)return;CashIn();
             if(Misses>=Lives){State=DanceState.Failed;Banked=Pending=0;FinishedAt=now;Feedback="Failed";ClearTargets();}
         }
     }
     internal sealed class SimonGame
     {
-        internal const double InputHighlightDuration=.18,RestDuration=.5;
+        internal const double InputHighlightDuration=.18,RestDuration=1;
         readonly Random random;
         public readonly ArcadeDifficulty Difficulty;
         public readonly List<ArcadeLane> Sequence=new List<ArcadeLane>();

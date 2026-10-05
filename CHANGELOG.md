@@ -1,4 +1,11 @@
-# Vpet 1.11.2
+# Vpet 1.11.3
+
+- Fix Dance Time music volume with explicit playback attenuation instead of scaled MCI volume requests. Full slider volume uses the normal Windows/device level; lower values provide useful quiet levels, and zero is mute. Retain saved volume choices and show the selected percentage below the slider.
+- Move Dance Time's flashing Streak Combo indicator to the top right.
+- Add Practice mode below Difficulty. Replace miss-limit circles with a numeric miss total, play the whole song regardless of misses, and disable scoring and streak bonuses. Practice rounds do not change high scores; the choice is saved and defaults to off.
+- Extend Simon Says' down-facing pause after the final input highlight to one full second before the next combination.
+
+## Vpet 1.11.2
 
 - Use normal window stacking for Arcade Window in every Window Location mode while keeping Vpet toys and desktop assets beneath it. Restore their configured stacking when the arcade closes.
 - Halve Dance Time's base music playback volume for all songs and slider levels, including previously saved settings. Retain the volume slider and saved choices.

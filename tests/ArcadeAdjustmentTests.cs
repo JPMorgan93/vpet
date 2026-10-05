@@ -14,7 +14,8 @@ namespace Vpet
             string path=Path.Combine(artifacts,"arcade-volume-migration.json");
             File.WriteAllText(path,"{\"Arcade\":{}}");Check(Preferences.Load(path).Arcade.Volume==53,"Missing music volume uses the quieter default");
             File.WriteAllText(path,"{\"Arcade\":{\"Volume\":70}}");Check(Preferences.Load(path).Arcade.Volume==70,"Explicit saved music volume is retained");
-            Check(ArcadeMusic.DeviceVolume(53)==265&&ArcadeMusic.DeviceVolume(70)==350&&ArcadeMusic.DeviceVolume(100)==500&&ArcadeMusic.DeviceVolume(0)==0,"Playback gain halves default, saved, and maximum volume while retaining mute");
+            Check(ArcadeMusic.Attenuation(100)==0&&ArcadeMusic.Attenuation(0)==-10000&&ArcadeMusic.Attenuation(50)==-1204&&ArcadeMusic.Attenuation(10)==-4000&&ArcadeMusic.Attenuation(1)==-8000,"Music spans unity gain to mute with strong, explicit attenuation at low slider levels");
+            Check(ArcadeMusic.Attenuation(-1)==-10000&&ArcadeMusic.Attenuation(101)==0&&Enumerable.Range(0,100).All(v=>ArcadeMusic.Attenuation(v)<ArcadeMusic.Attenuation(v+1)),"Volume range clamps safely and each slider step increases gain");
             using(var image=JoystickArtwork.Draw(1))
             {
                 image.Save(Path.Combine(artifacts,"joystick-reference-render.png"));
@@ -71,11 +72,11 @@ namespace Vpet
             simon.Start(0);simon.Update(3);simon.Update(3.01);simon.Update(3.15);Check(played.Count==1&&played[0]==simon.Sequence[0],"One tone is emitted per pet highlight, never once per paint/tick");
             simon.Update(3.4);simon.Press(simon.Sequence[0],3.5);
             Check(played.Count==2&&played[1]==played[0]&&simon.Lit(3.679)==simon.Sequence[0],"Player's final input plays the pet's matching tone and keeps the normal highlight");
-            simon.Press(ArcadeLane.Down,3.6);simon.Update(4.179);
-            Check(simon.State==SimonState.Waiting&&simon.Pending==50&&played.Count==2&&!simon.Lit(4.179).HasValue,"Full inter-round rest ignores keys and emits no tones");
-            simon.Update(4.18);Check(simon.Sequence.Count==2&&played.Count==3&&played[2]==simon.Sequence[0],"Next sequence and its tone start half a second after the final highlight ends");
-            simon.Sequence[1]=simon.Sequence[0];simon.Update(4.58);simon.Update(4.59);Check(played.Count==4&&played[3]==played[2],"Consecutive identical directions still play two separate tones");
-            simon.Update(4.98);simon.Press(simon.Sequence[0],5);simon.Press((ArcadeLane)(((int)simon.Sequence[1]+1)%4),5.1);
+            simon.Press(ArcadeLane.Down,3.6);simon.Update(4.679);
+            Check(simon.State==SimonState.Waiting&&simon.Pending==50&&played.Count==2&&!simon.Lit(4.679).HasValue,"Full one-second inter-round rest ignores keys and emits no tones");
+            simon.Update(4.68);Check(simon.Sequence.Count==2&&played.Count==3&&played[2]==simon.Sequence[0],"Next sequence and its tone start one second after the final highlight ends");
+            simon.Sequence[1]=simon.Sequence[0];simon.Update(5.08);simon.Update(5.09);Check(played.Count==4&&played[3]==played[2],"Consecutive identical directions still play two separate tones");
+            simon.Update(5.48);simon.Press(simon.Sequence[0],5.5);simon.Press((ArcadeLane)(((int)simon.Sequence[1]+1)%4),5.6);
             Check(simon.State==SimonState.Finished&&played.Count==6&&played[4]==simon.Sequence[0]&&played[5]!=(simon.Sequence[1]),"Every accepted player press, including a mistake, emits its directional tone");
             double[] frequencies={523.25,329.63,392,659.25};
             foreach(ArcadeLane lane in Enum.GetValues(typeof(ArcadeLane)))
