@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace Vpet
 {
@@ -63,5 +64,41 @@ namespace Vpet
                 byte[] mute=ArcadeTones.CreateWave(lane,0);Check(mute.Skip(44).All(b=>b==0),"Simon "+lane+" muted test wave is silent");
             }
         }
+        static void ArcadeLayerChecks(PetWindow pet)
+        {
+            LayerMode original=pet.Model.Settings.Layer;var model=pet.Toys.Model;
+            pet.Toys.SetVisible(true);model.SpawnBall(pet.Now);model.SpawnTriangle();model.SpawnCoin();model.SpawnCard();model.SpawnDie();pet.Plate.SetVisible(true);
+            using(var app=new Form{Text="Arcade stacking test",Size=new Size(80,80),StartPosition=FormStartPosition.Manual,Location=new Point(10,10)})
+            {
+                app.Show();Application.DoEvents();
+                foreach(LayerMode mode in Enum.GetValues(typeof(LayerMode)))
+                {
+                    pet.Model.Settings.Layer=mode;pet.ApplyLayer();PetFrame(pet);Application.DoEvents();
+                    Check(pet.arcadeWindow.TopMost==(mode==LayerMode.OverEverything),"Arcade follows the application's topmost band in "+mode);
+                    var assets=pet.Toys.Windows.Where(w=>w.Visible).Concat(new LayeredWindow[]{pet.Plate,pet.Joystick}).ToArray();
+                    foreach(var asset in assets)
+                    {
+                        Native.SetWindowPos(asset.Handle,new IntPtr(-1),0,0,0,0,0x213);Application.DoEvents();
+                        var order=new System.Collections.Generic.List<IntPtr>();Native.EnumWindows(delegate(IntPtr h,IntPtr unused){order.Add(h);return true;},IntPtr.Zero);
+                        Check(order.IndexOf(pet.arcadeWindow.Handle)<order.IndexOf(asset.Handle),"Arcade stays above "+asset.Text+" after promotion in "+mode);
+                    }
+                    if(mode==LayerMode.Dynamic)
+                    {
+                        Native.SetWindowPos(app.Handle,IntPtr.Zero,0,0,0,0,0x213);PetFrame(pet);Application.DoEvents();
+                        var order=new System.Collections.Generic.List<IntPtr>();Native.EnumWindows(delegate(IntPtr h,IntPtr unused){order.Add(h);return true;},IntPtr.Zero);
+                        Check(order.IndexOf(app.Handle)<order.IndexOf(pet.arcadeWindow.Handle),"Dynamic arcade still allows another application to stack above it");
+                    }
+                }
+            }
+            pet.Toys.SetVisible(false);pet.Plate.SetVisible(false);pet.Model.Settings.Layer=original;pet.ApplyLayer();PetFrame(pet);pet.arcadeWindow.Activate();
+        }
+        static Bitmap ArcadeRegion(ArcadeWindow arcade,Rectangle logical)
+        {
+            var canvas=MakerField<DoubleBufferedPanel>(arcade,"canvas");float scale=Math.Min(canvas.Width/1000f,canvas.Height/660f);
+            var region=new Rectangle((int)((canvas.Width-1000*scale)/2+logical.X*scale),(int)((canvas.Height-660*scale)/2+logical.Y*scale),(int)(logical.Width*scale),(int)(logical.Height*scale));
+            using(var image=new Bitmap(canvas.Width,canvas.Height)){canvas.DrawToBitmap(image,canvas.ClientRectangle);return image.Clone(region,System.Drawing.Imaging.PixelFormat.Format32bppArgb);}
+        }
+        static int ArcadeDifferentPixels(Bitmap first,Bitmap second)
+        {int different=0;for(int y=0;y<first.Height;y++)for(int x=0;x<first.Width;x++)if(first.GetPixel(x,y)!=second.GetPixel(x,y))different++;return different;}
     }
 }
