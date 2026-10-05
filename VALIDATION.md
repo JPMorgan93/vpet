@@ -1,5 +1,15 @@
 # Vpet validation
 
+## Version 1.11.2
+
+6,223 automated assertions passed. New coverage verifies the three-Excellent threshold, separate streak points, multiplier application on Good/Great, miss, and song completion, multiple streaks without reapplying earlier bonuses, stopped-round discard, and half-volume playback mapping for default, saved, maximum, and muted levels. Simon checks retain the final input's full highlight, wait another half second before extending the sequence, and emit matching tones for accepted player inputs, including mistakes.
+
+157 native UI checks passed: 114 arcade/music/joystick, 18 plate/Hunger, and 25 locator/settings/D20-hover. The arcade remains non-topmost in every Window Location mode, allows another ordinary application above it, and stays above every visible Vpet asset even after attempted promotion. Closing restores Over Everything for all toys and items. Score and streak lines fit the minimum window size; Simon's final highlight, matching player tone, down-facing rest, and exact next-sequence timing passed. The score layout and final-input/rest captures were visually inspected. All three songs played muted; loudspeaker quality was not assessed.
+
+The broader mouse-driven toy suite did not pass this run: different attempts reported a one-pixel resize mismatch, ball hover, and Close Toy Chest checks. The unchanged public 1.11.1 sources reproduced the Close Toy Chest failure. Temporary harness changes were removed and this suite is not counted as passing. A D20 hover check failed initially and passed on an unchanged rerun.
+
+The 1.11.2 EXE installer built successfully. The isolated installation/update test passed asset and icon hashes, progress-only upgrades, retained destination and shortcut choices, skipped-release history, legacy updater support, completion/relaunch, and cleanup. The normal installation and personal settings were unchanged. Existing-feature adjustments use a patch increment under AGENTS.md. Validated on 2026-10-05.
+
 ## Version 1.11.1
 
 6,209 automated assertions passed. New checks cover the quieter default and retained saved volume, supplied joystick artwork and transparency, Good/Great streak termination with pending points retained, hit-pulse lifetime and score exclusion, cancellation and clean restart in every game phase, exactly one tone per highlighted sequence step including repeated directions, the half-second inter-round pause, and four distinct PCM frequencies with silent endpoints and headroom.
