@@ -1,11 +1,11 @@
-# Vpet 1.10.0
+# Vpet 1.11.0
 
 ## Files to distribute
 
-- `dist/Vpet-Setup-1.10.0-Windows-x64.exe` — standalone Windows EXE installer.
+- `dist/Vpet-Setup-1.11.0-Windows-x64.exe` — standalone Windows EXE installer.
 - `dist/SHA256SUMS.txt` — SHA-256 checksum for that exact installer.
 
-The installer contains the application, reference sprite sheet, Heads/Tails PNGs, icon files, and getting-started guide. The supplied Vpet Pixel icon is retained unchanged as the project's `Vpet.ico`; the installed `Vpet-Pixel.ico` copy gives shortcuts a new icon path so they do not reuse the old artwork's cache entry. Source code, tests, development settings, logs, and compiler tools are excluded. GitHub Actions attaches the installer and checksum to a public release after a successful main-branch build. See `GITHUB.md`.
+The installer contains the application, reference sprite sheet, Heads/Tails PNGs, the three supplied arcade songs (Easy.mp3, Normal.mp3, Hard.mp3), icon files, and getting-started guide. The supplied Vpet Pixel icon is retained unchanged as the project's `Vpet.ico`; the installed `Vpet-Pixel.ico` copy gives shortcuts a new icon path so they do not reuse the old artwork's cache entry. Source code, tests, development settings, logs, and compiler tools are excluded. GitHub Actions attaches the installer and checksum to a public release after a successful main-branch build. See `GITHUB.md`.
 
 ## Installation behavior
 

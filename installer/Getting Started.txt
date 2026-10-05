@@ -178,6 +178,39 @@ A pause symbol appears only while Vpet settings are open. Toys and right-click
 menus do not trigger it. It is
 not a replaceable reaction. Try It Out previews temporarily replace this symbol.
 
+JOYSTICK AND ARCADE
+Display Items > Joystick adds an independent desktop joystick. Left-drag it
+outside either fence; it follows Window Location. Click it to send the pet
+behind it, even in Static mode or outside its restricted area. On arrival,
+Arcade Window opens and the desktop pet hides. Closing Arcade returns the pet
+behind the joystick and resumes normal rules. Right-click > Remove Joystick
+puts it away. Closing the toy chest does not remove it.
+
+Click Dance Time or Simon Says in the arcade lobby. The other three cabinets
+are unavailable. Both games have Easy (default), Normal, and Hard, a three-second
+countdown, WASD controls, and a circular-arrow button beside the top square to
+switch to arrow keys. Close Game returns to the lobby. Click the score box to
+see that game's high score for the selected difficulty. Scores, controls, and
+music volume are saved across restarts.
+
+Dance Time uses the supplied song for each difficulty. Hit matching keys while
+incoming targets overlap their squares: Good (1%) earns 10, Great (50%) earns
+20, and Excellent (90%) earns 30. Five consecutive Excellents start a x1.0
+streak; further Excellents increase it by 0.1. Pending points appear below the
+score box. A miss banks them with the multiplier and resets the streak.
+An unmatched press or a target reaching the pet is a miss. Easy allows three
+misses, Normal two, and Hard one; target speeds are 1x, 1.5x, and 2x.
+The final miss ends the game and discards all its points. Finish the song to
+bank remaining points and record a new high score if greater. The vertical
+slider controls music volume. Start reappears after Success or Failed.
+
+Simon Says has no music. Watch the red/up, blue/down, green/left, and yellow/right
+squares light up, then repeat the whole sequence within five seconds. Each
+correct round adds 50 pending points and one square to the sequence. Difficulty
+changes the display speed: 0.9, 0.6, or 0.4 seconds per step. A wrong key or
+timeout ends the game, banks your points, and records a new high score if greater.
+Start lets you replay.
+
 REMINDERS
 Right-click the pet > Reminders, between Settings and Check for Updates with
 a separator on each side, opens Reminder Window.

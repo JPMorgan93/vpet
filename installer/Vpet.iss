@@ -38,6 +38,9 @@ Source: "..\bin\release\Vpet.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Base Vpet Sprite Sheet.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Heads.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Tails.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Easy.mp3"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Normal.mp3"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Hard.mp3"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Vpet.ico"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Vpet.ico"; DestDir: "{app}\assets\reference"; DestName: "Vpet-Pixel.ico"; Flags: ignoreversion
 Source: "Getting Started.txt"; DestDir: "{app}"; Flags: ignoreversion

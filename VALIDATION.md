@@ -1,5 +1,13 @@
 # Vpet validation
 
+## Version 1.11.0
+
+6,153 automated assertions passed. New coverage checks preference migration and separate game/difficulty high scores; joystick visits in every movement mode at zero speed; fence overrides, approach/return, monitor crossings and disconnection; Dance overlap thresholds, countdown, miss limits, pace, streaks, cash-in, failed-score discard and successful completion; and Simon sequence growth, difficulty timing, full five-second input windows, timeout and scoring.
+
+224 native UI checks passed: 42 arcade/music/joystick, 18 plate/Hunger, 139 expanded settings/game, and 25 locator/settings/D20-hover checks. Arcade checks exercise real joystick mouse input, walking before opening, hidden desktop pet, cabinet selection, keyboard messages and repeat rejection, controls switching, music volume, success/failure, saved scores, window resizing, lobby return, and desktop restoration behind a relocated joystick. All three bundled MP3s opened, played with an advancing playback clock while muted, and closed successfully. Lobby, gameplay, and result screens were visually inspected. Loudspeaker quality was not assessed.
+
+The candidate EXE installer built successfully. The isolated installation/update test verified exact hashes for all three songs and reference artwork, fresh installation, progress-only upgrades, destination and shortcut preservation, skipped-release history, the legacy updater entry point, completion/relaunch, and cleanup. Tests used isolated preferences and a separate installer identity; the normal Vpet installation and personal settings were unchanged. The owner explicitly chose the 1.11.0 minor release for Joystick and the arcade games under AGENTS.md.
+
 ## Version 1.10.0
 
 6,068 automated assertions passed. New coverage checks default-off and saved locator settings, key normalization, modifier double taps, normal chords, held-key repeat rejection, invalid/cleared mappings, one-second fade timing, moving spotlight geometry, transparency and continuity across display boundaries, the eighth-second eating pause before food disappears, and the three distinct notes in the reminder WAV.

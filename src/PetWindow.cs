@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace Vpet
 {
-    internal sealed class PetWindow : LayeredWindow
+    internal sealed partial class PetWindow : LayeredWindow
     {
         public readonly PetModel Model;
         public readonly string DataDirectory;
@@ -29,6 +29,7 @@ namespace Vpet
         readonly RestrictedAreaOverlay restrictedOverlay;
         internal readonly ToyWindows Toys;
         internal readonly PlateWindow Plate;
+        internal readonly JoystickWindow Joystick;
         internal readonly FindPetController FindPet;
         internal readonly ReminderStore Reminders;
         ReminderWindow reminderWindow;
@@ -92,6 +93,8 @@ namespace Vpet
             Toys=new ToyWindows(Model,this,crossingWindow,delegate{Save();if(SettingsOpen)settingsWindow.SyncRestrictedAreaVisibility();},()=>Now,random);
             Toys.Model.ReactionPlayed+=ShowReaction;
             Plate=new PlateWindow(Toys.Model,Model,this,crossingWindow,Save,()=>Now);
+            Joystick=new JoystickWindow(Toys.Model,Model,this,crossingWindow,Save,()=>Now);
+            Toys.Model.ArcadeRequested+=OpenArcade;Toys.Model.ArcadeClosed+=CloseArcade;
             FindPet=new FindPetController(this,prefs.FindPet,()=>Now);
             Text="Vpet";bubble.Text="Vpet reaction";bubble.Owner=this;
             BuildMenu();ContextMenuStrip=menu;
@@ -127,6 +130,8 @@ namespace Vpet
             toyChest.Click+=delegate{Toys.SetVisible(toyChest.Checked);};displayItems.DropDownItems.Add(toyChest);
             var plate=new ToolStripMenuItem("Plate"){CheckOnClick=true};
             plate.Click+=delegate{Plate.SetVisible(plate.Checked);};displayItems.DropDownItems.Add(plate);
+            var joystick=new ToolStripMenuItem("Joystick"){CheckOnClick=true};
+            joystick.Click+=delegate{Joystick.SetVisible(joystick.Checked);};displayItems.DropDownItems.Add(joystick);
             var movement=new ToolStripMenuItem("Movement Controls");
             var type=new ToolStripMenuItem("Type");
             foreach(MovementMode value in Enum.GetValues(typeof(MovementMode)))
@@ -163,6 +168,7 @@ namespace Vpet
                 menuOpen=true;
                 toyChest.Checked=Model.Settings.Toys.DisplayChest;
                 plate.Checked=Model.Settings.Plate.Visible;
+                joystick.Checked=Model.Settings.Joystick.Visible;
                 displayArea.Checked=Model.RestrictedAreaVisible;
                 displayArea.Enabled=Model.Settings.Movement==MovementMode.Restricted;
                 foreach(ToolStripMenuItem item in type.DropDownItems)item.Checked=(MovementMode)item.Tag==Model.Settings.Movement;
@@ -218,11 +224,11 @@ namespace Vpet
             crossingWindow.CompanionHandle=Handle;crossingWindow.OtherCompanionHandle=bubble.Handle;
             SetLayer(Model.Settings.Layer);bubble.SetLayer(Model.Settings.Layer);crossingWindow.SetLayer(Model.Settings.Layer);
             restrictedOverlay.Update();
-            Toys.Update();Plate.UpdatePlate();
+            Toys.Update();Plate.UpdatePlate();Joystick.UpdateJoystick();
         }
         public void SettingsChanged(bool resetReaction)
         {
-            if(resetReaction)ResetReactionTimer();restrictedOverlay.Update();Toys.Update();Plate.UpdatePlate();Save();
+            if(resetReaction)ResetReactionTimer();restrictedOverlay.Update();Toys.Update();Plate.UpdatePlate();Joystick.UpdateJoystick();Save();
         }
         public void NameChanged()
         {
@@ -316,6 +322,7 @@ namespace Vpet
             double now=Now;float dt=(float)Math.Min(.1,now-previousTime);previousTime=now;
             if(now>=nextDisplayCheck){RefreshDisplays();nextDisplayCheck=now+2;}
             if(now>=nextAssetCheck){RefreshEmotes();nextAssetCheck=now+3;}
+            if(ArcadeOpen){ArcadeDesktopTick(now);return;}
             bool hovering=IsHovered();
             if(hovering&&!Model.Hovered&&!buttonDown&&!menuOpen&&!SettingsOpen&&!Model.Playing&&now-lastHover>=5)
             {ShowReaction(Reactions.Hover(Model.Settings.Personality));lastHover=now;}
@@ -330,7 +337,7 @@ namespace Vpet
             if(now>=nextRandom&&!Model.Dragging&&!Model.Shaking(now)&&!Model.Paused&&!Model.Playing&&now>=bubbleUntil)
                 ShowReaction(Reactions.Choose(Model.Settings.Personality,Reactions.Names.Length+CustomEmotes.Count,random));
             if(now>=nextReminderPoll){nextReminderPoll=now+1;CheckReminders();}
-            Render();restrictedOverlay.Update();Toys.Update();Plate.UpdatePlate();
+            Render();restrictedOverlay.Update();Toys.Update();Plate.UpdatePlate();Joystick.UpdateJoystick();
             if(FindPet.Spotlight.Active)
             {
                 var frames=new List<SpotlightFrame>{new SpotlightFrame(PresentedBounds,rendered)};
@@ -383,6 +390,7 @@ namespace Vpet
         async void InstallUpdate(AvailableUpdate update)
         {
             if(update==null||installingUpdate||updateNotesOpen||closing)return;
+            CloseArcade();
             if(updateCheckWindow!=null)updateCheckWindow.Close();
             if(reminderWindow!=null)reminderWindow.Close();if(reminderBubble!=null)reminderBubble.Close();reminderChime.Dispose();
             installingUpdate=true;installUpdate.Enabled=false;
@@ -447,6 +455,7 @@ namespace Vpet
         }
         void Render()
         {
+            if(ArcadeOpen){HideDesktopPet();return;}
             var display=Model.Current;Size size=display.PetSize(Sprites.Cell);
             animationFacing=Sprites.ResolveFacing(Model.Facing,Model.Walking||Toys.Model.InspectingDie?Model.LastMotion:PointF.Empty,animationFacing);
             // Optional reaction poses apply to greetings, clicks and pickup too; missing rows retain normal animation.
@@ -547,6 +556,7 @@ namespace Vpet
         void OnClosing(object sender,FormClosingEventArgs e)
         {
             if(closing)return;closing=true;timer.Stop();FindPet.Dispose();menuDismissal.Dispose();Save();
+            CloseArcade();Joystick.Close();Joystick.Dispose();
             if(updateCheckWindow!=null)updateCheckWindow.Close();
             if(SettingsOpen)settingsWindow.Close();Plate.Close();Plate.Dispose();Toys.Dispose();restrictedOverlay.Dispose();crossingWindow.Close();bubble.Close();tray.Visible=false;tray.Dispose();
             if(rendered!=null)rendered.Dispose();if(crossingRendered!=null)crossingRendered.Dispose();if(customReaction!=null)customReaction.Dispose();Replacements.Dispose();

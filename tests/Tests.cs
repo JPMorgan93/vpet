@@ -34,6 +34,8 @@ namespace Vpet
                     Console.WriteLine("PASS: "+count+" native window-layer assertions.");return 0;
                 }
                 artifacts=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-artifacts");Directory.CreateDirectory(artifacts);
+                if(Array.IndexOf(args,"--arcade-window-tests")>=0)
+                {Native.EnableDpi();Application.EnableVisualStyles();ArcadeWindows();Console.WriteLine("PASS: "+count+" arcade, music, and joystick UI checks.");return 0;}
                 if(Array.IndexOf(args,"--finder-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();FindPetWindows();Console.WriteLine("PASS: "+count+" finder, settings, and die-hover UI checks.");return 0;}
                 if(Array.IndexOf(args,"--plate-window-tests")>=0)
@@ -58,7 +60,7 @@ namespace Vpet
                     Console.WriteLine("PASS: public GitHub release "+update.Version+" discovered and installer downloaded/verified. No installer was executed.");return 0;
                 }
                 DirectionAndMotion();Interaction();Displays();ContinuousCrossings();DragCrossings();ReactionsAndSettings();SpritesAndImages();EmoteOverrides();BubbleBorders();PetNames();UpdateReleases();UpdateDescriptions();StartupSettings();MakerProjects();ToyBehavior();OptionalAnimations();TrianglePlay();InstrumentSounds();SheetReplacement();ExpandedFeatures();ReminderSchedules();
-                PlateFeatures();FindPetFeatures();Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
+                PlateFeatures();FindPetFeatures();ArcadeFeatures();Console.WriteLine("PASS: "+count+" assertions across movement, interaction, displays, reactions, persistence, and artwork.");return 0;
             }
             catch(Exception ex){Console.Error.WriteLine(ex);return 1;}
         }

@@ -1,0 +1,105 @@
+using System;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Windows.Forms;
+using Timer=System.Windows.Forms.Timer;
+
+namespace Vpet
+{
+    internal static partial class Tests
+    {
+        static void ArcadeMusicTests()
+        {
+            string root=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference");
+            using(var music=new ArcadeMusic())
+            {
+                foreach(string song in new[]{"Easy","Normal","Hard"})
+                {
+                    music.Open(Path.Combine(root,song+".mp3"),0);Check(music.Opened&&music.Duration>10,"Bundled "+song+" MP3 opens and has a valid duration");
+                    music.Play();Thread.Sleep(120);Check(music.Position>0,"Bundled "+song+" song advances on the playback clock while muted");music.SetVolume(0);music.Stop();music.Close();Check(!music.Opened,"Song device closes after "+song);
+                }
+            }
+        }
+        static void ArcadeWindows()
+        {
+            ArcadeMusicTests();Point cursor=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();string root=AppDomain.CurrentDomain.BaseDirectory;
+            try
+            {
+                using(var pet=new PetWindow(Path.Combine(artifacts,"arcade-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"arcade-smoke")))
+                {
+                    try
+                    {
+                        pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();typeof(PetWindow).GetField("smokeStep",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(pet,99);
+                        pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.Frequency=Frequency.Off;pet.Model.Settings.Arcade.Volume=0;
+                        var menu=MakerField<ContextMenuStrip>(pet,"menu");var items=(ToolStripMenuItem)Item(menu,"Display Items");var joystick=(ToolStripMenuItem)items.DropDownItems.Cast<ToolStripItem>().Single(i=>i.Text=="Joystick");
+                        joystick.PerformClick();Check(pet.Joystick.Visible&&pet.Toys.Model.HasJoystick,"Display Items > Joystick shows the independent desktop item");
+                        var work=pet.Model.Current.Work;pet.Toys.Model.DragJoystick(new PointF(work.Left+work.Width/2,work.Top+work.Height/2));pet.Joystick.UpdateJoystick();
+                        Point point=Point.Round(pet.Toys.Model.JoystickPosition);var old=pet.Toys.Model.JoystickPosition;
+                        ToyMouse(pet.Joystick,0x201,point);ToyMouse(pet.Joystick,0x200,new Point(point.X+20,point.Y+15));ToyMouse(pet.Joystick,0x202,Cursor.Position);
+                        Check(pet.Toys.Model.JoystickPosition!=old&&pet.Toys.Model.Fetch==FetchPhase.None,"Joystick drag moves the item without starting the arcade visit");
+                        point=Point.Round(pet.Toys.Model.JoystickPosition);ToyMouse(pet.Joystick,0x201,point);ToyMouse(pet.Joystick,0x202,point);Cursor.Position=new Point(work.Left+1,work.Top+1);
+                        Check(pet.Toys.Model.Target==PlayTarget.Joystick&&!pet.ArcadeOpen,"Joystick click begins walking before the arcade opens");
+                        pet.Model.Place(pet.Toys.Model.JoystickApproach);PetFrame(pet);Application.DoEvents();
+                        Check(pet.ArcadeOpen&&!pet.Visible&&pet.arcadeWindow.Visible&&pet.Toys.Model.Fetch==FetchPhase.Arcade,"Arrival opens Arcade Window and hides desktop pet");
+                        var arcade=pet.arcadeWindow;MakerField<Timer>(arcade,"timer").Stop();var canvas=MakerField<DoubleBufferedPanel>(arcade,"canvas");
+                        CaptureForm(arcade,"arcade-lobby");Check(arcade.Game==ArcadeGame.Lobby&&arcade.Text=="Arcade Window","Arcade opens to the five-cabinet lobby");
+                        var left=MakerField<double>(arcade,"lobbyX");double now=arcade.Now;arcade.Time=()=>now;now+=.1;arcade.Step();Check(MakerField<double>(arcade,"lobbyX")!=left,"Lobby pet walks in front of cabinets");
+                        ClickCabinet(arcade,4);Check(arcade.Game==ArcadeGame.Lobby,"Grey cabinet does not launch a game");
+                        ClickCabinet(arcade,0);Check(arcade.Game==ArcadeGame.Dance&&arcade.Difficulty==ArcadeDifficulty.Easy&&arcade.Dance!=null,"Dance Time cabinet opens Easy with its bundled song");
+                        var score=MakerField<Button>(arcade,"score");Check(score.Text=="- -"&&FindButton(arcade,"Start").Visible,"Dance opens with blank scoreboard and Start");score.PerformClick();Check(score.Text=="High: 0","Score box shows the selected difficulty's zero default high score");
+                        var modes=MakerField<RadioButton[]>(arcade,"modes");modes[1].Checked=true;Check(arcade.Difficulty==ArcadeDifficulty.Normal&&arcade.Dance.Lives==2&&modes.Count(m=>m.Checked)==1,"Difficulty controls select only Normal and update song/model");
+                        FindButton(arcade,"Start").PerformClick();Check(arcade.Dance.State==DanceState.Countdown&&!FindButton(arcade,"Start").Visible&&!modes.Any(m=>m.Enabled),"Start gives countdown and locks difficulty during a round");
+                        now+=3.01;arcade.Step();var volume=MakerField<TrackBar>(arcade,"volume");Check(arcade.Dance.State==DanceState.Running&&volume.Visible&&volume.Orientation==Orientation.Vertical,"Song starts after countdown with vertical music volume");
+                        // Send native key messages through the form, including an auto-repeat and release.
+                        Native.SendMessage(arcade.Handle,0x100,new IntPtr((int)Keys.A),new IntPtr(1));Check(arcade.Dance.Misses==1,"Keyboard input outside a target overlap counts a miss");Native.SendMessage(arcade.Handle,0x100,new IntPtr((int)Keys.A),new IntPtr(0x40000001));Check(arcade.Dance.Misses==1,"Holding a mapped key does not generate repeat misses");Native.SendMessage(arcade.Handle,0x101,new IntPtr((int)Keys.A),IntPtr.Zero);
+                        MakerField<Button>(arcade,"switchKeys").PerformClick();Check(pet.Model.Settings.Arcade.ArrowKeys,"Key switch changes WASD to arrows and persists preference");
+                        Check(!ArcadeKey(arcade,Keys.W),"Old letter mapping passes through after switching to arrows");ArcadeKey(arcade,Keys.Left);ArcadeKeyUp(arcade,Keys.Left);
+                        Check(arcade.Dance.State==DanceState.Failed&&score.Text=="- -"&&FindButton(arcade,"Start").Visible,"Last miss returns Start, discards score, and stops the song");CaptureForm(arcade,"dance-failed");
+                        modes[0].Checked=true;double songTime=0;arcade.SongPosition=()=>songTime;FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();
+                        Keys[] arrows={Keys.Up,Keys.Down,Keys.Left,Keys.Right};int noteCount=0;
+                        foreach(var target in arcade.Dance.Chart)
+                        {
+                            songTime=target.HitTime;now+=.1;ArcadeKey(arcade,arrows[(int)target.Lane]);ArcadeKeyUp(arcade,arrows[(int)target.Lane]);
+                            if(++noteCount==5)CaptureForm(arcade,"dance-playing");
+                        }
+                        songTime=arcade.Dance.Duration;now+=.1;arcade.Step();
+                        Check(arcade.Dance.State==DanceState.Success&&arcade.Dance.Banked>0&&score.Text==arcade.Dance.Banked.ToString(),"Successful Dance song banks its streak-adjusted score in the UI");
+                        Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.High(ArcadeGame.Dance,ArcadeDifficulty.Easy)==arcade.Dance.Banked,"Successful Dance high score persists independently");CaptureForm(arcade,"dance-success");
+                        FindButton(arcade,"Close Game").PerformClick();Check(arcade.Game==ArcadeGame.Lobby&&pet.ArcadeOpen&&!pet.Visible,"Close Game returns to lobby while desktop pet stays hidden");
+                        ClickCabinet(arcade,1);Check(arcade.Game==ArcadeGame.Simon&&!volume.Visible,"Simon Says cabinet opens without music/volume controls");
+                        FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();Check(arcade.Simon.State==SimonState.Showing&&arcade.Simon.Sequence.Count==1,"Simon begins by displaying one color");CaptureForm(arcade,"simon-watch");
+                        now+=.5+arcade.Simon.ShowStep+.01;arcade.Step();ArcadeLane lane=arcade.Simon.Sequence[0];ArcadeKey(arcade,arrows[(int)lane]);ArcadeKeyUp(arcade,arrows[(int)lane]);
+                        Check(arcade.Simon.Pending==50&&arcade.Simon.Sequence.Count==2,"Correct mapped key advances Simon and adds 50 pending points");
+                        now+=.5+2*arcade.Simon.ShowStep+.01;arcade.Step();Keys wrong=arrows[((int)arcade.Simon.Sequence[0]+1)%4];ArcadeKey(arcade,wrong);ArcadeKeyUp(arcade,wrong);
+                        Check(arcade.Simon.State==SimonState.Finished&&score.Text=="50"&&FindButton(arcade,"Start").Visible,"Simon mistake banks completed rounds and offers replay");
+                        Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.High(ArcadeGame.Simon,ArcadeDifficulty.Easy)==50,"Completed Simon high score persists to the pet's settings");
+                        foreach(var size in new[]{new Size(700,590),new Size(1150,830)})
+                        {
+                            arcade.ClientSize=size;Application.DoEvents();var footer=FindButton(arcade,"Close Game");Check(arcade.ClientRectangle.Contains(new Rectangle(arcade.PointToClient(footer.PointToScreen(Point.Empty)),footer.Size)),"Close Game remains accessible at "+size);
+                            Check(canvas.ClientRectangle.Contains(new Rectangle(MakerField<Button>(arcade,"switchKeys").Location,MakerField<Button>(arcade,"switchKeys").Size)),"Key switch remains inside resized game canvas");
+                        }
+                        CaptureForm(arcade,"simon-complete");pet.Toys.Model.DragJoystick(new PointF(old.X-45,old.Y+20));arcade.Close();PetFrame(pet);
+                        Check(!pet.ArcadeOpen&&pet.Visible&&Geometry.Distance(pet.Model.Position,pet.Toys.Model.JoystickApproach)<1&&!pet.Model.Playing,"Closing Arcade restores pet behind relocated joystick and resumes Static mode");
+                        pet.Toys.Model.PressJoystick(pet.Now);pet.Model.Place(pet.Toys.Model.JoystickApproach);PetFrame(pet);Check(pet.ArcadeOpen,"Joystick can reopen Arcade after closing");Item(pet.Joystick.Menu,"Remove Joystick").PerformClick();Check(!pet.ArcadeOpen&&pet.Visible&&!pet.Joystick.Visible,"Removing joystick closes Arcade and restores desktop pet");
+                        pet.Close();
+                    }
+                    finally{if(!pet.IsDisposed)pet.Close();}
+                }
+            }
+            finally{Cursor.Position=cursor;Native.SetForegroundWindow(foreground);}
+        }
+        static void ClickCabinet(ArcadeWindow arcade,int index)
+        {
+            var canvas=MakerField<DoubleBufferedPanel>(arcade,"canvas");var box=ArcadeWindow.Cabinet(index);float scale=Math.Min(canvas.Width/1000f,canvas.Height/660f);
+            var point=new Point((int)((canvas.Width-1000*scale)/2+(box.X+box.Width/2)*scale),(int)((canvas.Height-660*scale)/2+(box.Y+box.Height/2)*scale));
+            typeof(Control).GetMethod("OnMouseClick",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(canvas,new object[]{new MouseEventArgs(MouseButtons.Left,1,point.X,point.Y,0)});
+        }
+        static bool ArcadeKey(ArcadeWindow arcade,Keys key)
+        {return (bool)typeof(ArcadeWindow).GetMethod("HandleGameKey",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(arcade,new object[]{key});}
+        static void ArcadeKeyUp(ArcadeWindow arcade,Keys key)
+        {typeof(Control).GetMethod("OnKeyUp",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(arcade,new object[]{new KeyEventArgs(key)});}
+    }
+}

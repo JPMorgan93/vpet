@@ -1,10 +1,10 @@
-# Vpet 1.10.0
+# Vpet 1.11.0
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.10.0-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.11.0-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -164,6 +164,18 @@ The plate and pudding are 75% of their original size. At 100% Windows scaling th
 Right-click the plate and select **Pudding** to make it the default food and serve it. Left-click an empty plate to serve the default again. Pudding has caramel, whipped cream, and a strawberry, with whole, two-thirds, and one-third portions. Clicking a nonempty plate leaves its food intact; selecting Pudding from the menu serves a fresh portion.
 
 Serving food interrupts the pet's current action and temporarily overrides Static, zero speed, and movement fences. The pet shows Hunger and walks to a position just above the plate, behind the food. For each bite, it shakes for one eighth of a second, pauses for another eighth of a second, then removes one third of the food. A brief rest separates the bites. After three bites the plate is empty and normal movement resumes; restricted pets walk back inside their fence. Moving the plate redirects the pet and delays eating until release. Picking up the pet or starting another toy interaction interrupts the visit. Choose **Remove Plate** in the plate menu to hide it, clear the food, and end feeding. The pet menu can display it again.
+
+## Joystick and arcade
+
+Choose **Display Items > Joystick** to show or hide the joystick. Left-drag it anywhere on a connected display, independently of movement fences. It follows Window Location. Click it to send the pet behind it, temporarily overriding Static, zero speed, and restricted movement. On arrival, **Arcade Window** opens and the desktop pet hides. Closing the window restores the pet behind the joystick and resumes its normal rules. Right-click the joystick for **Remove Joystick**.
+
+The arcade lobby has five cabinets and your current pet walking in front of them. **Dance Time** and **Simon Says** are playable; the three grey cabinets are reserved. Both games offer **Easy**, **Normal**, and **Hard**, defaulting to Easy, a three-second countdown, and WASD controls. Use the circular-arrow button beside the upper square to switch to arrow keys. **Close Game** returns to the lobby. The key choice, music volume, and each game's separate high scores for all three difficulties are saved in your settings. Click the score box to view the selected difficulty's high score.
+
+**Dance Time** plays the supplied Easy, Normal, or Hard MP3. Targets travel inward toward matching squares at 1x, 1.5x, or 2x speed, with three, two, or one allowed misses. Press the matching key while a target overlaps its square: at least 1% earns **Good / 10**, 50% **Great / 20**, and 90% **Excellent / 30**. An early/late press or a target reaching the pet costs a miss. Five consecutive Excellents start a streak at **x1.0**; each additional Excellent adds **0.1**. Points accumulate below the score box and are banked with the current multiplier on a miss or successful song completion; a miss resets the streak. Banked totals round to the nearest whole point. The final miss ends the game immediately and discards its entire score. Completing the song records a new high score when greater. Use the vertical slider to adjust music volume. Start reappears after either result.
+
+**Simon Says** uses red/up, blue/down, green/left, and yellow/right squares without music. Watch the pet show a sequence, then repeat the entire sequence within **five seconds**. Each correct round adds 50 pending points and one more square to the next sequence. Easy shows each step for 0.9 seconds, Normal 0.6, and Hard 0.4. A wrong key or timeout ends the game, banks your points, and records a new high score when greater. Start lets you try again.
+
+`bin/Vpet.Tests.exe --arcade-window-tests` verifies joystick interactions, both games, saved scores, window resizing, desktop return, and muted playback of all three bundled songs using isolated preferences.
 
 ## Reminders
 
