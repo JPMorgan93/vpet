@@ -1,5 +1,13 @@
 # Vpet validation
 
+## Version 1.11.1
+
+6,209 automated assertions passed. New checks cover the quieter default and retained saved volume, supplied joystick artwork and transparency, Good/Great streak termination with pending points retained, hit-pulse lifetime and score exclusion, cancellation and clean restart in every game phase, exactly one tone per highlighted sequence step including repeated directions, the half-second inter-round pause, and four distinct PCM frequencies with silent endpoints and headroom.
+
+209 native UI checks passed: 87 arcade/music/joystick, 18 plate/Hunger, 79 toy controls, and 25 locator/settings/D20-hover. Arcade checks verify Start/Stop through countdown, play, and Simon's wait; stopped rounds cannot score or replace high scores; the always-visible Dance volume slider; suffix multiplier text; the actual flashing streak pixels and pulse display; Simon tone dispatch and pause; and stacking above each visible item even after attempted promotion in every layer mode. Dynamic still permits another application above the arcade, and closing clears the stacking rule. Four silent tones dispatched successfully, and all three MP3s opened and played muted. Cabinet arrows, streak/pulse, Stop, result, and joystick artwork were visually inspected. Loudspeaker quality was not assessed. The mouse-driven toy bounce check failed initially and passed on an unchanged rerun.
+
+The 1.11.1 EXE installer built successfully. The isolated installation/update test confirmed Joystick.png, the songs, other reference artwork, and icon hashes; progress-only updates; preserved shortcut choices and destination; skipped-release notes; the legacy updater entry point; completion/relaunch; and cleanup. The normal Vpet installation and personal settings were unchanged. These adjustments to existing items and games use the patch increment required by AGENTS.md.
+
 ## Version 1.11.0
 
 6,153 automated assertions passed. New coverage checks preference migration and separate game/difficulty high scores; joystick visits in every movement mode at zero speed; fence overrides, approach/return, monitor crossings and disconnection; Dance overlap thresholds, countdown, miss limits, pace, streaks, cash-in, failed-score discard and successful completion; and Simon sequence growth, difficulty timing, full five-second input windows, timeout and scoring.
