@@ -46,7 +46,7 @@ namespace Vpet
             songTime=0;FindButton(arcade,"Start").PerformClick();Check(!option.Enabled,"Practice choice is locked during a round");now+=3.01;arcade.Step();
             foreach(var target in arcade.Dance.Chart.Take(6)){songTime=target.HitTime;now+=.1;ArcadeKey(arcade,keys[(int)target.Lane]);ArcadeKeyUp(arcade,keys[(int)target.Lane]);}
             Check(arcade.Dance.Pending==0&&arcade.Dance.Banked==0&&arcade.Dance.StreakScore==0&&!arcade.Dance.Streak,"Practice hits give visual feedback without any score or combo");
-            songTime=arcade.Dance.Chart[5].HitTime+.45;now+=.1;arcade.Step();int before=arcade.Dance.Misses;
+            songTime=arcade.Dance.Chart[5].HitTime+.3;now+=.1;arcade.Step();int before=arcade.Dance.Misses;
             for(int i=0;i<8;i++){ArcadeKey(arcade,keys[0]);ArcadeKeyUp(arcade,keys[0]);}
             Check(arcade.Dance.Misses>=before+8&&arcade.Dance.State==DanceState.Running&&FindButton(arcade,"Stop").Visible,"Repeated practice misses keep the Hard song running beyond its normal single-miss limit");
             arcade.ClientSize=new Size(700,590);Application.DoEvents();Check(option.Parent.ClientRectangle.Contains(option.Bounds),"Practice option fits the minimum arcade window size");CaptureForm(arcade,"dance-practice-minimum");arcade.ClientSize=new Size(1040,790);
