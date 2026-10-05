@@ -8,6 +8,8 @@
 
 Practice UI checks verify placement below Difficulty, saved choices, numeric misses replacing limit circles, hidden scores, disabled mode changes during a round, continued Hard-mode play beyond its usual miss limit, completion/replay/Stop, and unchanged high scores. The top-right flashing streak indicator, Practice mode at minimum window size, and completed-round screenshots were visually inspected. Simon's last input still highlights and plays its tone, followed by exactly one second facing down. Existing asset stacking and arcade restoration checks passed. Validated on 2026-10-05. The owner explicitly chose patch version 1.11.3 for Practice mode and the existing-feature adjustments under AGENTS.md.
 
+The 1.11.3 EXE installer compiled successfully. Isolated installation/update checks passed asset and icon hashes, progress-only upgrades, retained destination and shortcut choices, skipped-version descriptions, legacy updater support, completion/relaunch, and cleanup. The regular installation and personal settings were unchanged.
+
 ## Version 1.11.2
 
 6,223 automated assertions passed. New coverage verifies the three-Excellent threshold, separate streak points, multiplier application on Good/Great, miss, and song completion, multiple streaks without reapplying earlier bonuses, stopped-round discard, and half-volume playback mapping for default, saved, maximum, and muted levels. Simon checks retain the final input's full highlight, wait another half second before extending the sequence, and emit matching tones for accepted player inputs, including mistakes.
