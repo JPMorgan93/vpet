@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
 
@@ -103,17 +104,14 @@ namespace Vpet
         public static Bitmap Draw(float scale)
         {
             var image=new Bitmap((int)Math.Ceiling(80*scale),(int)Math.Ceiling(72*scale),PixelFormat.Format32bppArgb);
-            using(var g=Graphics.FromImage(image))using(var edge=new Pen(Color.FromArgb(28,23,45),2))
-            using(var body=new SolidBrush(Color.FromArgb(76,49,123)))using(var top=new SolidBrush(Color.FromArgb(122,81,176)))using(var shadow=new SolidBrush(Color.FromArgb(45,20,15,30)))
+            using(var source=new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Joystick.png")))
+            using(var g=Graphics.FromImage(image))using(var attributes=new ImageAttributes())
             {
-                g.ScaleTransform(scale,scale);g.SmoothingMode=SmoothingMode.AntiAlias;
-                g.FillEllipse(shadow,5,56,70,12);
-                g.FillPolygon(body,new[]{new PointF(5,43),new PointF(68,43),new PointF(75,62),new PointF(10,65)});
-                g.FillPolygon(top,new[]{new PointF(5,43),new PointF(15,33),new PointF(74,34),new PointF(75,51),new PointF(10,54)});
-                g.DrawPolygon(edge,new[]{new PointF(5,43),new PointF(15,33),new PointF(74,34),new PointF(75,62),new PointF(10,65)});
-                g.FillEllipse(Brushes.Black,20,38,22,10);using(var stick=new Pen(Color.Silver,7))g.DrawLine(stick,31,42,27,15);
-                g.FillEllipse(Brushes.Crimson,17,4,22,22);g.DrawEllipse(edge,17,4,22,22);g.FillEllipse(Brushes.MistyRose,22,7,6,6);
-                g.FillEllipse(Brushes.Gold,49,39,10,8);g.FillEllipse(Brushes.DeepSkyBlue,62,39,10,8);
+                float factor=Math.Min(image.Width/(float)source.Width,image.Height/(float)source.Height);
+                int width=(int)Math.Round(source.Width*factor),height=(int)Math.Round(source.Height*factor);
+                g.InterpolationMode=InterpolationMode.HighQualityBicubic;g.PixelOffsetMode=PixelOffsetMode.HighQuality;
+                attributes.SetWrapMode(WrapMode.TileFlipXY);
+                g.DrawImage(source,new Rectangle((image.Width-width)/2,(image.Height-height)/2,width,height),0,0,source.Width,source.Height,GraphicsUnit.Pixel,attributes);
             }
             return image;
         }

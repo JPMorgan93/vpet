@@ -51,15 +51,17 @@ namespace Vpet
             foreach(ArcadeDifficulty difficulty in Enum.GetValues(typeof(ArcadeDifficulty)))
             {
                 var game=new SimonGame(difficulty,new Random(21));game.Start(0);game.Update(2.9);Check(game.State==SimonState.Countdown,"Simon gives a three-second countdown");game.Update(3);Check(game.State==SimonState.Showing&&game.Sequence.Count==1,"Simon starts with one square");
-                Check(game.Lit(3.51)==game.Sequence[0]&&game.Lit(3.1)==null,"Simon lights the indicated square after a lead-in");
-                double now=3+.5+game.ShowStep;game.Update(now);Check(game.State==SimonState.Replaying,"Simon waits for player until the entire sequence is displayed");game.Press(game.Sequence[0],now+.1);Check(game.Pending==50&&game.Sequence.Count==2&&game.State==SimonState.Showing,"One completed combination earns 50 and adds one square");
-                now+=.1+.5+2*game.ShowStep;game.Update(now);for(int i=0;i<2;i++)game.Press(game.Sequence[i],now+.1+i*.1);
-                Check(game.Pending==100&&game.Sequence.Count==3,"Simon scores 50 per completed sequence without a multiplier");
-                now+=.2+.5+3*game.ShowStep;game.Update(now);game.Press((ArcadeLane)(((int)game.Sequence[0]+1)%4),now+.1);Check(game.State==SimonState.Finished&&game.Banked==100&&game.Pending==0,"Wrong Simon key banks the completed rounds at "+difficulty);
-                game.Start(now+1);game.Update(now+4);game.Update(now+4+.5+game.ShowStep);double expiry=now+4+.5+game.ShowStep+5;game.Update(expiry-.01);Check(game.State==SimonState.Replaying,"Simon allows the full five-second replay window");game.Update(expiry);Check(game.State==SimonState.Finished&&game.Banked==0,"Simon timeout ends the game without adding incomplete-round points");
+                Check(game.Lit(3.01)==game.Sequence[0]&&game.Lit(3+game.ShowStep*.8)==null,"Simon lights the indicated square then leaves a gap");
+                double now=3+game.ShowStep;game.Update(now);Check(game.State==SimonState.Replaying,"Simon waits for player until the entire sequence is displayed");game.Press(game.Sequence[0],now+.1);Check(game.Pending==50&&game.Sequence.Count==1&&game.State==SimonState.Waiting,"Completed combination earns 50 and waits before extending sequence");
+                game.Update(now+.59);Check(game.State==SimonState.Waiting&&!game.Lit(now+.59).HasValue,"No next highlight during the half-second wait");now+=.6;game.Update(now);Check(game.Sequence.Count==2&&game.State==SimonState.Showing&&game.Lit(now)==game.Sequence[0],"Next sequence and first highlight start after exactly half a second");
+                now+=2*game.ShowStep;game.Update(now);for(int i=0;i<2;i++)game.Press(game.Sequence[i],now+.1+i*.1);
+                Check(game.Pending==100&&game.State==SimonState.Waiting,"Simon scores 50 per completed sequence without a multiplier");
+                now+=.7;game.Update(now);Check(game.Sequence.Count==3,"Third Simon sequence grows after the wait");now+=3*game.ShowStep;game.Update(now);game.Press((ArcadeLane)(((int)game.Sequence[0]+1)%4),now+.1);Check(game.State==SimonState.Finished&&game.Banked==100&&game.Pending==0,"Wrong Simon key banks the completed rounds at "+difficulty);
+                game.Start(now+1);game.Update(now+4);game.Update(now+4+game.ShowStep);double expiry=now+4+game.ShowStep+5;game.Update(expiry-.01);Check(game.State==SimonState.Replaying,"Simon allows the full five-second replay window");game.Update(expiry);Check(game.State==SimonState.Finished&&game.Banked==0,"Simon timeout ends the game without adding incomplete-round points");
             }
             Check(new SimonGame(ArcadeDifficulty.Easy,new Random()).ShowStep>new SimonGame(ArcadeDifficulty.Normal,new Random()).ShowStep&&new SimonGame(ArcadeDifficulty.Normal,new Random()).ShowStep>new SimonGame(ArcadeDifficulty.Hard,new Random()).ShowStep,"Simon display speed increases across difficulties");
             Check(ArcadeWindow.LaneFor(Keys.W,false)==ArcadeLane.Up&&ArcadeWindow.LaneFor(Keys.Left,true)==ArcadeLane.Left&&ArcadeWindow.LaneFor(Keys.W,true)==null&&ArcadeWindow.LaneFor(Keys.Up,false)==null,"WASD/arrow switching maps directions exclusively");
+            ArcadeAdjustmentChecks();
         }
     }
 }

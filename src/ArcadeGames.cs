@@ -8,15 +8,16 @@ namespace Vpet
     public enum ArcadeDifficulty { Easy, Normal, Hard }
     internal enum ArcadeGame { Lobby, Dance, Simon }
     internal enum ArcadeLane { Up, Down, Left, Right }
-    internal enum DanceState { Ready, Countdown, Running, Failed, Success }
-    internal enum SimonState { Ready, Countdown, Showing, Replaying, Finished }
+    internal enum DanceState { Ready, Countdown, Running, Failed, Success, Stopped }
+    internal enum SimonState { Ready, Countdown, Showing, Replaying, Finished, Waiting, Stopped }
     [DataContract] public sealed class ArcadePreferences
     {
         [DataMember] public long[] DanceHigh=new long[3];
         [DataMember] public long[] SimonHigh=new long[3];
-        [DataMember] public int Volume=70;
+        internal const int DefaultVolume=53;
+        [DataMember] public int Volume=DefaultVolume;
         [DataMember] public bool ArrowKeys;
-        [OnDeserializing] void Defaults(StreamingContext context){DanceHigh=new long[3];SimonHigh=new long[3];Volume=70;}
+        [OnDeserializing] void Defaults(StreamingContext context){DanceHigh=new long[3];SimonHigh=new long[3];Volume=DefaultVolume;}
         public void Validate()
         {
             DanceHigh=Clean(DanceHigh);SimonHigh=Clean(SimonHigh);Volume=Math.Max(0,Math.Min(100,Volume));
@@ -30,11 +31,12 @@ namespace Vpet
     {
         public readonly ArcadeLane Lane;public readonly double HitTime;
         public bool Resolved;
+        public double ScoredAt=double.NaN,ScoredDistance;
         public DanceTarget(ArcadeLane lane,double hitTime){Lane=lane;HitTime=hitTime;}
     }
     internal sealed class DanceGame
     {
-        public const double SquareDistance=136,SquareSize=58;
+        public const double SquareDistance=136,SquareSize=58,PulseDuration=.22;
         public readonly ArcadeDifficulty Difficulty;
         public readonly double Duration;
         public readonly List<DanceTarget> Chart;
@@ -69,12 +71,13 @@ namespace Vpet
         public static double SpawnDistance(ArcadeLane lane){return lane==ArcadeLane.Left||lane==ArcadeLane.Right?540:350;}
         public double Distance(DanceTarget target){return SquareDistance+(target.HitTime-Elapsed)*Speed;}
         public IEnumerable<DanceTarget> VisibleTargets {get{return Chart.Where(t=>!t.Resolved&&Distance(t)<=SpawnDistance(t.Lane));}}
+        public IEnumerable<DanceTarget> PulsingTargets(double now){return Chart.Where(t=>!double.IsNaN(t.ScoredAt)&&now>=t.ScoredAt&&now-t.ScoredAt<PulseDuration);}
         internal static double Overlap(double distance){return Math.Max(0,1-Math.Abs(distance-SquareDistance)/SquareSize);}
         internal static int Points(double overlap){return overlap+1e-9>=.9?30:overlap+1e-9>=.5?20:overlap+1e-9>=.01?10:0;}
         public int Countdown(double now){return Math.Max(1,(int)Math.Ceiling(3-(now-countdownAt)));}
         public void Start(double now)
         {
-            foreach(var target in Chart)target.Resolved=false;
+            foreach(var target in Chart){target.Resolved=false;target.ScoredAt=double.NaN;}
             State=DanceState.Countdown;countdownAt=now;Elapsed=0;Misses=0;Banked=Pending=0;ExcellentRun=0;bonusTenths=10;Streak=false;Feedback="";
         }
         public void Update(double now,double? musicPosition=null)
@@ -91,15 +94,22 @@ namespace Vpet
             if(State!=DanceState.Running)return;
             var target=VisibleTargets.Where(t=>t.Lane==lane&&Points(Overlap(Distance(t)))>0).OrderBy(t=>Math.Abs(Distance(t)-SquareDistance)).FirstOrDefault();
             if(target==null){Miss(now);return;}
-            target.Resolved=true;int points=Points(Overlap(Distance(target)));Pending+=points;
+            target.Resolved=true;target.ScoredAt=now;target.ScoredDistance=Distance(target);int points=Points(Overlap(target.ScoredDistance));Pending+=points;
             Feedback=points==30?"Excellent!":points==20?"Great!":"Good!";FeedbackAt=now;
-            if(points==30){ExcellentRun++;if(Streak)bonusTenths++;else if(ExcellentRun>=5)Streak=true;}else ExcellentRun=0;
+            if(points==30){ExcellentRun++;if(Streak)bonusTenths++;else if(ExcellentRun>=5)Streak=true;}else ResetStreak();
         }
-        void CashIn(){Banked+=(Pending*bonusTenths+5)/10;Pending=0;bonusTenths=10;Streak=false;ExcellentRun=0;}
+        void ResetStreak(){bonusTenths=10;Streak=false;ExcellentRun=0;}
+        void ClearTargets(){foreach(var target in Chart){target.Resolved=true;target.ScoredAt=double.NaN;}}
+        public void Stop(double now)
+        {
+            if(State!=DanceState.Countdown&&State!=DanceState.Running)return;
+            State=DanceState.Stopped;FinishedAt=FeedbackAt=now;Feedback="Stopped";Banked=Pending=0;ResetStreak();ClearTargets();
+        }
+        void CashIn(){Banked+=(Pending*bonusTenths+5)/10;Pending=0;ResetStreak();}
         void Miss(double now)
         {
             CashIn();Misses++;Feedback="Miss!";FeedbackAt=now;
-            if(Misses>=Lives){State=DanceState.Failed;Banked=Pending=0;FinishedAt=now;Feedback="Failed";foreach(var target in Chart)target.Resolved=true;}
+            if(Misses>=Lives){State=DanceState.Failed;Banked=Pending=0;FinishedAt=now;Feedback="Failed";ClearTargets();}
         }
     }
     internal sealed class SimonGame
@@ -114,23 +124,28 @@ namespace Vpet
         public string Feedback {get;private set;}
         public double FeedbackAt {get;private set;}
         double phaseAt;ArcadeLane? inputFlash;double inputFlashUntil;
+        int lastTone=-1;
+        public event Action<ArcadeLane> TonePlayed;
         public double ShowStep {get{return new[]{.9,.6,.4}[(int)Difficulty];}}
         public double SecondsLeft(double now){return Math.Max(0,5-(now-phaseAt));}
         public SimonGame(ArcadeDifficulty difficulty,Random random){Difficulty=difficulty;this.random=random;}
-        public void Start(double now){Sequence.Clear();State=SimonState.Countdown;phaseAt=now;InputIndex=0;Pending=Banked=0;Feedback="";inputFlash=null;}
+        public void Start(double now){Sequence.Clear();State=SimonState.Countdown;phaseAt=now;InputIndex=0;Pending=Banked=0;Feedback="";inputFlash=null;lastTone=-1;}
         public int Countdown(double now){return Math.Max(1,(int)Math.Ceiling(3-(now-phaseAt)));}
-        void NewRound(double now){Sequence.Add((ArcadeLane)random.Next(4));InputIndex=0;State=SimonState.Showing;phaseAt=now;}
+        void NewRound(double now){Sequence.Add((ArcadeLane)random.Next(4));InputIndex=0;State=SimonState.Showing;phaseAt=now;lastTone=-1;inputFlash=null;}
         public ArcadeLane? Lit(double now)
         {
             if(State==SimonState.Showing)
-            {double elapsed=now-phaseAt-.5;if(elapsed<0)return null;int index=(int)(elapsed/ShowStep);return index<Sequence.Count&&elapsed-index*ShowStep<ShowStep*.7?(ArcadeLane?)Sequence[index]:null;}
+            {double elapsed=now-phaseAt;if(elapsed<0)return null;int index=(int)(elapsed/ShowStep);return index<Sequence.Count&&elapsed-index*ShowStep<ShowStep*.7?(ArcadeLane?)Sequence[index]:null;}
             return now<inputFlashUntil?inputFlash:null;
         }
         public void Update(double now)
         {
             if(State==SimonState.Countdown&&now-phaseAt+1e-9>=3)NewRound(now);
-            else if(State==SimonState.Showing&&now-phaseAt+1e-9>=.5+Sequence.Count*ShowStep){State=SimonState.Replaying;phaseAt=now;}
+            else if(State==SimonState.Waiting&&now-phaseAt+1e-9>=.5)NewRound(now);
+            else if(State==SimonState.Showing&&now-phaseAt+1e-9>=Sequence.Count*ShowStep){State=SimonState.Replaying;phaseAt=now;}
             else if(State==SimonState.Replaying&&now-phaseAt+1e-9>=5)Finish(now);
+            if(State==SimonState.Showing&&Lit(now).HasValue)
+            {int index=(int)((now-phaseAt)/ShowStep);if(index!=lastTone){lastTone=index;if(TonePlayed!=null)TonePlayed(Sequence[index]);}}
         }
         public void Press(ArcadeLane lane,double now)
         {
@@ -138,7 +153,12 @@ namespace Vpet
             inputFlash=lane;inputFlashUntil=now+.18;
             if(lane!=Sequence[InputIndex]){Finish(now);return;}
             InputIndex++;
-            if(InputIndex==Sequence.Count){Pending+=50;Feedback="Correct!";FeedbackAt=now;NewRound(now);}
+            if(InputIndex==Sequence.Count){Pending+=50;Feedback="Correct!";FeedbackAt=now;State=SimonState.Waiting;phaseAt=now;inputFlash=null;}
+        }
+        public void Stop(double now)
+        {
+            if(State==SimonState.Ready||State==SimonState.Finished||State==SimonState.Stopped)return;
+            State=SimonState.Stopped;Banked=Pending=0;Feedback="Stopped";FeedbackAt=now;inputFlash=null;
         }
         void Finish(double now){State=SimonState.Finished;Banked=Pending;Pending=0;Feedback="Game Over";FeedbackAt=now;inputFlash=null;}
     }

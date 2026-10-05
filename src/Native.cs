@@ -11,6 +11,7 @@ namespace Vpet
     internal static class Native
     {
         internal static readonly HashSet<IntPtr> BackgroundAdornments=new HashSet<IntPtr>();
+        internal static IntPtr ArcadeForeground;
         [StructLayout(LayoutKind.Sequential)] public struct POINT { public int X,Y; public POINT(int x,int y){X=x;Y=y;} }
         [StructLayout(LayoutKind.Sequential)] public struct SIZE { public int Width,Height; public SIZE(int w,int h){Width=w;Height=h;} }
         [StructLayout(LayoutKind.Sequential, Pack=1)] public struct BLEND { public byte Op,Flags,Alpha,Format; }
@@ -98,10 +99,12 @@ namespace Vpet
         protected override void WndProc(ref Message m)
         {
             if(m.Msg==0x21){m.Result=new IntPtr(3);return;} // MA_NOACTIVATE
-            if(m.Msg==0x46&&m.LParam!=IntPtr.Zero&&(BehindWindow!=IntPtr.Zero||layerMode==LayerMode.UnderAll))
+            bool behindArcade=m.Msg==0x46&&m.LParam!=IntPtr.Zero&&layerMode!=LayerMode.UnderAll&&Native.ArcadeForeground!=IntPtr.Zero&&
+                Native.BackgroundAdornments.Contains(Handle)&&Native.IsWindowVisible(Native.ArcadeForeground);
+            if(m.Msg==0x46&&m.LParam!=IntPtr.Zero&&(behindArcade||BehindWindow!=IntPtr.Zero||layerMode==LayerMode.UnderAll))
             {
                 var position=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));
-                position.InsertAfter=BehindWindow!=IntPtr.Zero?BehindWindow:Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
+                position.InsertAfter=behindArcade?Native.ArcadeForeground:BehindWindow!=IntPtr.Zero?BehindWindow:Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
                 position.Flags=(position.Flags&~4u)|0x210u; // Clear NOZORDER; keep NOACTIVATE and NOOWNERZORDER.
                 Marshal.StructureToPtr(position,m.LParam,false);
             }
