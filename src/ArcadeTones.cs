@@ -1,13 +1,15 @@
 using System;
 using System.IO;
-using System.Media;
+using System.Runtime.InteropServices;
 
 namespace Vpet
 {
     internal sealed class ArcadeTones : IDisposable
     {
-        readonly MemoryStream[] waves=new MemoryStream[4];
-        readonly SoundPlayer[] players=new SoundPlayer[4];
+        readonly byte[][] samples=new byte[4][];
+        readonly GCHandle[] pinned=new GCHandle[4];
+        readonly ArcadeVoice[] voices=new ArcadeVoice[16];
+        ArcadeAudioDevice device;
         internal static byte[] CreateWave(ArcadeLane lane,float volume=1)
         {
             const int rate=22050,samples=4410;
@@ -21,16 +23,37 @@ namespace Vpet
                 writer.Write(System.Text.Encoding.ASCII.GetBytes("data"));writer.Write(samples*2);
                 for(int i=0;i<samples;i++)
                 {
-                    double t=i/(double)rate,envelope=Math.Min(1,t/.006)*Math.Min(1,(samples-1-i)/(rate*.02));
+                    double t=i/(double)rate,attack=Math.Min(1,t/.012),release=Math.Min(1,(samples-1-i)/(rate*.035));
+                    double envelope=(.5-.5*Math.Cos(Math.PI*attack))*(.5-.5*Math.Cos(Math.PI*release));
                     writer.Write((short)(Math.Sin(2*Math.PI*frequency*t)*envelope*.22*volume*short.MaxValue));
                 }
                 return output.ToArray();
             }
         }
         public ArcadeTones(float volume=1)
-        {for(int i=0;i<4;i++){waves[i]=new MemoryStream(CreateWave((ArcadeLane)i,volume));players[i]=new SoundPlayer(waves[i]);}}
-        public void Play(ArcadeLane lane){try{players[(int)lane].Play();}catch(InvalidOperationException){}catch(TimeoutException){}}
-        public void Stop(){foreach(var player in players)player.Stop();}
-        public void Dispose(){Stop();for(int i=0;i<4;i++){players[i].Dispose();waves[i].Dispose();}}
+        {for(int i=0;i<4;i++){byte[] wave=CreateWave((ArcadeLane)i,volume);samples[i]=new byte[wave.Length-44];System.Buffer.BlockCopy(wave,44,samples[i],0,samples[i].Length);}}
+        internal void Prepare()
+        {
+            if(device!=null)return;
+            try
+            {
+                device=new ArcadeAudioDevice();var format=new ArcadeAudioNative.WaveFormat{Tag=1,Channels=1,Rate=22050,BytesPerSecond=44100,BlockAlign=2,Bits=16};
+                for(int i=0;i<4;i++)pinned[i]=GCHandle.Alloc(samples[i],GCHandleType.Pinned);
+                for(int i=0;i<voices.Length;i++)voices[i]=device.Create(format);
+            }
+            catch{Dispose();throw;}
+        }
+        internal int ActiveVoices {get{int count=0;foreach(var voice in voices)if(voice!=null&&voice.State.Queued>0)count++;return count;}}
+        public void Play(ArcadeLane lane)
+        {
+            try
+            {
+                Prepare();foreach(var voice in voices)if(voice.State.Queued==0)
+                {voice.Flush();int index=(int)lane;voice.Submit(pinned[index].AddrOfPinnedObject(),samples[index].Length);voice.Play();return;}
+            }
+            catch(IOException){}catch(COMException){}
+        }
+        public void Stop(){foreach(var voice in voices)if(voice!=null)voice.Flush();}
+        public void Dispose(){for(int i=0;i<voices.Length;i++)if(voices[i]!=null){voices[i].Dispose();voices[i]=null;}for(int i=0;i<4;i++)if(pinned[i].IsAllocated)pinned[i].Free();if(device!=null){device.Dispose();device=null;}}
     }
 }
