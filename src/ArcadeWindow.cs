@@ -201,13 +201,17 @@ namespace Vpet
         void PositionControls()
         {
             float scale=SceneScale;PointF origin=SceneOrigin;
-            switchKeys.Location=new Point((int)(origin.X+552*scale),(int)(origin.Y+(500-DanceGame.SquareDistance-20)*scale));
+            var upper=GameSquareBounds(ArcadeLane.Up,DanceGame.SquareDistance);
+            switchKeys.Location=new Point((int)(origin.X+upper.Right*scale)+8,(int)(origin.Y+(upper.Top+upper.Height/2)*scale)-switchKeys.Height/2);
             volumePanel.Bounds=new Rectangle(8,8,82,Math.Max(152,canvas.Height-16));
             volumeLabel.Location=new Point(8,8);volume.Location=new Point(19,36);volume.Height=Math.Max(80,volumePanel.Height-72);volumeValue.Location=new Point(19,volumePanel.Height-27);
             songTime.Location=new Point(Math.Max(280,songTime.Parent.ClientSize.Width-180),songTime.Parent.ClientSize.Width>=710?12:66);
         }
         internal Size SceneSize {get{return Game==ArcadeGame.Lobby?new Size(1000,660):new Size(1000,1000);}}
         internal float SceneScale {get{return Math.Max(.1f,Math.Min((canvas.Width-(Game==ArcadeGame.Dance?98:0))/(float)SceneSize.Width,canvas.Height/(float)SceneSize.Height));}}
+        // Keep actors as large as they would be in the lobby at this window size.
+        // Scale lane distances with their squares so the drawn overlap still matches scoring.
+        internal float GameContentScale {get{return Game==ArcadeGame.Lobby?1:Math.Max(.1f,Math.Min(canvas.Width/1000f,canvas.Height/660f))/SceneScale;}}
         internal PointF SceneOrigin {get{int reserve=Game==ArcadeGame.Dance?98:0;return new PointF(reserve+(canvas.Width-reserve-SceneSize.Width*SceneScale)/2,(canvas.Height-SceneSize.Height*SceneScale)/2);}}
         internal RectangleF SceneBounds {get{return new RectangleF(SceneOrigin.X,SceneOrigin.Y,SceneSize.Width*SceneScale,SceneSize.Height*SceneScale);}}
         protected override void Dispose(bool disposing)

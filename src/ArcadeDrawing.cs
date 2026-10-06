@@ -24,8 +24,10 @@ namespace Vpet
         }
         internal static RectangleF Cabinet(int index){return new RectangleF(65+index*177,115,160,290);}
         static Color LaneColor(ArcadeLane lane){return new[]{Color.FromArgb(235,71,96),Color.FromArgb(58,133,239),Color.FromArgb(58,198,120),Color.FromArgb(244,198,52)}[(int)lane];}
-        static PointF LanePoint(ArcadeLane lane,double distance)
-        {return new PointF(500+(lane==ArcadeLane.Left?-(float)distance:lane==ArcadeLane.Right?(float)distance:0),500+(lane==ArcadeLane.Up?-(float)distance:lane==ArcadeLane.Down?(float)distance:0));}
+        PointF LanePoint(ArcadeLane lane,double distance)
+        {float offset=(float)distance*GameContentScale;return new PointF(500+(lane==ArcadeLane.Left?-offset:lane==ArcadeLane.Right?offset:0),500+(lane==ArcadeLane.Up?-offset:lane==ArcadeLane.Down?offset:0));}
+        internal RectangleF GameSquareBounds(ArcadeLane lane,double distance)
+        {var center=LanePoint(lane,distance);float side=(float)DanceGame.SquareSize*GameContentScale;return new RectangleF(center.X-side/2,center.Y-side/2,side,side);}
         string KeyName(ArcadeLane lane){return prefs.ArrowKeys?new[]{"\u2191","\u2193","\u2190","\u2192"}[(int)lane]:new[]{"W","S","A","D"}[(int)lane];}
         static void TextAt(Graphics g,string text,float x,float y,float size,Color color,bool bold=false)
         {
@@ -82,14 +84,14 @@ namespace Vpet
         }
         void DrawGame(Graphics g)
         {
-            double now=Now;
+            double now=Now;float contentScale=GameContentScale;
             if(Game==ArcadeGame.Dance)
             {
                 int lives=3-(int)Difficulty,misses=Dance==null?0:Dance.Misses;
-                using(var block=new SolidBrush(Neutral))g.FillRectangle(block,70,28,134,80);
-                TextAt(g,"Misses",137,52,16,Color.FromArgb(211,203,229));
-                if(prefs.Practice)TextAt(g,misses.ToString(),137,82,24,Color.White,true);
-                else for(int i=0;i<lives;i++){using(var fill=new SolidBrush(i<misses?Color.Crimson:Color.FromArgb(207,199,223)))g.FillEllipse(fill,88+i*32,73,20,20);}
+                using(var block=new SolidBrush(Neutral))g.FillRectangle(block,70,28,134,88);
+                TextAt(g,"Misses",137,54,26,Color.FromArgb(211,203,229),true);
+                if(prefs.Practice)TextAt(g,misses.ToString(),137,96,28,Color.White,true);
+                else for(int i=0;i<lives;i++){using(var fill=new SolidBrush(i<misses?Color.Crimson:Color.FromArgb(207,199,223)))g.FillEllipse(fill,88+i*32,84,20,20);}
                 if(Dance!=null&&Dance.Streak&&Dance.State==DanceState.Running)
                     TextAt(g,"Streak Combo "+Dance.Multiplier.ToString("0.0")+"x",790,129,22,Color.FromArgb((int)(now*3)%2==0?255:90,Color.Gold),true);
             }
@@ -101,15 +103,15 @@ namespace Vpet
                 foreach(var target in Dance.PulsingTargets(now))
                 {float progress=(float)((now-target.ScoredAt)/DanceGame.PulseDuration);DrawSquare(g,LanePoint(target.Lane,target.ScoredDistance),target.Lane,true,true,1+.3f*(float)Math.Sin(progress*Math.PI));}
             bool hopping=Game==ArcadeGame.Dance&&Dance!=null&&Dance.State==DanceState.Running;
-            float hop=hopping&&now-hopAt<.25?(float)(Math.Sin(Math.PI*Math.Max(0,now-hopAt)/.25)*13):0;
-            float shake=hopping&&now-hopAt<.25?(float)Math.Sin((now-hopAt)*65)*3:0;
-            DrawPet(g,new PointF(500+shake,550-hop),false,facing,hopping);
+            float hop=hopping&&now-hopAt<.25?(float)(Math.Sin(Math.PI*Math.Max(0,now-hopAt)/.25)*13*contentScale):0;
+            float shake=hopping&&now-hopAt<.25?(float)Math.Sin((now-hopAt)*65)*3*contentScale:0;
+            DrawPet(g,new PointF(500+shake,500+50*contentScale-hop),false,facing,hopping);
             if(Game==ArcadeGame.Dance&&Dance!=null)
             {
                 if(Dance.State==DanceState.Countdown)TextAt(g,Dance.Countdown(now).ToString(),500,112,54,Color.White,true);
                 else if(Dance.State==DanceState.Running)
                 {
-                    if(now-Dance.FeedbackAt<.7)TextAt(g,Dance.Feedback,500,422,25,Dance.Feedback=="Miss!"?Color.LightCoral:Color.Gold,true);
+                    if(now-Dance.FeedbackAt<.7)TextAt(g,Dance.Feedback,500,500-78*contentScale,25,Dance.Feedback=="Miss!"?Color.LightCoral:Color.Gold,true);
                 }
             }
             if(Game==ArcadeGame.Simon&&Simon!=null)
@@ -118,7 +120,7 @@ namespace Vpet
                 else if(Simon.State==SimonState.Showing)TextAt(g,"Watch  \u00b7  Round "+Simon.Sequence.Count,500,105,25,Color.Gold,true);
                 else if(Simon.State==SimonState.Replaying)TextAt(g,"Your turn  \u00b7  "+Simon.SecondsLeft(now).ToString("0.0")+"s",500,105,25,Color.White,true);
                 else if(Simon.State==SimonState.Waiting)TextAt(g,"Next round in a moment",500,105,25,Color.Gold,true);
-                if(now-Simon.FeedbackAt<.55&&Simon.Feedback=="Correct!")TextAt(g,"Correct!",500,422,25,Color.Gold,true);
+                if(now-Simon.FeedbackAt<.55&&Simon.Feedback=="Correct!")TextAt(g,"Correct!",500,500-78*contentScale,25,Color.Gold,true);
             }
             if(Game==ArcadeGame.Dance&&Dance!=null&&Dance.State==DanceState.Stopped&&now-Dance.FinishedAt<2)
                 TextAt(g,"Stopped",500,108,42,Color.FromArgb((int)(255*Math.Max(0,1-(now-Dance.FinishedAt)/2)),Color.LightGray),true);
@@ -128,22 +130,21 @@ namespace Vpet
             {
                 int alpha=(int)(255*Math.Max(0,1-(now-resultAt)/2));string result=Game==ArcadeGame.Dance&&Dance!=null?Dance.State==DanceState.Success?"Success":"Failed":"Game Over";
                 TextAt(g,result,500,108,42,Color.FromArgb(alpha,resultReaction==7?Color.PaleGreen:Color.LightCoral),true);
-                using(var bubble=Artwork.Bubble(resultReaction,emote(resultReaction),.8f,false))g.DrawImage(bubble,new PointF(500-bubble.Width/2f,446-bubble.Height));
+                using(var bubble=Artwork.Bubble(resultReaction,emote(resultReaction),.8f,false))g.DrawImage(bubble,new PointF(500-bubble.Width/2f,500-54*contentScale-bubble.Height));
             }
         }
         void DrawSquare(Graphics g,PointF center,ArcadeLane lane,bool target,bool lit,float pulse=1)
         {
-            float side=(float)DanceGame.SquareSize*pulse;var box=new RectangleF(center.X-side/2,center.Y-side/2,side,side);
-            if(Game==ArcadeGame.Dance&&!target)using(var block=new SolidBrush(Neutral))g.FillRectangle(block,box.X-10,box.Y-10,box.Width+20,box.Height+20);
+            float contentScale=GameContentScale,side=(float)DanceGame.SquareSize*contentScale*pulse;var box=new RectangleF(center.X-side/2,center.Y-side/2,side,side);
             Color color=Game==ArcadeGame.Simon?LaneColor(lane):Color.FromArgb(194,174,243);
-            using(var fill=new SolidBrush(target?Color.FromArgb(248,112,218):lit?color:Color.FromArgb(Game==ArcadeGame.Simon?130:35,color)))
-            using(var border=new Pen(lit?Color.White:target?Color.FromArgb(255,223,250):color,lit?5:target?3:2))
-            {g.FillRectangle(fill,box);g.DrawRectangle(border,box.X,box.Y,box.Width,box.Height);}
-            TextAt(g,KeyName(lane),center.X,center.Y,27,Game==ArcadeGame.Simon&&lit?Color.FromArgb(30,25,42):Color.White,true);
+            using(var fill=new SolidBrush(target?Color.FromArgb(248,112,218):Game==ArcadeGame.Dance?Neutral:lit?color:Color.FromArgb(130,color)))
+            using(var border=new Pen(lit?Color.White:target?Color.FromArgb(255,223,250):color,(Game==ArcadeGame.Dance?4:lit?5:2)*contentScale))
+            {border.Alignment=PenAlignment.Inset;g.FillRectangle(fill,box);g.DrawRectangle(border,box.X,box.Y,box.Width,box.Height);}
+            TextAt(g,KeyName(lane),center.X,center.Y,27*contentScale,Game==ArcadeGame.Simon&&lit?Color.FromArgb(30,25,42):Color.White,true);
         }
         void DrawPet(Graphics g,PointF feet,bool walking,int direction,bool dancing)
         {
-            var set=sprites();float factor=Math.Min(80f/set.Cell.Width,100f/set.Cell.Height);
+            var set=sprites();float factor=Math.Min(80f/set.Cell.Width,100f/set.Cell.Height)*GameContentScale;
             int renderFacing=set.ResolveFacing(direction,new PointF(direction==0?1:direction==4?-1:0,direction==2?1:direction==6?-1:0),direction);
             Bitmap frame=dancing?set.EmoteAtPhase(0,Now*6):null;
             if(frame==null)frame=set.FrameAtPhase(walking,renderFacing,Now*(walking?8:4));
