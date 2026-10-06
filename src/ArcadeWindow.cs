@@ -63,7 +63,7 @@ namespace Vpet
             lobbyHeading.ForeColor=MakerUi.Purple;LoadFloors();music.Preload(musicDirectory);
             var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};calculated.ForeColor=MakerUi.Purple;
             var difficultyArea=new Panel{Dock=DockStyle.Fill};difficulties.Dock=DockStyle.None;difficultyArea.Controls.Add(difficulties);difficultyArea.Controls.Add(backgroundLabel);difficultyArea.Controls.Add(background);difficultyArea.Controls.Add(songTime);
-            scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficultyArea);top.Controls.Add(lobbyHeading);
+            scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficultyArea);top.Controls.Add(lobbyHeading);difficultyArea.BringToFront();lobbyHeading.BringToFront();
             var difficultyLabel=MakerUi.Label("Difficulty:");difficultyLabel.ForeColor=MakerUi.Purple;difficulties.Controls.Add(difficultyLabel);
             for(int i=0;i<3;i++)
             {
