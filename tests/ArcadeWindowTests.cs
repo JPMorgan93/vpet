@@ -113,6 +113,7 @@ namespace Vpet
                         FindButton(arcade,"Stop").PerformClick();now+=10;songTime=arcade.Dance.Duration;arcade.Step();Check(arcade.Dance.State==DanceState.Stopped&&arcade.Dance.Pending==0&&score.Text=="- -"&&pet.Model.Settings.Arcade.High(ArcadeGame.Dance,ArcadeDifficulty.Easy)==high,"Stopping a scored Dance round preserves the previous high score and prevents later scoring");
                         PracticeWindows(pet,arcade,ref now,ref songTime,arrows);
                         ArcadeFloorWindows(pet,arcade,ref now);
+                        ArcadeLayoutWindows(arcade,ref now);
                         FindButton(arcade,"Close Game").PerformClick();Check(arcade.Game==ArcadeGame.Lobby&&pet.ArcadeOpen&&!pet.Visible,"Close Game returns to lobby while desktop pet stays hidden");
                         ClickCabinet(arcade,1);Check(arcade.Game==ArcadeGame.Simon&&!volume.Visible,"Simon Says cabinet opens without music/volume controls");
                         FindButton(arcade,"Start").PerformClick();Check(FindButton(arcade,"Stop").Visible,"Simon Start also becomes Stop");FindButton(arcade,"Stop").PerformClick();now+=3.01;arcade.Step();Check(arcade.Simon.State==SimonState.Stopped&&tonesPlayed.Count==0,"Simon Stop during countdown prevents the first tone and sequence");

@@ -15,7 +15,7 @@ namespace Vpet
     {
         [DataMember] public long[] DanceHigh=new long[3];
         [DataMember] public long[] SimonHigh=new long[3];
-        internal const int DefaultVolume=27;
+        internal const int DefaultVolume=25;
         [DataMember] public int Volume=DefaultVolume;
         [DataMember] public bool ArrowKeys;
         [DataMember] public bool Practice;
@@ -75,7 +75,7 @@ namespace Vpet
             return result;
         }
         public double Speed {get{return 160*new[]{1.0,1.5,2.0}[(int)Difficulty];}}
-        public static double SpawnDistance(ArcadeLane lane){return lane==ArcadeLane.Left||lane==ArcadeLane.Right?540:350;}
+        public static double SpawnDistance(ArcadeLane lane){return 540;}
         public double Distance(DanceTarget target){return SquareDistance+(target.HitTime-Elapsed)*Speed;}
         public IEnumerable<DanceTarget> VisibleTargets {get{return Chart.Where(t=>!t.Resolved&&Distance(t)<=SpawnDistance(t.Lane));}}
         public IEnumerable<DanceTarget> PulsingTargets(double now){return Chart.Where(t=>!double.IsNaN(t.ScoredAt)&&now>=t.ScoredAt&&now-t.ScoredAt<PulseDuration);}

@@ -10,10 +10,12 @@ namespace Vpet
     {
         static void ArcadeAdjustmentChecks()
         {
-            Check(new ArcadePreferences().Volume==27,"New music default halves the previous 53 percent setting, rounded to 27");
+            Check(new ArcadePreferences().Volume==25,"New music default is 25 percent");
             string path=Path.Combine(artifacts,"arcade-volume-migration.json");
-            File.WriteAllText(path,"{\"Arcade\":{}}");Check(Preferences.Load(path).Arcade.Volume==27,"Missing music volume uses the quieter default");
+            File.WriteAllText(path,"{\"Arcade\":{}}");Check(Preferences.Load(path).Arcade.Volume==25,"Missing music volume uses the quieter default");
             File.WriteAllText(path,"{\"Arcade\":{\"Volume\":70}}");Check(Preferences.Load(path).Arcade.Volume==70,"Explicit saved music volume is retained");
+            File.WriteAllText(path,"{\"Arcade\":{\"Volume\":27}}");Check(Preferences.Load(path).Arcade.Volume==27,"The previous explicit 27 percent setting is retained");
+            Check(Enum.GetValues(typeof(ArcadeLane)).Cast<ArcadeLane>().All(lane=>DanceGame.SpawnDistance(lane)==540),"Square Dance scene gives targets the same entrance distance in every direction");
             Check(ArcadeMusic.Attenuation(100)==0&&ArcadeMusic.Attenuation(0)==-10000&&ArcadeMusic.Attenuation(50)==-1204&&ArcadeMusic.Attenuation(10)==-4000&&ArcadeMusic.Attenuation(1)==-8000,"Music spans unity gain to mute with strong, explicit attenuation at low slider levels");
             Check(ArcadeMusic.Attenuation(-1)==-10000&&ArcadeMusic.Attenuation(101)==0&&Enumerable.Range(0,100).All(v=>ArcadeMusic.Attenuation(v)<ArcadeMusic.Attenuation(v+1)),"Volume range clamps safely and each slider step increases gain");
             using(var image=JoystickArtwork.Draw(1))
@@ -115,8 +117,8 @@ namespace Vpet
         }
         static Bitmap ArcadeRegion(ArcadeWindow arcade,Rectangle logical)
         {
-            var canvas=MakerField<DoubleBufferedPanel>(arcade,"canvas");float scale=Math.Min(canvas.Width/1000f,canvas.Height/660f);
-            var region=new Rectangle((int)((canvas.Width-1000*scale)/2+logical.X*scale),(int)((canvas.Height-660*scale)/2+logical.Y*scale),(int)(logical.Width*scale),(int)(logical.Height*scale));
+            var canvas=MakerField<DoubleBufferedPanel>(arcade,"canvas");float scale=arcade.SceneScale;var origin=arcade.SceneOrigin;
+            var region=new Rectangle((int)(origin.X+logical.X*scale),(int)(origin.Y+logical.Y*scale),(int)(logical.Width*scale),(int)(logical.Height*scale));
             using(var image=new Bitmap(canvas.Width,canvas.Height)){canvas.DrawToBitmap(image,canvas.ClientRectangle);return image.Clone(region,System.Drawing.Imaging.PixelFormat.Format32bppArgb);}
         }
         static int ArcadeDifferentPixels(Bitmap first,Bitmap second)

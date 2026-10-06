@@ -218,18 +218,22 @@ slider always controls music volume, including before starting, with its percent
 displayed below it. At 100%, music plays at the normal Windows/device-controlled
 level. Lower settings progressively attenuate the music, with useful quiet levels
 near the bottom; 0% is mute. Device master volume is unchanged. New preferences
-default to 27% (half the previous 53%, rounded); saved levels remain.
+default to 25%; saved levels remain. Volume, its slider, and percentage share
+one padded neutral column. Song time is in the header to the left of Score Card.
 
-Practice mode, below Difficulty, is off by default and saved across sessions.
+Practice mode, to the right of Difficulty, is off by default and saved across sessions.
 Turn it on between rounds to play the full song without scoring or a miss limit.
 A numeric miss total replaces the miss-limit circles at the top left. Hits keep
 their visual feedback; misses never end the song. High scores remain unchanged.
 
-Background, below Practice mode, offers Dynamic (default), Static, or Off.
-Dynamic rotates Dance Floor.png instantly by 90 degrees every two seconds.
-Static keeps the original orientation. Off restores the blank background.
+Background, below Difficulty, offers Dynamic (default), Static, or Off.
+Dynamic rotates Dance Floor.png instantly by 90 degrees every one second.
+Static keeps the original orientation. Off uses the dark neutral canvas color.
 Simon Background, below Difficulty, offers On (default) for Simon Floor.png,
-or Off for the blank background. Both background choices are saved separately.
+or Off for the same dark neutral color. Both choices are saved separately.
+Both game spaces and floor backgrounds stay square when you resize the window.
+Game names are in the window title. Dance's misses section and four fixed
+squares have padded neutral backings, and moving targets are brighter pink.
 
 Simon starts with one button on Easy, three on Normal, and five on Hard.
 Tones have smooth fades and rapid presses never cut off another tone.
