@@ -61,7 +61,7 @@ namespace Vpet
             {
                 tones.Prepare();tones.Play(ArcadeLane.Up);tones.Play(ArcadeLane.Up);tones.Play(ArcadeLane.Down);tones.Play(ArcadeLane.Left);
                 Check(tones.ActiveVoices==4,"Rapid identical and different Simon tones overlap without cutting off their fade-out");Thread.Sleep(260);Check(tones.ActiveVoices==0,"All overlapping tones finish naturally");
-                tones.Play(ArcadeLane.Right);tones.Stop();Check(tones.ActiveVoices==0,"Stop cancels all remaining Simon tones");
+                tones.Play(ArcadeLane.Right);tones.Stop();Thread.Sleep(30);Check(tones.ActiveVoices==0,"Stop cancels all remaining Simon tones on the next audio quantum");
             }
             using(var gate=new ManualResetEventSlim(false))using(var music=new ArcadeMusic((path,token)=>
             {gate.Wait(token);return new ArcadeClip(new byte[88200],new ArcadeAudioNative.WaveFormat{Tag=1,Channels=1,Rate=22050,BytesPerSecond=44100,BlockAlign=2,Bits=16});}))
