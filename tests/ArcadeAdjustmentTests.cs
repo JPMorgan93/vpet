@@ -14,6 +14,8 @@ namespace Vpet
             string path=Path.Combine(artifacts,"arcade-volume-migration.json");
             File.WriteAllText(path,"{\"Arcade\":{}}");Check(Preferences.Load(path).Arcade.Volume==25,"Missing music volume uses the quieter default");
             File.WriteAllText(path,"{\"Arcade\":{\"Volume\":70}}");Check(Preferences.Load(path).Arcade.Volume==70,"Explicit saved music volume is retained");
+            File.WriteAllText(path,"{\"Arcade\":{\"Volume\":27}}");Check(Preferences.Load(path).Arcade.Volume==27,"The previous explicit 27 percent setting is retained");
+            Check(Enum.GetValues(typeof(ArcadeLane)).Cast<ArcadeLane>().All(lane=>DanceGame.SpawnDistance(lane)==540),"Square Dance scene gives targets the same entrance distance in every direction");
             Check(ArcadeMusic.Attenuation(100)==0&&ArcadeMusic.Attenuation(0)==-10000&&ArcadeMusic.Attenuation(50)==-1204&&ArcadeMusic.Attenuation(10)==-4000&&ArcadeMusic.Attenuation(1)==-8000,"Music spans unity gain to mute with strong, explicit attenuation at low slider levels");
             Check(ArcadeMusic.Attenuation(-1)==-10000&&ArcadeMusic.Attenuation(101)==0&&Enumerable.Range(0,100).All(v=>ArcadeMusic.Attenuation(v)<ArcadeMusic.Attenuation(v+1)),"Volume range clamps safely and each slider step increases gain");
             using(var image=JoystickArtwork.Draw(1))
