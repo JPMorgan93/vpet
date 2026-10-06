@@ -72,6 +72,7 @@ namespace Vpet
             Check(ArcadeWindow.LaneFor(Keys.W,false)==ArcadeLane.Up&&ArcadeWindow.LaneFor(Keys.Left,true)==ArcadeLane.Left&&ArcadeWindow.LaneFor(Keys.W,true)==null&&ArcadeWindow.LaneFor(Keys.Up,false)==null,"WASD/arrow switching maps directions exclusively");
             ArcadeAdjustmentChecks();
             PracticeFeatures();
+            ArcadeFloorFeatures();
         }
     }
 }

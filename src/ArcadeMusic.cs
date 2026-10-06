@@ -11,15 +11,17 @@ namespace Vpet
     {
         readonly Dictionary<string,Task<ArcadeClip>> prepared=new Dictionary<string,Task<ArcadeClip>>(StringComparer.OrdinalIgnoreCase);
         readonly CancellationTokenSource cancellation=new CancellationTokenSource();
+        readonly Func<string,CancellationToken,ArcadeClip> decode;
         ArcadeAudioDevice device;ArcadeVoice voice;ArcadeClip clip;GCHandle pinned;
         int requestedVolume;bool playing,primed,disposed;ulong startSamples;double stoppedPosition;
         public double Duration {get{return clip==null?0:clip.Duration;}}
         public bool Opened {get{return voice!=null;}}
+        internal ArcadeMusic(Func<string,CancellationToken,ArcadeClip> decode=null){this.decode=decode??ArcadeClip.Decode;}
         internal Task<ArcadeClip> Prepare(string path)
         {
             if(disposed)throw new ObjectDisposedException("ArcadeMusic");path=Path.GetFullPath(path);Task<ArcadeClip> task;
             if(!prepared.TryGetValue(path,out task))
-            {string song=path;var token=cancellation.Token;task=Task.Run(()=>ArcadeClip.Decode(song,token),token);prepared.Add(path,task);}
+            {string song=path;var token=cancellation.Token;task=Task.Run(()=>decode(song,token),token);prepared.Add(path,task);task.ContinueWith(t=>{var failure=t.Exception;},TaskContinuationOptions.OnlyOnFaulted);}
             return task;
         }
         internal void Preload(string directory){foreach(string song in new[]{"Easy","Normal","Hard"})Prepare(Path.Combine(directory,song+".mp3"));}
