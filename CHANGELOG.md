@@ -1,4 +1,13 @@
-# Vpet 1.11.3
+# Vpet 1.11.4
+
+- Reduce the default Dance Time volume from 53% to 27%, approximately half the previous slider setting. Preserve saved volume choices, normal device volume at 100%, and mute at 0%.
+- Prepare all three Dance Time songs in the background and decode complete PCM audio before enabling Start. Play queued audio from memory at its native sample rate, synchronize targets with the sample clock, and reuse prepared songs on replay and difficulty changes.
+- Add Dance Time Background choices below Practice mode: Dynamic (default), Static, and Off. Dynamic instantly rotates the supplied Dance Floor PNG clockwise 90 degrees every two seconds; Static holds the original orientation; Off restores the blank gradient.
+- Add Simon Says Background choices below Difficulty: On (default) for the supplied Simon Floor PNG, or Off for the blank gradient. Save both games' background choices independently.
+- Smooth Simon tones with cosine attack/release fades and prepared overlapping playback, so rapid identical or different presses do not cut off another tone.
+- Start Simon Says with one button on Easy, three on Normal, and five on Hard. Continue adding one button per completed round, with the full one-second pause retained.
+
+## Vpet 1.11.3
 
 - Fix Dance Time music volume with explicit playback attenuation instead of scaled MCI volume requests. Full slider volume uses the normal Windows/device level; lower values provide useful quiet levels, and zero is mute. Retain saved volume choices and show the selected percentage below the slider.
 - Move Dance Time's flashing Streak Combo indicator to the top right.

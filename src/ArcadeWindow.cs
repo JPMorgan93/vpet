@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Vpet
@@ -15,12 +16,17 @@ namespace Vpet
         readonly ArcadePreferences prefs;readonly Action save;
         readonly string musicDirectory;readonly Random random;
         readonly Stopwatch clock=Stopwatch.StartNew();readonly Timer timer=new Timer{Interval=16};
-        readonly ArcadeMusic music=new ArcadeMusic();
+        readonly ArcadeMusic music;
         readonly ArcadeTones tones=new ArcadeTones();
         readonly DoubleBufferedPanel canvas=new DoubleBufferedPanel{Dock=DockStyle.Fill,BackColor=Color.FromArgb(23,18,42)};
         readonly FlowLayoutPanel difficulties=new FlowLayoutPanel{AutoSize=true,Dock=DockStyle.Left,WrapContents=false,Padding=new Padding(8)};
         readonly RadioButton[] modes=new RadioButton[3];
         readonly CheckBox practice=new CheckBox{Name="ArcadePractice",Text="Practice mode",AutoSize=true,ForeColor=MakerUi.Purple,Location=new Point(16,67)};
+        readonly Label backgroundLabel=new Label{Text="Background:",AutoSize=true,ForeColor=MakerUi.Purple};
+        readonly ComboBox background=new ComboBox{Name="ArcadeBackground",DropDownStyle=ComboBoxStyle.DropDownList,Width=145};
+        readonly Panel top=new Panel{Dock=DockStyle.Top,Height=142,BackColor=Color.FromArgb(241,236,249)};
+        readonly Bitmap[] danceFloors=new Bitmap[4];Bitmap simonFloor;
+        Task<ArcadeClip> musicPreparation;string pendingSong;double backgroundAt;
         readonly Button score=new Button{Name="ArcadeScore",Width=170,Height=42,Text="- -",BackColor=Color.FromArgb(44,33,75),ForeColor=Color.White,FlatStyle=FlatStyle.Flat};
         readonly Label calculated=new Label{Name="ArcadePending",AutoSize=true,ForeColor=Color.White,Text="1.0x   0"};
         readonly Button start=MakerUi.Button("Start",null),closeGame=MakerUi.Button("Close Game",null),switchKeys=MakerUi.Button("\u21bb",null);
@@ -45,15 +51,15 @@ namespace Vpet
         double previous;
         internal double Now {get{return Time==null?clock.Elapsed.TotalSeconds:Time();}}
         internal bool Busy {get{return Game==ArcadeGame.Dance?Dance!=null&&(Dance.State==DanceState.Countdown||Dance.State==DanceState.Running):Game==ArcadeGame.Simon&&Simon!=null&&Simon.State!=SimonState.Ready&&Simon.State!=SimonState.Finished&&Simon.State!=SimonState.Stopped;}}
-        public ArcadeWindow(Func<SpriteSet> sprites,Func<int,Bitmap> emote,ArcadePreferences prefs,Action save,string musicDirectory,Random random)
+        public ArcadeWindow(Func<SpriteSet> sprites,Func<int,Bitmap> emote,ArcadePreferences prefs,Action save,string musicDirectory,Random random,ArcadeMusic musicPlayer=null)
         {
-            this.sprites=sprites;this.emote=emote;this.prefs=prefs;this.save=save;this.musicDirectory=musicDirectory;this.random=random;
+            this.sprites=sprites;this.emote=emote;this.prefs=prefs;this.save=save;this.musicDirectory=musicDirectory;this.random=random;music=musicPlayer??new ArcadeMusic();
             Text="Arcade Window";Font=new Font("Segoe UI",10);AutoScaleMode=AutoScaleMode.Dpi;BackColor=Color.FromArgb(36,27,58);
             ClientSize=new Size(1040,790);MinimumSize=new Size(700,620);StartPosition=FormStartPosition.CenterScreen;KeyPreview=true;
             SongPosition=()=>music.Position;PlayTone=tones.Play;score.Font=new Font("Consolas",16,FontStyle.Bold);
-            var top=new Panel{Dock=DockStyle.Top,Height=110,BackColor=Color.FromArgb(241,236,249)};lobbyHeading.ForeColor=MakerUi.Purple;
+            lobbyHeading.ForeColor=MakerUi.Purple;LoadFloors();music.Preload(musicDirectory);
             var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};calculated.ForeColor=MakerUi.Purple;
-            var difficultyArea=new Panel{Dock=DockStyle.Left,Width=440};difficulties.Dock=DockStyle.Top;difficultyArea.Controls.Add(difficulties);difficultyArea.Controls.Add(practice);
+            var difficultyArea=new Panel{Dock=DockStyle.Left,Width=440};difficulties.Dock=DockStyle.Top;difficultyArea.Controls.Add(difficulties);difficultyArea.Controls.Add(practice);difficultyArea.Controls.Add(backgroundLabel);difficultyArea.Controls.Add(background);
             scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficultyArea);top.Controls.Add(lobbyHeading);
             var difficultyLabel=MakerUi.Label("Difficulty:");difficultyLabel.ForeColor=MakerUi.Purple;difficulties.Controls.Add(difficultyLabel);
             for(int i=0;i<3;i++)
@@ -64,6 +70,9 @@ namespace Vpet
             practice.Checked=prefs.Practice;practice.CheckedChanged+=delegate
             {if(updating||Busy)return;prefs.Practice=practice.Checked;showingHigh=false;resultReaction=-1;CreateGame();RefreshControls();save();};
             tips.SetToolTip(practice,"Play the full song without scoring or a miss limit. Misses are counted for practice.");
+            background.SelectedIndexChanged+=delegate
+            {if(updating||background.SelectedIndex<0)return;if(Game==ArcadeGame.Dance)prefs.Background=(DanceBackground)background.SelectedIndex;else if(Game==ArcadeGame.Simon)prefs.SimonBackground=background.SelectedIndex==0;else return;backgroundAt=Now;save();canvas.Invalidate();};
+            background.DropDownClosed+=delegate{Focus();};
             var footer=new TableLayoutPanel{Dock=DockStyle.Bottom,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=3,RowCount=2,Padding=new Padding(8)};
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,33));footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,34));footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,33));
             closeGame.Anchor=AnchorStyles.Left;start.Anchor=AnchorStyles.None;footer.Controls.Add(closeGame,0,0);footer.Controls.Add(start,1,0);footer.Controls.Add(guidance,0,1);footer.SetColumnSpan(guidance,3);
@@ -85,31 +94,39 @@ namespace Vpet
         void MusicError(Exception ex){music.Close();if(Dance!=null)Dance=null;guidance.Text=ex.Message;RefreshControls();}
         internal void ShowLobby()
         {
-            tones.Stop();music.Close();Game=ArcadeGame.Lobby;Dance=null;Simon=null;held.Clear();resultReaction=-1;Text="Arcade Window";guidance.Text="Click a lit cabinet to play. Close this window to return your pet to the desktop.";RefreshControls();canvas.Invalidate();
+            tones.Stop();music.Close();musicPreparation=null;Game=ArcadeGame.Lobby;Dance=null;Simon=null;held.Clear();resultReaction=-1;Text="Arcade Window";guidance.Text="Click a lit cabinet to play. Close this window to return your pet to the desktop.";RefreshControls();canvas.Invalidate();
         }
         internal void OpenGame(ArcadeGame game)
         {
-            music.Close();Game=game;Difficulty=ArcadeDifficulty.Easy;showingHigh=false;resultReaction=-1;
+            music.Close();Game=game;Difficulty=ArcadeDifficulty.Easy;showingHigh=false;resultReaction=-1;backgroundAt=Now;
+            updating=true;background.Items.Clear();background.Items.AddRange(game==ArcadeGame.Dance?new object[]{"Dynamic","Static","Off"}:new object[]{"On","Off"});background.SelectedIndex=game==ArcadeGame.Dance?(int)prefs.Background:prefs.SimonBackground?0:1;updating=false;
             Text=game==ArcadeGame.Dance?"Arcade Window \u00b7 Dance Time":"Arcade Window \u00b7 Simon Says";CreateGame();RefreshControls();Focus();canvas.Invalidate();
         }
         void ChooseDifficulty(ArcadeDifficulty value)
         {if(Busy)return;Difficulty=value;showingHigh=false;resultReaction=-1;CreateGame();RefreshControls();canvas.Invalidate();}
         void CreateGame()
         {
-            tones.Stop();held.Clear();resultHandled=false;Dance=null;Simon=null;music.Close();
+            tones.Stop();held.Clear();resultHandled=false;Dance=null;Simon=null;music.Close();musicPreparation=null;
             if(Game==ArcadeGame.Dance)
             {
-                try{music.Open(Path.Combine(musicDirectory,Difficulty+".mp3"),prefs.Volume);Dance=new DanceGame(Difficulty,music.Duration,null,prefs.Practice);Dance.MusicStarted+=delegate{music.Play();lastHop=0;hopAt=Now;};guidance.Text=prefs.Practice?"Practice: play the full song without scoring or a miss limit. Misses are counted at the top left.":"Hit matching keys while a target overlaps its square. Three Excellents start a streak.";}
+                try{pendingSong=Path.Combine(musicDirectory,Difficulty+".mp3");musicPreparation=music.Prepare(pendingSong);guidance.Text="Preparing music\u2026 Start will be ready when the entire song is loaded.";FinishPreparingMusic();}
                 catch(Exception ex){MusicError(ex);}
             }
-            else if(Game==ArcadeGame.Simon){Simon=new SimonGame(Difficulty,random);Simon.TonePlayed+=delegate(ArcadeLane lane){PlayTone(lane);};guidance.Text="Watch the lights and listen, then repeat the entire sequence within five seconds.";}
+            else if(Game==ArcadeGame.Simon){try{tones.Prepare();}catch(IOException){}Simon=new SimonGame(Difficulty,random);Simon.TonePlayed+=delegate(ArcadeLane lane){PlayTone(lane);};guidance.Text="Watch the lights and listen, then repeat the entire sequence within five seconds. Start with "+Simon.InitialLength+" button"+(Simon.InitialLength==1?".":"s.");}
+        }
+        void FinishPreparingMusic()
+        {
+            if(Game!=ArcadeGame.Dance||musicPreparation==null||!musicPreparation.IsCompleted)return;
+            musicPreparation=null;
+            try{music.Open(pendingSong,prefs.Volume);Dance=new DanceGame(Difficulty,music.Duration,null,prefs.Practice);Dance.MusicStarted+=delegate{music.Play();lastHop=0;hopAt=Now;};guidance.Text=prefs.Practice?"Practice: play the full song without scoring or a miss limit. Misses are counted at the top left.":"Hit matching keys while a target overlaps its square. Three Excellents start a streak.";}
+            catch(Exception ex){MusicError(ex);}
         }
         internal void StartGame()
         {
-            if(Busy||Game==ArcadeGame.Lobby)return;if(Game==ArcadeGame.Dance&&Dance==null)CreateGame();
+            if(Busy||Game==ArcadeGame.Lobby)return;
             if(Game==ArcadeGame.Dance&&Dance==null)return;
             resultReaction=-1;resultHandled=false;showingHigh=false;held.Clear();facing=2;
-            if(Game==ArcadeGame.Dance)Dance.Start(Now);else Simon.Start(Now);
+            if(Game==ArcadeGame.Dance){try{music.PreparePlayback();}catch(Exception ex){MusicError(ex);return;}Dance.Start(Now);}else Simon.Start(Now);
             RefreshControls();Focus();canvas.Invalidate();
         }
         internal void StopGame()
@@ -122,6 +139,7 @@ namespace Vpet
         internal void Step()
         {
             double now=Now,dt=Math.Max(0,Math.Min(.1,now-previous));previous=now;
+            FinishPreparingMusic();
             if(Game==ArcadeGame.Lobby)
             {lobbyX+=lobbyDirection*80*dt;if(lobbyX>880){lobbyX=880;lobbyDirection=-1;}else if(lobbyX<120){lobbyX=120;lobbyDirection=1;}facing=lobbyDirection>0?0:4;}
             else if(Game==ArcadeGame.Dance&&Dance!=null)
@@ -145,7 +163,7 @@ namespace Vpet
         }
         bool HandleGameKey(Keys keyData)
         {
-            if(Game==ArcadeGame.Lobby||(keyData&Keys.Modifiers)!=Keys.None)return false;Keys key=keyData&Keys.KeyCode;var lane=LaneFor(key,prefs.ArrowKeys);if(!lane.HasValue)return false;
+            if(Game==ArcadeGame.Lobby||background.DroppedDown||(keyData&Keys.Modifiers)!=Keys.None)return false;Keys key=keyData&Keys.KeyCode;var lane=LaneFor(key,prefs.ArrowKeys);if(!lane.HasValue)return false;
             if(!held.Add(key))return true;Step();if(Game==ArcadeGame.Dance&&Dance!=null)Dance.Press(lane.Value,Now);else if(Simon!=null)Simon.Press(lane.Value,Now);Step();return true;
         }
         internal static ArcadeLane? LaneFor(Keys key,bool arrows)
@@ -160,6 +178,8 @@ namespace Vpet
             bool game=Game!=ArcadeGame.Lobby;updating=true;for(int i=0;i<3;i++){modes[i].Checked=i==(int)Difficulty;modes[i].Enabled=!Busy;}updating=false;
             difficulties.Visible=closeGame.Visible=switchKeys.Visible=game;lobbyHeading.Visible=!game;
             practice.Visible=Game==ArcadeGame.Dance;practice.Enabled=!Busy;
+            background.Visible=backgroundLabel.Visible=game;top.Height=Game==ArcadeGame.Dance?142:game?114:110;
+            backgroundLabel.Location=new Point(16,Game==ArcadeGame.Dance?100:72);background.Location=new Point(115,Game==ArcadeGame.Dance?94:66);
             score.Visible=calculated.Visible=game&&!(Game==ArcadeGame.Dance&&prefs.Practice);
             start.Visible=game;start.Text=Busy?"Stop":"Start";start.Enabled=Game==ArcadeGame.Simon||Dance!=null;
             volume.Visible=volumeLabel.Visible=volumeValue.Visible=Game==ArcadeGame.Dance;
@@ -181,7 +201,7 @@ namespace Vpet
         float SceneScale {get{return Math.Max(.1f,Math.Min(canvas.Width/1000f,canvas.Height/660f));}}
         PointF SceneOrigin {get{return new PointF((canvas.Width-1000*SceneScale)/2,(canvas.Height-660*SceneScale)/2);}}
         protected override void Dispose(bool disposing)
-        {if(disposing&&!disposed){disposed=true;timer.Stop();timer.Dispose();music.Dispose();tones.Dispose();tips.Dispose();switchKeys.Image.Dispose();save();}base.Dispose(disposing);}
+        {if(disposing&&!disposed){disposed=true;timer.Stop();timer.Dispose();music.Dispose();tones.Dispose();tips.Dispose();switchKeys.Image.Dispose();foreach(var floor in danceFloors)if(floor!=null)floor.Dispose();if(simonFloor!=null)simonFloor.Dispose();save();}base.Dispose(disposing);}
     }
     internal static class ArcadeControls
     {

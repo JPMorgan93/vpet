@@ -39,7 +39,7 @@ namespace Vpet
             Check(option.Visible&&option.Enabled&&option.Top>=difficulty.Bottom,"Practice mode is available directly below Difficulty");
             using(var counters=ArcadeRegion(arcade,new Rectangle(75,68,125,32)))
             {
-                option.Checked=true;modes[2].Checked=true;Check(arcade.Dance.Practice&&!score.Visible&&!calculated.Visible,"Practice hides scoring and rebuilds the selected difficulty without scoring");
+                option.Checked=true;modes[2].Checked=true;WaitForDance(arcade);Check(arcade.Dance.Practice&&!score.Visible&&!calculated.Visible,"Practice hides scoring and rebuilds the selected difficulty without scoring");
                 using(var total=ArcadeRegion(arcade,new Rectangle(75,68,125,32)))Check(ArcadeDifferentPixels(counters,total)>50,"Practice replaces the miss-limit circles with a numerical count");
             }
             Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.Practice,"Practice selection is saved immediately");

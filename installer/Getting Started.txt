@@ -196,6 +196,9 @@ switch to arrow keys. Close Game returns to the lobby. Click the score box to
 see that game's high score for the selected difficulty. Scores, controls, and
 music volume are saved across restarts.
 
+Dance Time prepares all three supplied songs in the background. Start is ready
+only when the selected song is fully decoded and queued in memory. Songs play
+at their native sample rate; replay reuses the prepared song.
 Dance Time uses the supplied song for each difficulty. Hit matching keys while
 incoming targets overlap their squares: Good (1%) earns 10, Great (50%) earns
 20, and Excellent (90%) earns 30. Three consecutive Excellents start a 1.0x
@@ -215,13 +218,21 @@ slider always controls music volume, including before starting, with its percent
 displayed below it. At 100%, music plays at the normal Windows/device-controlled
 level. Lower settings progressively attenuate the music, with useful quiet levels
 near the bottom; 0% is mute. Device master volume is unchanged. New preferences
-default to 53%; saved levels remain.
+default to 27% (half the previous 53%, rounded); saved levels remain.
 
 Practice mode, below Difficulty, is off by default and saved across sessions.
 Turn it on between rounds to play the full song without scoring or a miss limit.
 A numeric miss total replaces the miss-limit circles at the top left. Hits keep
 their visual feedback; misses never end the song. High scores remain unchanged.
 
+Background, below Practice mode, offers Dynamic (default), Static, or Off.
+Dynamic rotates Dance Floor.png instantly by 90 degrees every two seconds.
+Static keeps the original orientation. Off restores the blank background.
+Simon Background, below Difficulty, offers On (default) for Simon Floor.png,
+or Off for the blank background. Both background choices are saved separately.
+
+Simon starts with one button on Easy, three on Normal, and five on Hard.
+Tones have smooth fades and rapid presses never cut off another tone.
 Simon Says has no music. Watch the red/up, blue/down, green/left, and yellow/right
 squares light up and play their unique tones, then repeat within five seconds.
 Your inputs play the same directional tones. Each
