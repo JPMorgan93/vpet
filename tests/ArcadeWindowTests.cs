@@ -79,7 +79,7 @@ namespace Vpet
                         volume.Value=100;Check(player.PlaybackAttenuation==0&&volumeText.Text=="100%","Full slider value reaches normal device-controlled gain and displays 100%");
                         volume.Value=5;Check(player.PlaybackAttenuation==ArcadeMusic.Attenuation(5)&&volumeText.Text=="5%","A nearly lowered slider directly attenuates the music renderer");
                         volume.Value=0;Check(player.PlaybackAttenuation==-10000&&volumeText.Text=="0%","Bottom slider value is true mute before starting");
-                        var modes=MakerField<RadioButton[]>(arcade,"modes");modes[1].Checked=true;Check(arcade.Difficulty==ArcadeDifficulty.Normal&&arcade.Dance.Lives==2&&modes.Count(m=>m.Checked)==1,"Difficulty controls select only Normal and update song/model");
+                        var modes=MakerField<RadioButton[]>(arcade,"modes");modes[1].Checked=true;WaitForDance(arcade);Check(arcade.Difficulty==ArcadeDifficulty.Normal&&arcade.Dance.Lives==2&&modes.Count(m=>m.Checked)==1,"Difficulty controls select only Normal and update song/model");
                         FindButton(arcade,"Start").PerformClick();Check(arcade.Dance.State==DanceState.Countdown&&FindButton(arcade,"Stop").Visible&&volume.Visible&&!modes.Any(m=>m.Enabled),"Start becomes Stop during countdown with visible volume and locked difficulty");
                         FindButton(arcade,"Stop").PerformClick();now+=3.1;arcade.Step();Check(arcade.Dance.State==DanceState.Stopped&&FindButton(arcade,"Start").Visible&&score.Text=="- -"&&volume.Visible,"Stop cancels Dance countdown and restores Start without scoring");
                         FindButton(arcade,"Start").PerformClick();now+=3.01;arcade.Step();Check(arcade.Dance.State==DanceState.Running&&volume.Visible&&volume.Orientation==Orientation.Vertical,"Song starts after countdown with vertical music volume");
@@ -153,6 +153,13 @@ namespace Vpet
             var canvas=MakerField<DoubleBufferedPanel>(arcade,"canvas");var box=ArcadeWindow.Cabinet(index);float scale=Math.Min(canvas.Width/1000f,canvas.Height/660f);
             var point=new Point((int)((canvas.Width-1000*scale)/2+(box.X+box.Width/2)*scale),(int)((canvas.Height-660*scale)/2+(box.Y+box.Height/2)*scale));
             typeof(Control).GetMethod("OnMouseClick",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(canvas,new object[]{new MouseEventArgs(MouseButtons.Left,1,point.X,point.Y,0)});
+            if(index==0&&arcade.Game==ArcadeGame.Dance)WaitForDance(arcade);
+        }
+        static void WaitForDance(ArcadeWindow arcade)
+        {
+            var watch=System.Diagnostics.Stopwatch.StartNew();
+            while(arcade.Dance==null&&watch.Elapsed.TotalSeconds<30){Thread.Sleep(10);Application.DoEvents();arcade.Step();}
+            Check(arcade.Dance!=null,"Selected music is prepared before the game can start: "+MakerField<Label>(arcade,"guidance").Text);
         }
         static bool ArcadeKey(ArcadeWindow arcade,Keys key)
         {return (bool)typeof(ArcadeWindow).GetMethod("HandleGameKey",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(arcade,new object[]{key});}
