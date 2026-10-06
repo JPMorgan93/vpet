@@ -27,6 +27,16 @@ namespace Vpet
                     Check(Math.Abs(scene.Width-scene.Height)<.001&&scene.Width>350&&scene.Left>=0&&scene.Top>=-.001&&scene.Right<=canvas.Width+.001&&scene.Bottom<=canvas.Height+.001,"Square "+game+" scene fits the resized canvas: "+size);
                     Check(!song.Visible== (game==ArcadeGame.Simon)&&!panel.Visible==(game==ArcadeGame.Simon),"Song clock and volume are shown only in Dance: "+size);
                     Check(picker.Parent.ClientRectangle.Contains(picker.Bounds)&&modes.All(m=>m.Parent.ClientRectangle.Contains(m.Bounds)),"Difficulty and background remain fully inside the header: "+game+size);
+                    float lobbyScale=Math.Min(canvas.Width/1000f,canvas.Height/660f);
+                    Check(Math.Abs(arcade.GameContentScale*arcade.SceneScale-lobbyScale)<.001,"Pet and square rendering use the lobby's on-screen scale: "+game+size);
+                    foreach(ArcadeLane lane in Enum.GetValues(typeof(ArcadeLane)))
+                    {
+                        var square=arcade.GameSquareBounds(lane,DanceGame.SquareDistance);var target=arcade.GameSquareBounds(lane,DanceGame.SquareDistance+DanceGame.SquareSize*.1);
+                        float separation=lane==ArcadeLane.Up||lane==ArcadeLane.Down?Math.Abs(square.Y-target.Y):Math.Abs(square.X-target.X);
+                        Check(square.Width==target.Width&&square.Height==target.Height&&Math.Abs(1-separation/square.Width-.9)<.001&&new RectangleF(Point.Empty,arcade.SceneSize).Contains(square),"Enlarged targets match their fixed squares, preserve Excellent overlap and fit the scene: "+game+size+lane);
+                    }
+                    var switchKeys=MakerField<Button>(arcade,"switchKeys");var upperSquare=arcade.GameSquareBounds(ArcadeLane.Up,DanceGame.SquareDistance);
+                    Check(switchKeys.Size==new Size(42,36)&&switchKeys.Left>=arcade.SceneOrigin.X+upperSquare.Right*arcade.SceneScale+7&&canvas.ClientRectangle.Contains(switchKeys.Bounds),"Key mapping keeps its original size and remains beside the enlarged upper square: "+game+size);
                     if(game==ArcadeGame.Dance)
                     {
                         var timeBox=ArcadeControlBounds(song,top);var scoreBox=ArcadeControlBounds(score,top);var practiceBox=ArcadeControlBounds(practice,top);var pickerBox=ArcadeControlBounds(picker,top);
@@ -45,14 +55,26 @@ namespace Vpet
                 if(game==ArcadeGame.Dance)
                 {
                     using(var padding=ArcadeRegion(arcade,new Rectangle(74,31,12,9)))Check(ArcadeNeutral(padding),"Misses have neutral padding over the visible floor");
-                    foreach(var point in new[]{new Point(500,364),new Point(500,636),new Point(364,500),new Point(636,500)})
-                        using(var padding=ArcadeRegion(arcade,new Rectangle(point.X-34,point.Y-34,3,3)))Check(ArcadeNeutral(padding),"Every fixed directional square has neutral padding over the floor: "+point);
+                    foreach(ArcadeLane lane in Enum.GetValues(typeof(ArcadeLane)))
+                    {
+                        var square=arcade.GameSquareBounds(lane,DanceGame.SquareDistance);
+                        using(var outside=ArcadeRegion(arcade,new Rectangle((int)square.Left-8,(int)square.Top-8,4,4)))Check(!ArcadeNeutral(outside),"The floor reaches each square without the old dark outer border: "+lane);
+                        using(var inside=ArcadeRegion(arcade,new Rectangle((int)(square.Left+square.Width*.2),(int)(square.Top+square.Height*.2),4,4)))Check(ArcadeNeutral(inside),"Each square retains its neutral interior inside the light border: "+lane);
+                    }
+                    using(var misses=ArcadeRegion(arcade,new Rectangle(75,34,124,38)))
+                    {
+                        int ink=0,left=misses.Width,right=0,topInk=misses.Height,bottom=0;
+                        for(int y=0;y<misses.Height;y++)for(int x=0;x<misses.Width;x++)
+                        {var pixel=misses.GetPixel(x,y);if(pixel.R>100&&pixel.G>100&&pixel.B>100){ink++;left=Math.Min(left,x);right=Math.Max(right,x);topInk=Math.Min(topInk,y);bottom=Math.Max(bottom,y);}}
+                        Check(right-left>=60*arcade.SceneScale&&bottom-topInk>=16*arcade.SceneScale&&ink>130,"Misses renders with a larger, substantial bold label");
+                    }
                     using(var column=new Bitmap(panel.Width,panel.Height))
                     {panel.DrawToBitmap(column,panel.ClientRectangle);Check(Enumerable.Range(0,column.Height).All(y=>column.GetPixel(2,y).ToArgb()==ArcadeWindow.Neutral.ToArgb()),"Volume column keeps one continuous background from top to bottom");}
                     var clock=arcade.SongPosition;arcade.SongPosition=()=>3;arcade.Dance.Chart.Clear();arcade.Dance.Chart.Add(new DanceTarget(ArcadeLane.Up,4));
                     arcade.StartGame();now+=3.01;arcade.Step();arcade.Step();
                     Check(song.Text.StartsWith("Song\n0:03 / ")&&song.Visible,"Header song time advances with music playback");
-                    using(var target=ArcadeRegion(arcade,new Rectangle(481,186,8,8)))
+                    var moving=arcade.GameSquareBounds(ArcadeLane.Up,arcade.Dance.Distance(arcade.Dance.Chart[0]));
+                    using(var target=ArcadeRegion(arcade,new Rectangle((int)(moving.Left+moving.Width*.22),(int)(moving.Top+moving.Height*.22),8,8)))
                     {var color=target.GetPixel(target.Width/2,target.Height/2);Check(color.R>240&&color.G>100&&color.B>200,"Moving targets render as bright pink against the shaded floor");}
                     volume.Value=25;MakerField<ArcadeMusic>(arcade,"music").SetVolume(0);CaptureForm(arcade,"dance-square-bright");arcade.StopGame();volume.Value=0;arcade.SongPosition=clock;
                     practice.Checked=true;arcade.Step();Check(song.Visible&&song.Parent.ClientRectangle.Contains(song.Bounds),"Practice retains the song timer even though scores are hidden");practice.Checked=false;
