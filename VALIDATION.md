@@ -1,5 +1,15 @@
 # Vpet validation
 
+## Version 1.11.6
+
+6,265 automated assertions passed, retaining existing movement, artwork, toys, reminders, music, scoring, and Practice coverage. No scoring constants or audio playback settings changed.
+
+364 isolated native arcade/audio/joystick checks passed. New checks verify lobby-equivalent pet/square rendering scale in both games across default, minimum, wide, and tall windows. All four lanes retain matched target and fixed-square dimensions, equivalent 90% Excellent overlap, and bounds inside the scene. The key-mapping button retains its 42 x 36 size beside the enlarged upper square. Pixel checks verify the larger substantial Misses label, removal of the dark outer bands, neutral square interiors, and bright scaled targets. Existing header/timer/volume layout, background rotation, saved choices, scoring, Stop/replay, Simon timing and tones, prepared playback, window stacking, and desktop restoration checks continue to pass.
+
+The lobby, both default game windows, and the minimum-size Dance window were visually inspected. Pets and directional squares are visibly larger, Dance uses thicker light outlines with matching targets, and the key-mapping button remains its previous size. Miss counters and the Practice total fit beneath the larger bold label. Tests used isolated preferences and muted audio on this development PC; other display scaling settings were not directly assessed. Validated on 2026-10-06. Version 1.11.6 follows AGENTS.md's patch policy for existing-feature adjustments.
+
+The 1.11.6 EXE installer compiled successfully. Isolated installation/update checks verified packaged assets, shortcut/icon paths, progress-only upgrades, retained destination and shortcut choices, skipped-version descriptions, legacy updater support, relaunch, and cleanup. The regular installation and personal settings were unchanged.
+
 ## Version 1.11.5
 
 6,265 automated assertions passed. Checks cover the 25% default for new and older profiles without a saved level, retained explicit 27% and other saved levels, and equal entrance distances for all four lanes in the square Dance scene. Existing movement, sprites, reminders, toys, scoring, Practice mode, and prepared audio checks continue to pass.

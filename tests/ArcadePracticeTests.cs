@@ -37,10 +37,10 @@ namespace Vpet
             var option=MakerField<CheckBox>(arcade,"practice");var modes=MakerField<RadioButton[]>(arcade,"modes");var difficulty=MakerField<FlowLayoutPanel>(arcade,"difficulties");
             var score=MakerField<Button>(arcade,"score");var calculated=MakerField<Label>(arcade,"calculated");long[] high=(long[])pet.Model.Settings.Arcade.DanceHigh.Clone();
             Check(option.Visible&&option.Enabled&&option.Parent==difficulty&&option.Left>modes[2].Right,"Practice mode is available to the right of the difficulty options");
-            using(var counters=ArcadeRegion(arcade,new Rectangle(75,68,125,32)))
+            using(var counters=ArcadeRegion(arcade,new Rectangle(75,80,125,34)))
             {
                 option.Checked=true;modes[2].Checked=true;WaitForDance(arcade);Check(arcade.Dance.Practice&&!score.Visible&&!calculated.Visible,"Practice hides scoring and rebuilds the selected difficulty without scoring");
-                using(var total=ArcadeRegion(arcade,new Rectangle(75,68,125,32)))Check(ArcadeDifferentPixels(counters,total)>50,"Practice replaces the miss-limit circles with a numerical count");
+                using(var total=ArcadeRegion(arcade,new Rectangle(75,80,125,34)))Check(ArcadeDifferentPixels(counters,total)>50,"Practice replaces the miss-limit circles with a numerical count");
             }
             Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.Practice,"Practice selection is saved immediately");
             songTime=0;FindButton(arcade,"Start").PerformClick();Check(!option.Enabled,"Practice choice is locked during a round");now+=3.01;arcade.Step();

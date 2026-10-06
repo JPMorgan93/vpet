@@ -232,8 +232,12 @@ Static keeps the original orientation. Off uses the dark neutral canvas color.
 Simon Background, below Difficulty, offers On (default) for Simon Floor.png,
 or Off for the same dark neutral color. Both choices are saved separately.
 Both game spaces and floor backgrounds stay square when you resize the window.
-Game names are in the window title. Dance's misses section and four fixed
-squares have padded neutral backings, and moving targets are brighter pink.
+Game names are in the window title. Pets, directional squares, labels, and targets
+use the lobby's on-screen proportions as the window resizes. The key-mapping
+button keeps its original size beside the upper square. Dance's larger bold
+Misses label has a padded neutral block. Its fixed squares have neutral interiors
+and thicker light outlines, with no dark outer band. Bright pink targets use
+matching sizes and outline thickness. Visual overlap still matches scoring.
 
 Simon starts with one button on Easy, three on Normal, and five on Hard.
 Tones have smooth fades and rapid presses never cut off another tone.
