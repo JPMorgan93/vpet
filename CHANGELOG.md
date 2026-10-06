@@ -1,4 +1,11 @@
-# Vpet 1.11.5
+# Vpet 1.11.6
+
+- Enlarge the pet and all four surrounding directional squares in Dance Time and Simon Says to use the arcade lobby's on-screen proportions as the window resizes. Scale the square labels and moving targets with them. Keep the key-mapping button at its existing size beside the upper square.
+- Make Dance Time's Misses label larger and bold, with room for its counters and Practice total.
+- Remove the dark outer band around Dance Time's fixed squares. Use a thicker light outline inside each square and the same outline thickness and dimensions for its moving targets.
+- Keep visual target overlap aligned with the scoring model while scaling the game artwork. Retain existing hit timing, scoring, music, and game controls.
+
+## Vpet 1.11.5
 
 - Make Dance Time and Simon Says game spaces and floor backgrounds square at every window size, and remove their titles from the game space. Keep the game names in the window title.
 - Set the default Dance Time music volume to 25%, retaining saved volume choices and existing playback gain behavior.
