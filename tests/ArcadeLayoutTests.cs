@@ -31,7 +31,7 @@ namespace Vpet
                     {
                         var timeBox=ArcadeControlBounds(song,top);var scoreBox=ArcadeControlBounds(score,top);var practiceBox=ArcadeControlBounds(practice,top);var pickerBox=ArcadeControlBounds(picker,top);
                         Check(practice.Parent==modes[2].Parent&&practice.Left>modes[2].Right&&Math.Abs(practice.Top-modes[2].Top)<=1&&practice.Parent.ClientRectangle.Contains(practice.Bounds),"Practice stays beside the difficulty choices: "+size);
-                        Check(song.Parent.ClientRectangle.Contains(song.Bounds)&&timeBox.Right<=scoreBox.Left&&!timeBox.IntersectsWith(practiceBox)&&!timeBox.IntersectsWith(pickerBox),"Header song time fits to the left of Score Card without covering controls: "+size);
+                        Check(song.Parent.ClientRectangle.Contains(song.Bounds)&&timeBox.Right<=scoreBox.Left&&!timeBox.IntersectsWith(practiceBox)&&!timeBox.IntersectsWith(pickerBox),"Header song time fits to the left of Score Card without covering controls: "+size+" clock="+timeBox+" score="+scoreBox+" practice="+practiceBox+" background="+pickerBox+" parent="+song.Parent.ClientRectangle);
                         Check(volume.Parent==panel&&title.Parent==panel&&value.Parent==panel&&panel.BackColor==ArcadeWindow.Neutral&&volume.BackColor==panel.BackColor&&title.BackColor==Color.Transparent&&value.BackColor==Color.Transparent,"Volume title, slider and percentage share one neutral panel: "+size);
                         Check(canvas.ClientRectangle.Contains(panel.Bounds)&&panel.Controls.Cast<Control>().All(c=>panel.ClientRectangle.Contains(c.Bounds))&&title.Top>=8&&value.Bottom<=panel.Height-8,"Entire volume column and its padding fit: "+size);
                     }
