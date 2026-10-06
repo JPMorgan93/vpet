@@ -10,9 +10,9 @@ namespace Vpet
     {
         static void ArcadeAdjustmentChecks()
         {
-            Check(new ArcadePreferences().Volume==53,"New music default is 25 percent below the former 70 percent, rounded to 53");
+            Check(new ArcadePreferences().Volume==27,"New music default halves the previous 53 percent setting, rounded to 27");
             string path=Path.Combine(artifacts,"arcade-volume-migration.json");
-            File.WriteAllText(path,"{\"Arcade\":{}}");Check(Preferences.Load(path).Arcade.Volume==53,"Missing music volume uses the quieter default");
+            File.WriteAllText(path,"{\"Arcade\":{}}");Check(Preferences.Load(path).Arcade.Volume==27,"Missing music volume uses the quieter default");
             File.WriteAllText(path,"{\"Arcade\":{\"Volume\":70}}");Check(Preferences.Load(path).Arcade.Volume==70,"Explicit saved music volume is retained");
             Check(ArcadeMusic.Attenuation(100)==0&&ArcadeMusic.Attenuation(0)==-10000&&ArcadeMusic.Attenuation(50)==-1204&&ArcadeMusic.Attenuation(10)==-4000&&ArcadeMusic.Attenuation(1)==-8000,"Music spans unity gain to mute with strong, explicit attenuation at low slider levels");
             Check(ArcadeMusic.Attenuation(-1)==-10000&&ArcadeMusic.Attenuation(101)==0&&Enumerable.Range(0,100).All(v=>ArcadeMusic.Attenuation(v)<ArcadeMusic.Attenuation(v+1)),"Volume range clamps safely and each slider step increases gain");
@@ -68,16 +68,16 @@ namespace Vpet
                 Check(game.State==SimonState.Stopped&&game.Pending==0&&game.Banked==0&&!game.Lit(30).HasValue&&tones==previous,"Simon Stop prevents later scoring, highlights, and tones in "+stopAt);
                 game.Start(31);Check(game.State==SimonState.Countdown&&game.Sequence.Count==0,"Stopped Simon can restart cleanly");
             }
-            var simon=new SimonGame(ArcadeDifficulty.Hard,new Random(4));var played=new System.Collections.Generic.List<ArcadeLane>();simon.TonePlayed+=played.Add;
+            var simon=new SimonGame(ArcadeDifficulty.Easy,new Random(4));var played=new System.Collections.Generic.List<ArcadeLane>();simon.TonePlayed+=played.Add;
             simon.Start(0);simon.Update(3);simon.Update(3.01);simon.Update(3.15);Check(played.Count==1&&played[0]==simon.Sequence[0],"One tone is emitted per pet highlight, never once per paint/tick");
-            simon.Update(3.4);simon.Press(simon.Sequence[0],3.5);
-            Check(played.Count==2&&played[1]==played[0]&&simon.Lit(3.679)==simon.Sequence[0],"Player's final input plays the pet's matching tone and keeps the normal highlight");
-            simon.Press(ArcadeLane.Down,3.6);simon.Update(4.679);
-            Check(simon.State==SimonState.Waiting&&simon.Pending==50&&played.Count==2&&!simon.Lit(4.679).HasValue,"Full one-second inter-round rest ignores keys and emits no tones");
-            simon.Update(4.68);Check(simon.Sequence.Count==2&&played.Count==3&&played[2]==simon.Sequence[0],"Next sequence and its tone start one second after the final highlight ends");
-            simon.Sequence[1]=simon.Sequence[0];simon.Update(5.08);simon.Update(5.09);Check(played.Count==4&&played[3]==played[2],"Consecutive identical directions still play two separate tones");
-            simon.Update(5.48);simon.Press(simon.Sequence[0],5.5);simon.Press((ArcadeLane)(((int)simon.Sequence[1]+1)%4),5.6);
-            Check(simon.State==SimonState.Finished&&played.Count==6&&played[4]==simon.Sequence[0]&&played[5]!=(simon.Sequence[1]),"Every accepted player press, including a mistake, emits its directional tone");
+            simon.Update(3.9);simon.Press(simon.Sequence[0],4);
+            Check(played.Count==2&&played[1]==played[0]&&simon.Lit(4.179)==simon.Sequence[0],"Player's final input plays the pet's matching tone and retains the highlight");
+            simon.Press(ArcadeLane.Down,4.1);simon.Update(5.179);
+            Check(simon.State==SimonState.Waiting&&simon.Pending==50&&played.Count==2&&!simon.Lit(5.179).HasValue,"One-second rest ignores keys and emits no tones");
+            simon.Update(5.18);Check(simon.Sequence.Count==2&&played.Count==3&&played[2]==simon.Sequence[0],"Next sequence starts one second after the final highlight ends");
+            simon.Sequence[1]=simon.Sequence[0];simon.Update(6.08);simon.Update(6.09);Check(played.Count==4&&played[3]==played[2],"Identical consecutive directions play separate tones");
+            simon.Update(6.98);simon.Press(simon.Sequence[0],7);simon.Press((ArcadeLane)(((int)simon.Sequence[1]+1)%4),7.1);
+            Check(simon.State==SimonState.Finished&&played.Count==6&&played[4]==simon.Sequence[0]&&played[5]!=simon.Sequence[1],"Every accepted player press, including a mistake, emits its tone");
             double[] frequencies={523.25,329.63,392,659.25};
             foreach(ArcadeLane lane in Enum.GetValues(typeof(ArcadeLane)))
             {

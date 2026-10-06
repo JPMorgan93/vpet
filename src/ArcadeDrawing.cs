@@ -2,12 +2,26 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Vpet
 {
     internal sealed partial class ArcadeWindow
     {
+        void LoadFloors()
+        {
+            string dance=Path.Combine(musicDirectory,"Dance Floor.png"),simon=Path.Combine(musicDirectory,"Simon Floor.png");
+            if(File.Exists(dance))using(var original=new Bitmap(dance))for(int i=0;i<4;i++){danceFloors[i]=new Bitmap(original);for(int turn=0;turn<i;turn++)danceFloors[i].RotateFlip(RotateFlipType.Rotate90FlipNone);}
+            if(File.Exists(simon))using(var original=new Bitmap(simon))simonFloor=new Bitmap(original);
+        }
+        internal int FloorOrientation {get{return prefs.Background==DanceBackground.Dynamic?(int)(Math.Max(0,Now-backgroundAt)/2)%4:0;}}
+        void DrawFloor(Graphics g)
+        {
+            Bitmap floor=Game==ArcadeGame.Dance?(prefs.Background==DanceBackground.Off?null:danceFloors[FloorOrientation]):Game==ArcadeGame.Simon&&prefs.SimonBackground?simonFloor:null;
+            if(floor==null)return;
+            g.DrawImage(floor,new Rectangle(0,0,1000,660));using(var shade=new SolidBrush(Color.FromArgb(105,Color.Black)))g.FillRectangle(shade,0,0,1000,660);
+        }
         internal static RectangleF Cabinet(int index){return new RectangleF(65+index*177,115,160,290);}
         static Color LaneColor(ArcadeLane lane){return new[]{Color.FromArgb(235,71,96),Color.FromArgb(58,133,239),Color.FromArgb(58,198,120),Color.FromArgb(244,198,52)}[(int)lane];}
         static PointF LanePoint(ArcadeLane lane,double distance)
@@ -23,7 +37,7 @@ namespace Vpet
             var g=e.Graphics;g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(SceneOrigin.X,SceneOrigin.Y);g.ScaleTransform(SceneScale,SceneScale);
             var state=g.Save();g.SetClip(new Rectangle(0,0,1000,660));
             using(var background=new LinearGradientBrush(new Rectangle(0,0,1000,660),Color.FromArgb(34,23,63),Color.FromArgb(14,24,46),90))g.FillRectangle(background,0,0,1000,660);
-            if(Game==ArcadeGame.Lobby)DrawLobby(g);else DrawGame(g);
+            if(Game==ArcadeGame.Lobby)DrawLobby(g);else{DrawFloor(g);DrawGame(g);}
             g.Restore(state);
         }
         void DrawLobby(Graphics g)

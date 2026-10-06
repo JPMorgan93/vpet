@@ -50,15 +50,23 @@ namespace Vpet
             var streak=new DanceGame(ArcadeDifficulty.Easy,30,new[]{new DanceTarget(ArcadeLane.Up,4),new DanceTarget(ArcadeLane.Down,5)});streak.Start(0);streak.Update(3);streak.Update(7,4);streak.Press(ArcadeLane.Up,7);streak.Update(8,5-.5*58/160);streak.Press(ArcadeLane.Down,8);Check(streak.Pending==50&&streak.ExcellentRun==0,"Great earns 20 and breaks consecutive Excellents");streak.Update(40,30);Check(streak.State==DanceState.Success&&streak.Banked==50&&streak.Pending==0,"Success banks remaining pending points exactly once");streak.Update(41,31);Check(streak.Banked==50,"Repeated result ticks do not add score twice");
             foreach(ArcadeDifficulty difficulty in Enum.GetValues(typeof(ArcadeDifficulty)))
             {
-                var game=new SimonGame(difficulty,new Random(21));game.Start(0);game.Update(2.9);Check(game.State==SimonState.Countdown,"Simon gives a three-second countdown");game.Update(3);Check(game.State==SimonState.Showing&&game.Sequence.Count==1,"Simon starts with one square");
+                int initial=new[]{1,3,5}[(int)difficulty];
+                var game=new SimonGame(difficulty,new Random(21));game.Start(0);game.Update(2.9);Check(game.State==SimonState.Countdown,"Simon gives a three-second countdown");game.Update(3);
+                Check(game.State==SimonState.Showing&&game.Sequence.Count==initial,"Simon starts with "+initial+" buttons at "+difficulty);
                 Check(game.Lit(3.01)==game.Sequence[0]&&game.Lit(3+game.ShowStep*.8)==null,"Simon lights the indicated square then leaves a gap");
-                double now=3+game.ShowStep;game.Update(now);Check(game.State==SimonState.Replaying,"Simon waits for player until the entire sequence is displayed");game.Press(game.Sequence[0],now+.1);Check(game.Pending==50&&game.Sequence.Count==1&&game.State==SimonState.Waiting,"Completed combination earns 50 and waits before extending sequence");
-                Check(game.Lit(now+.1)==game.Sequence[0]&&game.Lit(now+.279)==game.Sequence[0],"Final correct input retains its full highlight");
-                game.Update(now+1.279);Check(game.State==SimonState.Waiting&&!game.Lit(now+1.279).HasValue,"No next highlight until the final flash and full one-second rest finish");now+=1.28;game.Update(now);Check(game.Sequence.Count==2&&game.State==SimonState.Showing&&game.Lit(now)==game.Sequence[0],"Next sequence starts after the highlight followed by exactly one second");
-                now+=2*game.ShowStep;game.Update(now);for(int i=0;i<2;i++)game.Press(game.Sequence[i],now+.1+i*.1);
+                double now=3+initial*game.ShowStep;game.Update(now);Check(game.State==SimonState.Replaying,"Simon waits until the entire starting sequence is displayed");
+                for(int i=0;i<initial;i++)game.Press(game.Sequence[i],now+.1+i*.1);
+                double final=now+initial*.1;
+                Check(game.Pending==50&&game.Sequence.Count==initial&&game.State==SimonState.Waiting,"Completed combination earns 50 and waits before extending sequence");
+                Check(game.Lit(final)==game.Sequence.Last()&&game.Lit(final+.179)==game.Sequence.Last(),"Final correct input retains its full highlight");
+                game.Update(final+1.179);Check(game.State==SimonState.Waiting&&!game.Lit(final+1.179).HasValue,"No next highlight until the final flash and full one-second rest finish");
+                now=final+1.18;game.Update(now);Check(game.Sequence.Count==initial+1&&game.State==SimonState.Showing&&game.Lit(now)==game.Sequence[0],"Next sequence grows by one after the one-second rest");
+                now+=(initial+1)*game.ShowStep;game.Update(now);for(int i=0;i<initial+1;i++)game.Press(game.Sequence[i],now+.1+i*.1);
                 Check(game.Pending==100&&game.State==SimonState.Waiting,"Simon scores 50 per completed sequence without a multiplier");
-                now+=1.38;game.Update(now);Check(game.Sequence.Count==3,"Third Simon sequence grows after the wait");now+=3*game.ShowStep;game.Update(now);game.Press((ArcadeLane)(((int)game.Sequence[0]+1)%4),now+.1);Check(game.State==SimonState.Finished&&game.Banked==100&&game.Pending==0,"Wrong Simon key banks the completed rounds at "+difficulty);
-                game.Start(now+1);game.Update(now+4);game.Update(now+4+game.ShowStep);double expiry=now+4+game.ShowStep+5;game.Update(expiry-.01);Check(game.State==SimonState.Replaying,"Simon allows the full five-second replay window");game.Update(expiry);Check(game.State==SimonState.Finished&&game.Banked==0,"Simon timeout ends the game without adding incomplete-round points");
+                now+=(initial+1)*.1+1.18;game.Update(now);Check(game.Sequence.Count==initial+2,"Third Simon sequence grows after the wait");now+=(initial+2)*game.ShowStep;game.Update(now);game.Press((ArcadeLane)(((int)game.Sequence[0]+1)%4),now+.1);
+                Check(game.State==SimonState.Finished&&game.Banked==100&&game.Pending==0,"Wrong Simon key banks the completed rounds at "+difficulty);
+                game.Start(now+1);game.Update(now+4);game.Update(now+4+initial*game.ShowStep);double expiry=now+4+initial*game.ShowStep+5;game.Update(expiry-.01);
+                Check(game.State==SimonState.Replaying,"Simon allows the full five-second replay window");game.Update(expiry);Check(game.State==SimonState.Finished&&game.Banked==0,"Simon timeout ends without incomplete-round points");
             }
             Check(new SimonGame(ArcadeDifficulty.Easy,new Random()).ShowStep>new SimonGame(ArcadeDifficulty.Normal,new Random()).ShowStep&&new SimonGame(ArcadeDifficulty.Normal,new Random()).ShowStep>new SimonGame(ArcadeDifficulty.Hard,new Random()).ShowStep,"Simon display speed increases across difficulties");
             Check(ArcadeWindow.LaneFor(Keys.W,false)==ArcadeLane.Up&&ArcadeWindow.LaneFor(Keys.Left,true)==ArcadeLane.Left&&ArcadeWindow.LaneFor(Keys.W,true)==null&&ArcadeWindow.LaneFor(Keys.Up,false)==null,"WASD/arrow switching maps directions exclusively");

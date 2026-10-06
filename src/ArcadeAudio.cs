@@ -23,7 +23,7 @@ namespace Vpet
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate int SetUInt(IntPtr self,ref Guid key,uint value);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate int SelectStream(IntPtr self,uint stream,int selected);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate int SetType(IntPtr self,uint stream,IntPtr reserved,IntPtr type);
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate int GetType(IntPtr self,uint stream,out IntPtr type);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate int GetMediaType(IntPtr self,uint stream,out IntPtr type);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate int ReadSample(IntPtr self,uint stream,uint control,out uint actual,out uint flags,out long timestamp,out IntPtr sample);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate int GetBuffer(IntPtr self,out IntPtr buffer);
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] internal delegate int LockBuffer(IntPtr self,out IntPtr data,out uint maximum,out uint length);
@@ -66,7 +66,7 @@ namespace Vpet
                 ArcadeAudioNative.Check(setGuid(type,ref major,ref audio));ArcadeAudioNative.Check(setGuid(type,ref subtype,ref pcm));
                 ArcadeAudioNative.Check(ArcadeAudioNative.Method<ArcadeAudioNative.SetUInt>(type,21)(type,ref bits,16));
                 ArcadeAudioNative.Check(ArcadeAudioNative.Method<ArcadeAudioNative.SetType>(reader,7)(reader,0xfffffffd,IntPtr.Zero,type));
-                ArcadeAudioNative.Check(ArcadeAudioNative.Method<ArcadeAudioNative.GetType>(reader,6)(reader,0xfffffffd,out actualType));
+                ArcadeAudioNative.Check(ArcadeAudioNative.Method<ArcadeAudioNative.GetMediaType>(reader,6)(reader,0xfffffffd,out actualType));
                 uint formatSize;ArcadeAudioNative.Check(ArcadeAudioNative.MFCreateWaveFormatExFromMFMediaType(actualType,out formatPointer,out formatSize,0));
                 var format=(ArcadeAudioNative.WaveFormat)Marshal.PtrToStructure(formatPointer,typeof(ArcadeAudioNative.WaveFormat));
                 if(format.Bits!=16||format.Channels<1||format.Channels>2||format.Rate<8000||format.BytesPerSecond==0)throw new IOException("Unsupported decoded song format.");

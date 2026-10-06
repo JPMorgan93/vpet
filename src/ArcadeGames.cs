@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 namespace Vpet
 {
     public enum ArcadeDifficulty { Easy, Normal, Hard }
+    public enum DanceBackground { Dynamic, Static, Off }
     internal enum ArcadeGame { Lobby, Dance, Simon }
     internal enum ArcadeLane { Up, Down, Left, Right }
     internal enum DanceState { Ready, Countdown, Running, Failed, Success, Stopped }
@@ -14,14 +15,17 @@ namespace Vpet
     {
         [DataMember] public long[] DanceHigh=new long[3];
         [DataMember] public long[] SimonHigh=new long[3];
-        internal const int DefaultVolume=53;
+        internal const int DefaultVolume=27;
         [DataMember] public int Volume=DefaultVolume;
         [DataMember] public bool ArrowKeys;
         [DataMember] public bool Practice;
-        [OnDeserializing] void Defaults(StreamingContext context){DanceHigh=new long[3];SimonHigh=new long[3];Volume=DefaultVolume;}
+        [DataMember] public DanceBackground Background=DanceBackground.Dynamic;
+        [DataMember] public bool SimonBackground=true;
+        [OnDeserializing] void Defaults(StreamingContext context){DanceHigh=new long[3];SimonHigh=new long[3];Volume=DefaultVolume;SimonBackground=true;}
         public void Validate()
         {
             DanceHigh=Clean(DanceHigh);SimonHigh=Clean(SimonHigh);Volume=Math.Max(0,Math.Min(100,Volume));
+            if(!Enum.IsDefined(typeof(DanceBackground),Background))Background=DanceBackground.Dynamic;
         }
         static long[] Clean(long[] source){var result=new long[3];if(source!=null)for(int i=0;i<Math.Min(3,source.Length);i++)result[i]=Math.Max(0,Math.Min(1000000000000L,source[i]));return result;}
         internal long High(ArcadeGame game,ArcadeDifficulty difficulty){return (game==ArcadeGame.Dance?DanceHigh:SimonHigh)[(int)difficulty];}
@@ -138,11 +142,12 @@ namespace Vpet
         int lastTone=-1;
         public event Action<ArcadeLane> TonePlayed;
         public double ShowStep {get{return new[]{.9,.6,.4}[(int)Difficulty];}}
+        internal int InitialLength {get{return new[]{1,3,5}[(int)Difficulty];}}
         public double SecondsLeft(double now){return Math.Max(0,5-(now-phaseAt));}
         public SimonGame(ArcadeDifficulty difficulty,Random random){Difficulty=difficulty;this.random=random;}
         public void Start(double now){Sequence.Clear();State=SimonState.Countdown;phaseAt=now;InputIndex=0;Pending=Banked=0;Feedback="";inputFlash=null;lastTone=-1;}
         public int Countdown(double now){return Math.Max(1,(int)Math.Ceiling(3-(now-phaseAt)));}
-        void NewRound(double now){Sequence.Add((ArcadeLane)random.Next(4));InputIndex=0;State=SimonState.Showing;phaseAt=now;lastTone=-1;inputFlash=null;}
+        void NewRound(double now){int length=Sequence.Count==0?InitialLength:Sequence.Count+1;while(Sequence.Count<length)Sequence.Add((ArcadeLane)random.Next(4));InputIndex=0;State=SimonState.Showing;phaseAt=now;lastTone=-1;inputFlash=null;}
         public ArcadeLane? Lit(double now)
         {
             if(State==SimonState.Showing)
