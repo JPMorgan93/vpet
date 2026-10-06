@@ -1,5 +1,15 @@
 # Vpet validation
 
+## Version 1.11.5
+
+6,265 automated assertions passed. Checks cover the 25% default for new and older profiles without a saved level, retained explicit 27% and other saved levels, and equal entrance distances for all four lanes in the square Dance scene. Existing movement, sprites, reminders, toys, scoring, Practice mode, and prepared audio checks continue to pass.
+
+311 isolated native arcade/audio/joystick UI checks passed. Both game scenes remain square and inside their canvases at default, minimum, wide, and tall window sizes. Difficulty, Practice, background, volume, timer, and score controls remain visible without overlapping. The header song timer advances with music playback, sits to the left of Score Card, and remains available when Practice hides scores. Pixel checks verify uniform neutral Off backgrounds, removed in-scene titles and bottom timer, padding around misses and each fixed directional square, a continuous neutral volume column, and bright moving targets over the shaded floor. Dynamic snaps at one-second boundaries through all four orientations, returns at four seconds, and Static stays still. Both backgrounds still persist independently.
+
+The default and minimum-size Dance and Simon screenshots were visually inspected. Existing memory-backed playback, native sample timing, full/muted gain, tone fades and overlap, preparation gating, scoring, Stop/replay, Simon sequence lengths and one-second rest, normal window stacking, and desktop return checks passed. Songs and audio fixtures were muted during native tests. Tests ran on this development PC; other display scaling settings and the reported other device's audio hardware were not directly assessed. Validated on 2026-10-06. Version 1.11.5 follows AGENTS.md's patch policy for adjustments to existing features.
+
+The 1.11.5 EXE installer compiled successfully. Isolated installation/update checks confirmed packaged artwork, floors, songs, icon and shortcut paths, progress-only upgrades, retained destination and shortcut choices, skipped-version completion notes, legacy updater support, relaunch, and cleanup. The regular installation and personal settings were unchanged.
+
 ## Version 1.11.4
 
 6,263 automated assertions passed. Coverage checks independent background defaults, migration, persistence and invalid-value recovery; the quieter 27% volume default with saved choices retained; gentle PCM attacks and silent releases for all four distinct tones; and Simon's one/three/five-button starting combinations, one-button growth, five-second input timer, scoring, replay and one-second rest.
