@@ -50,11 +50,11 @@ namespace Vpet
                     using(var column=new Bitmap(panel.Width,panel.Height))
                     {panel.DrawToBitmap(column,panel.ClientRectangle);Check(Enumerable.Range(0,column.Height).All(y=>column.GetPixel(2,y).ToArgb()==ArcadeWindow.Neutral.ToArgb()),"Volume column keeps one continuous background from top to bottom");}
                     var clock=arcade.SongPosition;arcade.SongPosition=()=>3;arcade.Dance.Chart.Clear();arcade.Dance.Chart.Add(new DanceTarget(ArcadeLane.Up,4));
-                    arcade.StartGame();now+=3.01;arcade.Step();
+                    arcade.StartGame();now+=3.01;arcade.Step();arcade.Step();
                     Check(song.Text.StartsWith("Song\n0:03 / ")&&song.Visible,"Header song time advances with music playback");
                     using(var target=ArcadeRegion(arcade,new Rectangle(481,186,8,8)))
                     {var color=target.GetPixel(target.Width/2,target.Height/2);Check(color.R>240&&color.G>100&&color.B>200,"Moving targets render as bright pink against the shaded floor");}
-                    volume.Value=25;CaptureForm(arcade,"dance-square-bright");arcade.StopGame();volume.Value=0;arcade.SongPosition=clock;
+                    volume.Value=25;MakerField<ArcadeMusic>(arcade,"music").SetVolume(0);CaptureForm(arcade,"dance-square-bright");arcade.StopGame();volume.Value=0;arcade.SongPosition=clock;
                     practice.Checked=true;arcade.Step();Check(song.Visible&&song.Parent.ClientRectangle.Contains(song.Bounds),"Practice retains the song timer even though scores are hidden");practice.Checked=false;
                 }
                 else CaptureForm(arcade,"simon-square-default");
