@@ -72,6 +72,7 @@ namespace Vpet
             tips.SetToolTip(practice,"Play the full song without scoring or a miss limit. Misses are counted for practice.");
             background.SelectedIndexChanged+=delegate
             {if(updating||background.SelectedIndex<0)return;if(Game==ArcadeGame.Dance)prefs.Background=(DanceBackground)background.SelectedIndex;else if(Game==ArcadeGame.Simon)prefs.SimonBackground=background.SelectedIndex==0;else return;backgroundAt=Now;save();canvas.Invalidate();};
+            background.DropDownClosed+=delegate{Focus();};
             var footer=new TableLayoutPanel{Dock=DockStyle.Bottom,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=3,RowCount=2,Padding=new Padding(8)};
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,33));footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,34));footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,33));
             closeGame.Anchor=AnchorStyles.Left;start.Anchor=AnchorStyles.None;footer.Controls.Add(closeGame,0,0);footer.Controls.Add(start,1,0);footer.Controls.Add(guidance,0,1);footer.SetColumnSpan(guidance,3);
@@ -162,7 +163,7 @@ namespace Vpet
         }
         bool HandleGameKey(Keys keyData)
         {
-            if(Game==ArcadeGame.Lobby||(keyData&Keys.Modifiers)!=Keys.None)return false;Keys key=keyData&Keys.KeyCode;var lane=LaneFor(key,prefs.ArrowKeys);if(!lane.HasValue)return false;
+            if(Game==ArcadeGame.Lobby||background.DroppedDown||(keyData&Keys.Modifiers)!=Keys.None)return false;Keys key=keyData&Keys.KeyCode;var lane=LaneFor(key,prefs.ArrowKeys);if(!lane.HasValue)return false;
             if(!held.Add(key))return true;Step();if(Game==ArcadeGame.Dance&&Dance!=null)Dance.Press(lane.Value,Now);else if(Simon!=null)Simon.Press(lane.Value,Now);Step();return true;
         }
         internal static ArcadeLane? LaneFor(Keys key,bool arrows)

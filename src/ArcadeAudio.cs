@@ -42,6 +42,8 @@ namespace Vpet
         [DllImport("mfplat.dll",ExactSpelling=true)] internal static extern int MFCreateWaveFormatExFromMFMediaType(IntPtr type,out IntPtr format,out uint size,uint flags);
         [DllImport("mfreadwrite.dll",ExactSpelling=true,CharSet=CharSet.Unicode)] internal static extern int MFCreateSourceReaderFromURL(string url,IntPtr attributes,out IntPtr reader);
         [DllImport("xaudio2_9.dll",ExactSpelling=true)] internal static extern int XAudio2Create(out IntPtr engine,uint flags,uint processor);
+        [DllImport("ole32.dll",ExactSpelling=true)] internal static extern int CoInitializeEx(IntPtr reserved,uint flags);
+        [DllImport("ole32.dll",ExactSpelling=true)] internal static extern void CoUninitialize();
     }
     internal sealed class ArcadeClip
     {
@@ -52,9 +54,10 @@ namespace Vpet
         {
             if(!File.Exists(path))throw new IOException("The selected difficulty's song is unavailable.");
             IntPtr reader=IntPtr.Zero,type=IntPtr.Zero,actualType=IntPtr.Zero,formatPointer=IntPtr.Zero;
-            ArcadeAudioNative.Check(ArcadeAudioNative.MFStartup(0x20070,0));
+            ArcadeAudioNative.Check(ArcadeAudioNative.CoInitializeEx(IntPtr.Zero,0));bool started=false;
             try
             {
+                ArcadeAudioNative.Check(ArcadeAudioNative.MFStartup(0x20070,0));started=true;
                 ArcadeAudioNative.Check(ArcadeAudioNative.MFCreateSourceReaderFromURL(path,IntPtr.Zero,out reader));
                 var select=ArcadeAudioNative.Method<ArcadeAudioNative.SelectStream>(reader,4);
                 ArcadeAudioNative.Check(select(reader,0xfffffffe,0));ArcadeAudioNative.Check(select(reader,0xfffffffd,1));
@@ -100,7 +103,7 @@ namespace Vpet
                 }
             }
             finally
-            {if(formatPointer!=IntPtr.Zero)Marshal.FreeCoTaskMem(formatPointer);ArcadeAudioNative.Release(ref actualType);ArcadeAudioNative.Release(ref type);ArcadeAudioNative.Release(ref reader);ArcadeAudioNative.MFShutdown();}
+            {if(formatPointer!=IntPtr.Zero)Marshal.FreeCoTaskMem(formatPointer);ArcadeAudioNative.Release(ref actualType);ArcadeAudioNative.Release(ref type);ArcadeAudioNative.Release(ref reader);if(started)ArcadeAudioNative.MFShutdown();ArcadeAudioNative.CoUninitialize();}
         }
     }
     internal sealed class ArcadeAudioDevice : IDisposable
