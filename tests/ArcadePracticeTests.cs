@@ -36,7 +36,7 @@ namespace Vpet
         {
             var option=MakerField<CheckBox>(arcade,"practice");var modes=MakerField<RadioButton[]>(arcade,"modes");var difficulty=MakerField<FlowLayoutPanel>(arcade,"difficulties");
             var score=MakerField<Button>(arcade,"score");var calculated=MakerField<Label>(arcade,"calculated");long[] high=(long[])pet.Model.Settings.Arcade.DanceHigh.Clone();
-            Check(option.Visible&&option.Enabled&&option.Top>=difficulty.Bottom,"Practice mode is available directly below Difficulty");
+            Check(option.Visible&&option.Enabled&&option.Parent==difficulty&&option.Left>modes[2].Right,"Practice mode is available to the right of the difficulty options");
             using(var counters=ArcadeRegion(arcade,new Rectangle(75,68,125,32)))
             {
                 option.Checked=true;modes[2].Checked=true;WaitForDance(arcade);Check(arcade.Dance.Practice&&!score.Visible&&!calculated.Visible,"Practice hides scoring and rebuilds the selected difficulty without scoring");

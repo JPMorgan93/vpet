@@ -15,17 +15,17 @@ namespace Vpet
             if(File.Exists(dance))using(var original=new Bitmap(dance))for(int i=0;i<4;i++){danceFloors[i]=new Bitmap(original);for(int turn=0;turn<i;turn++)danceFloors[i].RotateFlip(RotateFlipType.Rotate90FlipNone);}
             if(File.Exists(simon))using(var original=new Bitmap(simon))simonFloor=new Bitmap(original);
         }
-        internal int FloorOrientation {get{return prefs.Background==DanceBackground.Dynamic?(int)(Math.Max(0,Now-backgroundAt)/2)%4:0;}}
+        internal int FloorOrientation {get{return prefs.Background==DanceBackground.Dynamic?(int)Math.Max(0,Now-backgroundAt)%4:0;}}
         void DrawFloor(Graphics g)
         {
             Bitmap floor=Game==ArcadeGame.Dance?(prefs.Background==DanceBackground.Off?null:danceFloors[FloorOrientation]):Game==ArcadeGame.Simon&&prefs.SimonBackground?simonFloor:null;
             if(floor==null)return;
-            g.DrawImage(floor,new Rectangle(0,0,1000,660));using(var shade=new SolidBrush(Color.FromArgb(105,Color.Black)))g.FillRectangle(shade,0,0,1000,660);
+            g.DrawImage(floor,new Rectangle(0,0,1000,1000));using(var shade=new SolidBrush(Color.FromArgb(105,Color.Black)))g.FillRectangle(shade,0,0,1000,1000);
         }
         internal static RectangleF Cabinet(int index){return new RectangleF(65+index*177,115,160,290);}
         static Color LaneColor(ArcadeLane lane){return new[]{Color.FromArgb(235,71,96),Color.FromArgb(58,133,239),Color.FromArgb(58,198,120),Color.FromArgb(244,198,52)}[(int)lane];}
         static PointF LanePoint(ArcadeLane lane,double distance)
-        {return new PointF(500+(lane==ArcadeLane.Left?-(float)distance:lane==ArcadeLane.Right?(float)distance:0),330+(lane==ArcadeLane.Up?-(float)distance:lane==ArcadeLane.Down?(float)distance:0));}
+        {return new PointF(500+(lane==ArcadeLane.Left?-(float)distance:lane==ArcadeLane.Right?(float)distance:0),500+(lane==ArcadeLane.Up?-(float)distance:lane==ArcadeLane.Down?(float)distance:0));}
         string KeyName(ArcadeLane lane){return prefs.ArrowKeys?new[]{"\u2191","\u2193","\u2190","\u2192"}[(int)lane]:new[]{"W","S","A","D"}[(int)lane];}
         static void TextAt(Graphics g,string text,float x,float y,float size,Color color,bool bold=false)
         {
@@ -35,9 +35,9 @@ namespace Vpet
         void PaintArcade(object sender,PaintEventArgs e)
         {
             var g=e.Graphics;g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(SceneOrigin.X,SceneOrigin.Y);g.ScaleTransform(SceneScale,SceneScale);
-            var state=g.Save();g.SetClip(new Rectangle(0,0,1000,660));
-            using(var background=new LinearGradientBrush(new Rectangle(0,0,1000,660),Color.FromArgb(34,23,63),Color.FromArgb(14,24,46),90))g.FillRectangle(background,0,0,1000,660);
-            if(Game==ArcadeGame.Lobby)DrawLobby(g);else{DrawFloor(g);DrawGame(g);}
+            var state=g.Save();var scene=new Rectangle(Point.Empty,SceneSize);g.SetClip(scene);
+            if(Game==ArcadeGame.Lobby){using(var background=new LinearGradientBrush(scene,Color.FromArgb(34,23,63),Color.FromArgb(14,24,46),90))g.FillRectangle(background,scene);DrawLobby(g);}
+            else{using(var background=new SolidBrush(Neutral))g.FillRectangle(background,scene);DrawFloor(g);DrawGame(g);}
             g.Restore(state);
         }
         void DrawLobby(Graphics g)
@@ -82,10 +82,11 @@ namespace Vpet
         }
         void DrawGame(Graphics g)
         {
-            double now=Now;TextAt(g,Game==ArcadeGame.Dance?"Dance Time":"Simon Says",500,32,28,Color.White,true);
+            double now=Now;
             if(Game==ArcadeGame.Dance)
             {
                 int lives=3-(int)Difficulty,misses=Dance==null?0:Dance.Misses;
+                using(var block=new SolidBrush(Neutral))g.FillRectangle(block,70,28,134,80);
                 TextAt(g,"Misses",137,52,16,Color.FromArgb(211,203,229));
                 if(prefs.Practice)TextAt(g,misses.ToString(),137,82,24,Color.White,true);
                 else for(int i=0;i<lives;i++){using(var fill=new SolidBrush(i<misses?Color.Crimson:Color.FromArgb(207,199,223)))g.FillEllipse(fill,88+i*32,73,20,20);}
@@ -102,14 +103,13 @@ namespace Vpet
             bool hopping=Game==ArcadeGame.Dance&&Dance!=null&&Dance.State==DanceState.Running;
             float hop=hopping&&now-hopAt<.25?(float)(Math.Sin(Math.PI*Math.Max(0,now-hopAt)/.25)*13):0;
             float shake=hopping&&now-hopAt<.25?(float)Math.Sin((now-hopAt)*65)*3:0;
-            DrawPet(g,new PointF(500+shake,380-hop),false,facing,hopping);
+            DrawPet(g,new PointF(500+shake,550-hop),false,facing,hopping);
             if(Game==ArcadeGame.Dance&&Dance!=null)
             {
                 if(Dance.State==DanceState.Countdown)TextAt(g,Dance.Countdown(now).ToString(),500,112,54,Color.White,true);
                 else if(Dance.State==DanceState.Running)
                 {
-                    if(now-Dance.FeedbackAt<.7)TextAt(g,Dance.Feedback,500,252,25,Dance.Feedback=="Miss!"?Color.LightCoral:Color.Gold,true);
-                    TextAt(g,"Song: "+TimeSpan.FromSeconds(Math.Min(Dance.Duration,Dance.Elapsed)).ToString(@"m\:ss")+" / "+TimeSpan.FromSeconds(Dance.Duration).ToString(@"m\:ss"),500,587,16,Color.FromArgb(211,203,229));
+                    if(now-Dance.FeedbackAt<.7)TextAt(g,Dance.Feedback,500,422,25,Dance.Feedback=="Miss!"?Color.LightCoral:Color.Gold,true);
                 }
             }
             if(Game==ArcadeGame.Simon&&Simon!=null)
@@ -118,7 +118,7 @@ namespace Vpet
                 else if(Simon.State==SimonState.Showing)TextAt(g,"Watch  \u00b7  Round "+Simon.Sequence.Count,500,105,25,Color.Gold,true);
                 else if(Simon.State==SimonState.Replaying)TextAt(g,"Your turn  \u00b7  "+Simon.SecondsLeft(now).ToString("0.0")+"s",500,105,25,Color.White,true);
                 else if(Simon.State==SimonState.Waiting)TextAt(g,"Next round in a moment",500,105,25,Color.Gold,true);
-                if(now-Simon.FeedbackAt<.55&&Simon.Feedback=="Correct!")TextAt(g,"Correct!",500,252,25,Color.Gold,true);
+                if(now-Simon.FeedbackAt<.55&&Simon.Feedback=="Correct!")TextAt(g,"Correct!",500,422,25,Color.Gold,true);
             }
             if(Game==ArcadeGame.Dance&&Dance!=null&&Dance.State==DanceState.Stopped&&now-Dance.FinishedAt<2)
                 TextAt(g,"Stopped",500,108,42,Color.FromArgb((int)(255*Math.Max(0,1-(now-Dance.FinishedAt)/2)),Color.LightGray),true);
@@ -128,15 +128,16 @@ namespace Vpet
             {
                 int alpha=(int)(255*Math.Max(0,1-(now-resultAt)/2));string result=Game==ArcadeGame.Dance&&Dance!=null?Dance.State==DanceState.Success?"Success":"Failed":"Game Over";
                 TextAt(g,result,500,108,42,Color.FromArgb(alpha,resultReaction==7?Color.PaleGreen:Color.LightCoral),true);
-                using(var bubble=Artwork.Bubble(resultReaction,emote(resultReaction),.8f,false))g.DrawImage(bubble,new PointF(500-bubble.Width/2f,276-bubble.Height));
+                using(var bubble=Artwork.Bubble(resultReaction,emote(resultReaction),.8f,false))g.DrawImage(bubble,new PointF(500-bubble.Width/2f,446-bubble.Height));
             }
         }
         void DrawSquare(Graphics g,PointF center,ArcadeLane lane,bool target,bool lit,float pulse=1)
         {
             float side=(float)DanceGame.SquareSize*pulse;var box=new RectangleF(center.X-side/2,center.Y-side/2,side,side);
+            if(Game==ArcadeGame.Dance&&!target)using(var block=new SolidBrush(Neutral))g.FillRectangle(block,box.X-10,box.Y-10,box.Width+20,box.Height+20);
             Color color=Game==ArcadeGame.Simon?LaneColor(lane):Color.FromArgb(194,174,243);
-            using(var fill=new SolidBrush(target?Color.FromArgb(170,97,190):lit?color:Color.FromArgb(Game==ArcadeGame.Simon?130:35,color)))
-            using(var border=new Pen(lit?Color.White:color,lit?5:target?3:2))
+            using(var fill=new SolidBrush(target?Color.FromArgb(248,112,218):lit?color:Color.FromArgb(Game==ArcadeGame.Simon?130:35,color)))
+            using(var border=new Pen(lit?Color.White:target?Color.FromArgb(255,223,250):color,lit?5:target?3:2))
             {g.FillRectangle(fill,box);g.DrawRectangle(border,box.X,box.Y,box.Width,box.Height);}
             TextAt(g,KeyName(lane),center.X,center.Y,27,Game==ArcadeGame.Simon&&lit?Color.FromArgb(30,25,42):Color.White,true);
         }

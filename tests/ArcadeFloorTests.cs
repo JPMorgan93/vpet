@@ -14,12 +14,12 @@ namespace Vpet
         static void ArcadeFloorFeatures()
         {
             string path=Path.Combine(artifacts,"arcade-floor-settings.json");File.WriteAllText(path,"{\"Arcade\":{}}");
-            var prefs=Preferences.Load(path);Check(prefs.Arcade.Background==DanceBackground.Dynamic&&prefs.Arcade.SimonBackground&&prefs.Arcade.Volume==27,"Old and new profiles use rotating Dance floors, Simon floors, and the quieter default");
+            var prefs=Preferences.Load(path);Check(prefs.Arcade.Background==DanceBackground.Dynamic&&prefs.Arcade.SimonBackground&&prefs.Arcade.Volume==25,"Old and new profiles use rotating Dance floors, Simon floors, and the quieter default");
             prefs.Arcade.Background=DanceBackground.Static;prefs.Arcade.SimonBackground=false;prefs.Save(path);prefs=Preferences.Load(path);
             Check(prefs.Arcade.Background==DanceBackground.Static&&!prefs.Arcade.SimonBackground,"Independent background choices persist");
             prefs.Arcade.Background=DanceBackground.Off;prefs.Save(path);Check(Preferences.Load(path).Arcade.Background==DanceBackground.Off,"Dance Off survives a restart");
             prefs.Arcade.Background=(DanceBackground)900;prefs.Validate();Check(prefs.Arcade.Background==DanceBackground.Dynamic,"Invalid background values recover to Dynamic");
-            Check(Math.Abs(ArcadeMusic.Gain(100)-1)<1e-6&&ArcadeMusic.Gain(0)==0&&ArcadeMusic.Gain(27)<ArcadeMusic.Gain(53)*.51,"Full volume remains normal, mute is exact, and the new default is substantially quieter");
+            Check(Math.Abs(ArcadeMusic.Gain(100)-1)<1e-6&&ArcadeMusic.Gain(0)==0&&ArcadeMusic.Gain(25)<ArcadeMusic.Gain(53)*.51,"Full volume remains normal, mute is exact, and the new default is substantially quieter");
             foreach(ArcadeLane lane in Enum.GetValues(typeof(ArcadeLane)))
             {
                 byte[] wave=ArcadeTones.CreateWave(lane);int edgePeak=0,edgeJump=0;short prior=0;
@@ -86,18 +86,18 @@ namespace Vpet
             now=100;picker.SelectedIndex=1;picker.SelectedIndex=0;arcade.Step();
             using(var zero=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))
             {
-                now=101.999;arcade.Step();using(var before=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,before)==0&&arcade.FloorOrientation==0,"Dynamic floor holds still until two seconds");
-                now=102;arcade.Step();using(var rotated=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,rotated)>1000&&arcade.FloorOrientation==1,"Floor snaps to exactly 90 degrees at two seconds");
-                now=104;arcade.Step();Check(arcade.FloorOrientation==2,"Floor rotates 180 degrees at four seconds");now=106;arcade.Step();Check(arcade.FloorOrientation==3,"Floor rotates 270 degrees at six seconds");
-                now=108;arcade.Step();using(var full=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,full)==0,"Dynamic floor returns to its original orientation at eight seconds");
+                now=100.999;arcade.Step();using(var before=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,before)==0&&arcade.FloorOrientation==0,"Dynamic floor holds still until one second");
+                now=101;arcade.Step();using(var rotated=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,rotated)>1000&&arcade.FloorOrientation==1,"Floor snaps to exactly 90 degrees at one second");
+                now=102;arcade.Step();Check(arcade.FloorOrientation==2,"Floor rotates 180 degrees at two seconds");now=103;arcade.Step();Check(arcade.FloorOrientation==3,"Floor rotates 270 degrees at three seconds");
+                now=104;arcade.Step();using(var full=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,full)==0,"Dynamic floor returns to its original orientation at four seconds");
                 picker.SelectedIndex=1;now+=20;arcade.Step();using(var stationary=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,stationary)==0,"Static displays the unrotated floor indefinitely");
-                picker.SelectedIndex=2;using(var off=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,off)>1000,"Off restores the previous blank gradient");
+                picker.SelectedIndex=2;using(var off=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(zero,off)>1000,"Off restores the neutral background");
                 Check(Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.Background==DanceBackground.Off,"Dance background saves immediately");picker.SelectedIndex=0;
             }
             CaptureForm(arcade,"dance-floor-dynamic");
             arcade.OpenGame(ArcadeGame.Simon);Check(!practice.Visible&&picker.SelectedItem.ToString()=="On"&&picker.Top>=MakerField<FlowLayoutPanel>(arcade,"difficulties").Bottom&&picker.Items.Cast<object>().Select(x=>x.ToString()).SequenceEqual(new[]{"On","Off"}),"Simon offers On and Off below Difficulty with On selected");
             using(var enabled=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))
-            {picker.SelectedIndex=1;using(var off=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(enabled,off)>1000,"Simon Off restores the blank gradient");}
+            {picker.SelectedIndex=1;using(var off=ArcadeRegion(arcade,new Rectangle(220,470,100,100)))Check(ArcadeDifferentPixels(enabled,off)>1000,"Simon Off restores the neutral background");}
             Check(!Preferences.Load(Path.Combine(pet.DataDirectory,"settings.json")).Arcade.SimonBackground,"Simon choice saves independently");picker.SelectedIndex=0;
             foreach(int difficulty in new[]{1,2})
             {
