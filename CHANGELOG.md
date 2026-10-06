@@ -1,4 +1,13 @@
-# Vpet 1.11.4
+# Vpet 1.11.5
+
+- Make Dance Time and Simon Says game spaces and floor backgrounds square at every window size, and remove their titles from the game space. Keep the game names in the window title.
+- Set the default Dance Time music volume to 25%, retaining saved volume choices and existing playback gain behavior.
+- Move Practice mode to the right of Difficulty. Move the song timer into the header, to the left of Score Card; keep it visible in Practice mode.
+- Use one dark neutral color for both games' Off backgrounds, Dance Time's padded misses block, the backing around its four fixed directional squares, and the entire padded volume column with its title, slider, and percentage.
+- Brighten Dance Time's moving targets and borders for better visibility over the floor. Give all four target lanes equal entrance distances in the square scene without changing song timing or scoring.
+- Change Dynamic Dance Floor rotation to an instant clockwise 90-degree turn every one second, with a four-second full cycle.
+
+## Vpet 1.11.4
 
 - Reduce the default Dance Time volume from 53% to 27%, approximately half the previous slider setting. Preserve saved volume choices, normal device volume at 100%, and mute at 0%.
 - Prepare all three Dance Time songs in the background and decode complete PCM audio before enabling Start. Play queued audio from memory at its native sample rate, synchronize targets with the sample clock, and reuse prepared songs on replay and difficulty changes.

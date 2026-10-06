@@ -21,7 +21,7 @@ namespace Vpet
         internal static readonly Color Neutral=Color.FromArgb(23,18,42);
         readonly DoubleBufferedPanel canvas=new DoubleBufferedPanel{Dock=DockStyle.Fill,BackColor=Neutral};
         readonly Panel volumePanel=new Panel{Name="ArcadeVolumePanel",BackColor=Neutral,Padding=new Padding(8)};
-        readonly FlowLayoutPanel difficulties=new FlowLayoutPanel{AutoSize=true,Dock=DockStyle.Left,WrapContents=false,Padding=new Padding(8)};
+        readonly FlowLayoutPanel difficulties=new FlowLayoutPanel{AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,WrapContents=false,Padding=new Padding(8)};
         readonly RadioButton[] modes=new RadioButton[3];
         readonly CheckBox practice=new CheckBox{Name="ArcadePractice",Text="Practice mode",AutoSize=true,ForeColor=MakerUi.Purple,Margin=new Padding(16,15,6,8)};
         readonly Label backgroundLabel=new Label{Text="Background:",AutoSize=true,ForeColor=MakerUi.Purple};
