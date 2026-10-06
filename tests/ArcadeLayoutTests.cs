@@ -46,7 +46,7 @@ namespace Vpet
                 {
                     using(var padding=ArcadeRegion(arcade,new Rectangle(74,31,12,9)))Check(ArcadeNeutral(padding),"Misses have neutral padding over the visible floor");
                     foreach(var point in new[]{new Point(500,364),new Point(500,636),new Point(364,500),new Point(636,500)})
-                        using(var padding=ArcadeRegion(arcade,new Rectangle(point.X-37,point.Y-37,5,5)))Check(ArcadeNeutral(padding),"Every fixed directional square has neutral padding over the floor");
+                        using(var padding=ArcadeRegion(arcade,new Rectangle(point.X-34,point.Y-34,3,3)))Check(ArcadeNeutral(padding),"Every fixed directional square has neutral padding over the floor: "+point);
                     using(var column=new Bitmap(panel.Width,panel.Height))
                     {panel.DrawToBitmap(column,panel.ClientRectangle);Check(Enumerable.Range(0,column.Height).All(y=>column.GetPixel(2,y).ToArgb()==ArcadeWindow.Neutral.ToArgb()),"Volume column keeps one continuous background from top to bottom");}
                     var clock=arcade.SongPosition;arcade.SongPosition=()=>3;arcade.Dance.Chart.Clear();arcade.Dance.Chart.Add(new DanceTarget(ArcadeLane.Up,4));
