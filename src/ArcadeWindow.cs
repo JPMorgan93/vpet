@@ -62,8 +62,8 @@ namespace Vpet
             SongPosition=()=>music.Position;PlayTone=tones.Play;score.Font=new Font("Consolas",16,FontStyle.Bold);
             lobbyHeading.ForeColor=MakerUi.Purple;LoadFloors();music.Preload(musicDirectory);
             var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};calculated.ForeColor=MakerUi.Purple;
-            var difficultyArea=new Panel{Dock=DockStyle.Left,Width=500};difficulties.Dock=DockStyle.Top;difficultyArea.Controls.Add(difficulties);difficultyArea.Controls.Add(backgroundLabel);difficultyArea.Controls.Add(background);
-            scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficultyArea);top.Controls.Add(lobbyHeading);top.Controls.Add(songTime);songTime.BringToFront();
+            var difficultyArea=new Panel{Dock=DockStyle.Fill};difficulties.Dock=DockStyle.None;difficultyArea.Controls.Add(difficulties);difficultyArea.Controls.Add(backgroundLabel);difficultyArea.Controls.Add(background);difficultyArea.Controls.Add(songTime);
+            scoreboard.Controls.Add(score);scoreboard.Controls.Add(calculated);top.Controls.Add(scoreboard);top.Controls.Add(difficultyArea);top.Controls.Add(lobbyHeading);
             var difficultyLabel=MakerUi.Label("Difficulty:");difficultyLabel.ForeColor=MakerUi.Purple;difficulties.Controls.Add(difficultyLabel);
             for(int i=0;i<3;i++)
             {
@@ -204,7 +204,7 @@ namespace Vpet
             switchKeys.Location=new Point((int)(origin.X+552*scale),(int)(origin.Y+(500-DanceGame.SquareDistance-20)*scale));
             volumePanel.Bounds=new Rectangle(8,8,82,Math.Max(152,canvas.Height-16));
             volumeLabel.Location=new Point(8,8);volume.Location=new Point(19,36);volume.Height=Math.Max(80,volumePanel.Height-72);volumeValue.Location=new Point(19,volumePanel.Height-27);
-            songTime.Location=new Point(Math.Max(280,top.ClientSize.Width-370),top.ClientSize.Width>=900?12:66);
+            songTime.Location=new Point(Math.Max(280,songTime.Parent.ClientSize.Width-180),songTime.Parent.ClientSize.Width>=710?12:66);
         }
         internal Size SceneSize {get{return Game==ArcadeGame.Lobby?new Size(1000,660):new Size(1000,1000);}}
         internal float SceneScale {get{return Math.Max(.1f,Math.Min((canvas.Width-(Game==ArcadeGame.Dance?98:0))/(float)SceneSize.Width,canvas.Height/(float)SceneSize.Height));}}
