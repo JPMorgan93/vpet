@@ -36,9 +36,26 @@ namespace Vpet
                     Check(!scoreboard.Bounds.IntersectsWith(choices.Bounds)&&!scoreboard.Bounds.IntersectsWith(powers.Bounds)&&!scoreboard.Bounds.IntersectsWith(timer.Bounds)&&!round.Bounds.IntersectsWith(choices.Bounds),"Header sections do not overlap: "+size);
                     var field=window.SceneBounds;Check(field.Left==0&&Math.Abs(field.Right-canvas.Width)<.001&&Math.Abs(field.Bottom-canvas.Height)<.001&&Math.Abs(window.Brick.Height*window.SceneScale-field.Height)<.001,"Brick field fills the full canvas width and available height: "+size);
                     Check(window.Brick.PaddleBounds(0).Left>0&&window.Brick.PaddleBounds(1).Right<1000,"Paddles stay inset from the open sides: "+size);
+                    Check(Math.Abs(window.BrickPetBounds.Left+window.BrickPetBounds.Width/2-(window.Brick.PaddleBounds(1).Left+window.Brick.PaddleBounds(1).Width/2))<.001&&Math.Abs(window.BrickPetBounds.Top+window.BrickPetBounds.Height/2-window.Brick.Paddles[1].Y)<.001,"NPC is centered directly over its right paddle at "+size);
                     if(size.Width==684)CaptureForm(window,"brick-minimum");
                 }
                 window.ClientSize=new Size(1040,790);Application.DoEvents();window.Step();CaptureForm(window,"brick-ready");
+                foreach(float y in new[]{window.Brick.PaddleHeight(1)/2+2,window.Brick.Height/2,window.Brick.Height-window.Brick.PaddleHeight(1)/2-2})
+                {
+                    window.Brick.Paddles[1].Y=y;var pet=window.BrickPetBounds;
+                    Check(pet.Top>=0&&pet.Bottom<=window.Brick.Height&&Math.Abs(pet.Top+pet.Height/2-y)<.001,"NPC stays centered and visible at paddle height "+y);
+                }
+                window.Brick.Paddles[1].Y=window.Brick.Height/2;
+                using(var drawn=BrickCanvas(window))
+                {
+                    var pet=window.BrickPetBounds;int colored=0;
+                    for(int y=(int)(window.BrickFieldBounds.Top+pet.Top*window.SceneScale);y<(int)(window.BrickFieldBounds.Top+pet.Bottom*window.SceneScale);y++)
+                    for(int x=(int)(window.Brick.PaddleBounds(1).Left*window.SceneScale);x<(int)(window.Brick.PaddleBounds(1).Right*window.SceneScale);x++)
+                    {Color pixel=drawn.GetPixel(x,y);if(pixel.B>pixel.R+20&&pixel.B>pixel.G+10)colored++;}
+                    Check(colored>20,"Visible blue sprite pixels cover the right paddle rather than being covered by it");
+                }
+                window.Brick.Paddles[1].FrozenUntil=now+.5;
+                Check(Math.Abs(window.BrickPetBounds.Left+window.BrickPetBounds.Width/2-(window.Brick.PaddleBounds(1).Left+window.Brick.PaddleBounds(1).Width/2+Math.Sin(now*75)*3))<.001,"NPC follows the paddle's freeze shake");window.Brick.Paddles[1].FrozenUntil=0;
                 FindButton(window,"Start").PerformClick();Check(window.Busy&&window.Brick.State==BrickState.Pending&&FindButton(window,"Stop").Visible&&!powers.Enabled&&modes.All(mode=>!mode.Enabled),"Start enters Pending, shows Stop, and locks match options");
                 now+=5;window.Step();Check(timer.Text=="2:00"&&window.Brick.Balls.All(ball=>ball.HeldBy>=0),"Initial pending state never auto-launches or runs down the timer");
                 int mouseY=window.BrickFieldBounds.Top+(int)((window.Brick.Height/2+45)*window.SceneScale);BrickMouse(window,"OnMouseMove",100,mouseY);Check(window.Brick.Paddles[0].Y>window.Brick.Height/2&&window.Brick.Balls.Single(ball=>ball.HeldBy==0).Y==window.Brick.Paddles[0].Y,"Native mouse motion moves the paddle and its pending ball");

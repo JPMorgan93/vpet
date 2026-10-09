@@ -35,6 +35,8 @@ namespace Vpet
                     Console.WriteLine("PASS: "+count+" native window-layer assertions.");return 0;
                 }
                 artifacts=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-artifacts");Directory.CreateDirectory(artifacts);
+                if(Array.IndexOf(args,"--item-layer-tests")>=0)
+                {Native.EnableDpi();Application.EnableVisualStyles();ItemLayerWindows();Console.WriteLine("PASS: "+count+" item layering and default sprite UI checks.");return 0;}
                 if(Array.IndexOf(args,"--arcade-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();ArcadeWindows();Console.WriteLine("PASS: "+count+" arcade, music, and joystick UI checks.");return 0;}
                 if(Array.IndexOf(args,"--brick-window-tests")>=0)
