@@ -116,9 +116,11 @@ namespace Vpet
                 maker.ClearFrame();Check(maker.Project.Data.Frames[0][9]==null&&maker.Project.Data.Frames[0][8]!=null,"Clear frame 10 leaves frame 9 intact");
                 maker.ChooseSlot(8);sheet.Draft=new SpriteFrame{X=256};maker.SetFrame();Check(maker.Slot==9,"Setting frame 9 advances to frame 10");
                 sheet.Draft=new SpriteFrame{X=288};maker.SetFrame();Check(maker.Slot==9&&maker.Project.Data.Frames[0][9]!=null,"Setting frame 10 stays within the last allowed slot");
-                maker.ClientSize=new Size(900,760);Application.DoEvents();buttons[9].Focus();Application.DoEvents();
-                Check(buttons[9].RectangleToScreen(buttons[9].ClientRectangle).IntersectsWith(maker.RectangleToScreen(maker.ClientRectangle)),"Frame 10 remains reachable at minimum editor size");
-                maker.ClientSize=new Size(1100,850);Application.DoEvents();CaptureForm(maker,"sprite-maker-ten-frames.png");
+                maker.Size=maker.MinimumSize;Application.DoEvents();buttons[9].Focus();Application.DoEvents();
+                var controlScroll=(Panel)buttons[9].Parent.Parent.Parent;
+                Check(controlScroll.RectangleToScreen(controlScroll.ClientRectangle).Contains(buttons[9].RectangleToScreen(buttons[9].ClientRectangle)),"Frame 10 remains fully reachable at minimum editor size");
+                CaptureForm(maker,"sprite-maker-ten-minimum");
+                maker.ClientSize=new Size(1100,850);Application.DoEvents();CaptureForm(maker,"sprite-maker-ten-frames");
                 using(var tweak=new SpriteTweakWindow(maker))
                 {
                     tweak.Show();Application.DoEvents();FindButton(tweak,"Tweak").PerformClick();Application.DoEvents();
@@ -126,7 +128,7 @@ namespace Vpet
                     Check(slider.Maximum==9&&slider.Enabled,"Tweak slider exposes all ten populated frames");slider.Value=9;Application.DoEvents();
                     Check(preview.Slot==9,"Tweak preview displays the tenth frame");
                     FindButton(tweak,"Magic Tweak").PerformClick();Application.DoEvents();using(var frame=maker.Project.RenderFrame(0,9))Check(SpriteProject.GroundPoint(frame)==new Point(15,35),"Magic Tweak button aligns the tenth frame");
-                    CaptureForm(tweak,"sprite-tweak-ten-frames.png");FindButton(tweak,"Undo").PerformClick();
+                    CaptureForm(tweak,"sprite-tweak-ten-frames");FindButton(tweak,"Undo").PerformClick();
                     Check(maker.Project.Data.Frames[0].Length==10&&maker.Project.Data.Frames[0][9].X==288&&maker.Project.Data.Frames[0][9].OffsetY==0,"Undo restores frame 10 without shrinking the animation");
                     tweak.Close();
                 }
