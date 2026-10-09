@@ -115,6 +115,7 @@ namespace Vpet
             Text="Vpet plate";Cursor=Cursors.Hand;
             for(int i=0;i<images.Length;i++)images[i]=PlateArtwork.Draw(i,model.Scale);
             CompanionHandle=petWindow.Handle;OtherCompanionHandle=crossingWindow.Handle;
+            AboveCompanions=true;
             IntPtr handle=Handle;Native.BackgroundAdornments.Add(handle);FormClosed+=delegate{Native.BackgroundAdornments.Remove(handle);};
             var pudding=new ToolStripMenuItem("Pudding"){Checked=true};Menu.Items.Add(pudding);
             pudding.Click+=delegate{model.ServeFood(FoodKind.Pudding,now());UpdatePlate();save();};
@@ -147,13 +148,8 @@ namespace Vpet
             {Present(images[model.FoodRemaining],location);shownFood=model.FoodRemaining;}
             if(layer!=pet.Settings.Layer){SetLayer(pet.Settings.Layer);layer=pet.Settings.Layer;}
             if(!Visible)Show();
-            // The food stays in front of the pet, while sharing its place among application windows.
-            if(pet.Settings.Layer==LayerMode.UnderAll)EnforceUnderAll();
-            else
-            {
-                IntPtr previous=Native.GetWindow(petWindow.Handle,3); // GW_HWNDPREV
-                if(previous!=Handle)Native.SetWindowPos(Handle,previous,0,0,0,0,0x213);
-            }
+            // Stay above both sprite portions without changing the selected application-window layer.
+            EnforceAboveCompanions();
         }
         protected override void Dispose(bool disposing)
         {

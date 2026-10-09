@@ -75,6 +75,21 @@ namespace Vpet
             },IntPtr.Zero);
             return lastApp!=IntPtr.Zero?lastApp:new IntPtr(-2); // No apps: normal non-topmost desktop-visible window.
         }
+        internal static IntPtr? AboveCompanionTarget(IntPtr window,IntPtr companion,IntPtr otherCompanion,LayerMode mode)
+        {
+            IntPtr highest=IntPtr.Zero;
+            EnumWindows(delegate(IntPtr hwnd,IntPtr unused)
+            {
+                if((hwnd==companion||hwnd==otherCompanion)&&IsWindowVisible(hwnd)){highest=hwnd;return false;}
+                return true;
+            },IntPtr.Zero);
+            if(highest==IntPtr.Zero)return null;
+            IntPtr previous=GetWindow(highest,3); // GW_HWNDPREV: insert immediately above the highest sprite portion.
+            if(previous==window)previous=GetWindow(window,3);
+            // A normal item must not enter the topmost band by following a topmost application.
+            if(mode!=LayerMode.OverEverything&&previous!=IntPtr.Zero&&(GetWindowLongPtr(previous,-20).ToInt64()&8)!=0)previous=IntPtr.Zero;
+            return previous;
+        }
     }
 
     internal class LayeredWindow : Form
@@ -85,6 +100,7 @@ namespace Vpet
         public IntPtr CompanionHandle;
         public IntPtr OtherCompanionHandle;
         public IntPtr BehindWindow;
+        public bool AboveCompanions;
         LayerMode layerMode;
         public LayeredWindow(bool clickThrough)
         {
@@ -101,10 +117,12 @@ namespace Vpet
             if(m.Msg==0x21){m.Result=new IntPtr(3);return;} // MA_NOACTIVATE
             bool behindArcade=m.Msg==0x46&&m.LParam!=IntPtr.Zero&&layerMode!=LayerMode.UnderAll&&Native.ArcadeForeground!=IntPtr.Zero&&
                 Native.BackgroundAdornments.Contains(Handle)&&Native.IsWindowVisible(Native.ArcadeForeground);
-            if(m.Msg==0x46&&m.LParam!=IntPtr.Zero&&(behindArcade||BehindWindow!=IntPtr.Zero||layerMode==LayerMode.UnderAll))
+            IntPtr? above=m.Msg==0x46&&m.LParam!=IntPtr.Zero&&!behindArcade&&AboveCompanions?
+                Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode):null;
+            if(m.Msg==0x46&&m.LParam!=IntPtr.Zero&&(behindArcade||BehindWindow!=IntPtr.Zero||above.HasValue||layerMode==LayerMode.UnderAll))
             {
                 var position=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));
-                position.InsertAfter=behindArcade?Native.ArcadeForeground:BehindWindow!=IntPtr.Zero?BehindWindow:Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
+                position.InsertAfter=behindArcade?Native.ArcadeForeground:BehindWindow!=IntPtr.Zero?BehindWindow:above.HasValue?above.Value:Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
                 position.Flags=(position.Flags&~4u)|0x210u; // Clear NOZORDER; keep NOACTIVATE and NOOWNERZORDER.
                 Marshal.StructureToPtr(position,m.LParam,false);
             }
@@ -139,6 +157,10 @@ namespace Vpet
         {
             if(layerMode!=LayerMode.UnderAll||!IsHandleCreated)return;
             Native.SetWindowPos(Handle,Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle),0,0,0,0,0x213);
+        }
+        public void EnforceAboveCompanions()
+        {
+            if(AboveCompanions&&IsHandleCreated)Native.SetWindowPos(Handle,IntPtr.Zero,0,0,0,0,0x213);
         }
     }
 }

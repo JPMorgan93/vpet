@@ -74,6 +74,8 @@ namespace Vpet
             chime=new ToyChime(()=>Model.Settings.Sound,()=>Model.Settings.Volume);Model.ChimePlayed+=chime.Play;
             foreach(var window in Windows)
             {
+                window.CompanionHandle=petWindow.Handle;window.OtherCompanionHandle=crossingWindow==null?IntPtr.Zero:crossingWindow.Handle;
+                window.AboveCompanions=window!=Chest&&window!=Fence&&window!=FenceLabel;
                 IntPtr handle=window.Handle;Native.BackgroundAdornments.Add(handle);
                 window.FormClosed+=delegate{Native.BackgroundAdornments.Remove(handle);};
                 window.MouseDown+=Down;window.MouseMove+=Move;window.MouseUp+=Up;
@@ -210,8 +212,8 @@ namespace Vpet
         {
             if(disposed)return;
             cleanUp.Enabled=HasToys;
-            if(!Model.Settings.DisplayChest){foreach(var window in Windows)if(window!=Fence&&window!=FenceLabel)window.Hide();UpdateFence();KeepBelowPet();return;}
-            KeepBelowPet();
+            if(!Model.Settings.DisplayChest){foreach(var window in Windows)if(window!=Fence&&window!=FenceLabel)window.Hide();UpdateFence();ArrangeLayers();return;}
+            ArrangeLayers();
             var chestPoint=new Point((int)Math.Round(Model.Chest.X-chestImage.Width/2f),(int)Math.Round(Model.Chest.Y-chestImage.Height/2f));
             if(chestLocation!=chestPoint||!Chest.Visible){Present(Chest,chestImage,chestPoint);chestLocation=chestPoint;}
             if(Model.HasBall)
@@ -232,7 +234,7 @@ namespace Vpet
             DrawGames();UpdateFence();
             if((captured==Ball||captured==Die)&&gestureButton==MouseButtons.Right&&dragged&&Geometry.Distance(pull,PointF.Empty)>=4)DrawArrow();else Arrow.Hide();
             UpdateHelp();
-            KeepBelowPet();
+            ArrangeLayers();
         }
         bool HasToys {get{return Model.HasBall||Model.HasTriangle||Model.HasCoin||Model.HasCard||Model.HasDie;}}
         void UpdateFence()
@@ -313,7 +315,7 @@ namespace Vpet
         }
         static void Present(LayeredWindow window,Bitmap image,Point position)
         {window.Present(image,position);if(!window.Visible)window.Show();}
-        void KeepBelowPet()
+        void ArrangeLayers()
         {
             IntPtr lowest=petWindow.Handle;
             Native.EnumWindows(delegate(IntPtr window,IntPtr unused)
@@ -324,6 +326,8 @@ namespace Vpet
                 bool topmost=(Native.GetWindowLongPtr(window.Handle,-20).ToInt64()&8)!=0;
                 if(changed||topmost!=(pet.Settings.Layer==LayerMode.OverEverything))
                 {window.BehindWindow=IntPtr.Zero;window.SetLayer(pet.Settings.Layer);}
+                if(window.AboveCompanions)
+                {window.BehindWindow=IntPtr.Zero;if(changed||window.Visible)window.EnforceAboveCompanions();continue;}
                 window.BehindWindow=lowest;
                 if(changed||window.Visible)Native.SetWindowPos(window.Handle,lowest,0,0,0,0,0x213);
                 lowest=window.Handle;
