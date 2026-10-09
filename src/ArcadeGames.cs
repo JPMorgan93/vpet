@@ -7,7 +7,7 @@ namespace Vpet
 {
     public enum ArcadeDifficulty { Easy, Normal, Hard }
     public enum DanceBackground { Dynamic, Static, Off }
-    internal enum ArcadeGame { Lobby, Dance, Simon }
+    internal enum ArcadeGame { Lobby, Dance, Simon, Brick }
     internal enum ArcadeLane { Up, Down, Left, Right }
     internal enum DanceState { Ready, Countdown, Running, Failed, Success, Stopped }
     internal enum SimonState { Ready, Countdown, Showing, Replaying, Finished, Waiting, Stopped }
@@ -21,16 +21,17 @@ namespace Vpet
         [DataMember] public bool Practice;
         [DataMember] public DanceBackground Background=DanceBackground.Dynamic;
         [DataMember] public bool SimonBackground=true;
-        [OnDeserializing] void Defaults(StreamingContext context){DanceHigh=new long[3];SimonHigh=new long[3];Volume=DefaultVolume;SimonBackground=true;}
+        [DataMember] public bool BrickPowerUps=true;
+        [OnDeserializing] void Defaults(StreamingContext context){DanceHigh=new long[3];SimonHigh=new long[3];Volume=DefaultVolume;SimonBackground=true;BrickPowerUps=true;}
         public void Validate()
         {
             DanceHigh=Clean(DanceHigh);SimonHigh=Clean(SimonHigh);Volume=Math.Max(0,Math.Min(100,Volume));
             if(!Enum.IsDefined(typeof(DanceBackground),Background))Background=DanceBackground.Dynamic;
         }
         static long[] Clean(long[] source){var result=new long[3];if(source!=null)for(int i=0;i<Math.Min(3,source.Length);i++)result[i]=Math.Max(0,Math.Min(1000000000000L,source[i]));return result;}
-        internal long High(ArcadeGame game,ArcadeDifficulty difficulty){return (game==ArcadeGame.Dance?DanceHigh:SimonHigh)[(int)difficulty];}
+        internal long High(ArcadeGame game,ArcadeDifficulty difficulty){return game==ArcadeGame.Dance?DanceHigh[(int)difficulty]:game==ArcadeGame.Simon?SimonHigh[(int)difficulty]:0;}
         internal bool Record(ArcadeGame game,ArcadeDifficulty difficulty,long score)
-        {var values=game==ArcadeGame.Dance?DanceHigh:SimonHigh;int index=(int)difficulty;if(score<=values[index])return false;values[index]=score;return true;}
+        {if(game!=ArcadeGame.Dance&&game!=ArcadeGame.Simon)return false;var values=game==ArcadeGame.Dance?DanceHigh:SimonHigh;int index=(int)difficulty;if(score<=values[index])return false;values[index]=score;return true;}
     }
     internal sealed class DanceTarget
     {

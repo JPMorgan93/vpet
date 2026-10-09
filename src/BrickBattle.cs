@@ -233,7 +233,7 @@ namespace Vpet
             ball.VX=(float)Math.Cos(angle)*BallSpeed*(side==0?1:-1);ball.VY=(float)Math.Sin(angle)*BallSpeed;
             if(paddle.Power==BrickPower.Sticky)
             {ball.HeldBy=side;ball.Offset=ball.Y-paddle.Y;ball.StickyHeld=true;paddle.LaunchAt=now+.55+random.NextDouble()*.35;FollowHeld();return;}
-            if(paddle.Power==BrickPower.Bomb){ball.Bomb=true;paddle.Power=BrickPower.None;ball.X=side==0?box.Right+BallRadius(ball)+.1f:box.Left-BallRadius(ball)-.1f;}
+            if(paddle.Power==BrickPower.Bomb){ball.Bomb=true;paddle.Power=BrickPower.None;ball.X=side==0?box.Right+BallRadius(ball)+.1f:box.Left-BallRadius(ball)-.1f;ball.Y=Clamp(ball.Y,BallRadius(ball),Height-BallRadius(ball));}
             else if(paddle.Power==BrickPower.Triple)
             {
                 double heading=Math.Atan2(ball.VY,ball.VX);
