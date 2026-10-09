@@ -87,7 +87,8 @@ namespace Vpet
             IntPtr previous=GetWindow(highest,3); // GW_HWNDPREV: insert immediately above the highest sprite portion.
             if(previous==window)previous=GetWindow(window,3);
             // A normal item must not enter the topmost band by following a topmost application.
-            if(mode!=LayerMode.OverEverything&&(previous==IntPtr.Zero||(GetWindowLongPtr(previous,-20).ToInt64()&8)!=0))return new IntPtr(-2);
+            if(mode!=LayerMode.OverEverything&&(previous==IntPtr.Zero||(GetWindowLongPtr(previous,-20).ToInt64()&8)!=0))
+                return (GetWindowLongPtr(window,-20).ToInt64()&8)!=0?new IntPtr(-2):IntPtr.Zero;
             if(mode==LayerMode.OverEverything&&previous==IntPtr.Zero)return new IntPtr(-1);
             return previous;
         }
