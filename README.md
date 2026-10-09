@@ -1,10 +1,10 @@
-# Vpet 1.12.1
+# Vpet 1.12.2
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.1-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.2-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -188,6 +188,8 @@ The vertical music volume slider stays available before, during, and after a rou
 In both games, **Start** becomes **Stop** during countdowns and active rounds. Stop cancels the round immediately, stopping playback and discarding its score without changing your high score. Start returns after stopping or finishing a round.
 
 **Brick Battle**, in the third cabinet, is a full-width paddle battle against your pet. Move the mouse up/down in the field and left-click to launch a pending ball. A three-column brick wall fills the field's height. Every round begins with both balls held and the timer at **2:00**; your first click launches both and starts the clock. Each ball escaping an open side awards a red dot to the opponent. Five dots, or the most dots at time-out, wins a match point. A tied round awards no point; a 2–0 score ends after round two, otherwise play continues for at least three rounds and until one side leads. Match scores show **You** and your saved pet name (or **Vpet**). The winner flashes yellow; the pet shows Proud on winning or Sad on losing. Start becomes Stop during pending/active play and restarts a complete match afterward. Match scores do not overwrite the other games' high scores.
+
+Paddle hits play a light high tone, brick hits play a lower tone, and power-up pickups play an ascending two-tone chime. Effects are prepared before play, overlap during multiball, and stop when you stop or close the game.
 
 **Power ups**, below Difficulty, defaults on and is saved. Choose it before starting. Each destroyed brick has a 25% drop chance; half-transparent orbs drift toward the paddle that last touched the ball. Blue **x3** splits the next paddle hit into three balls ten degrees apart, yellow **↕** adds 20% base height (another yellow adds 10%), green **S** holds the next ball until you click (the pet releases its own), and red **!** charges a double-size blinking ball. An explosive brick hit destroys touching neighbors and pulses away; an explosive paddle hit pulses away and freezes that paddle for half a second. A new power replaces the current one. Empty halves get a pending replacement serve after a ball disappears. Difficulty changes the pet's paddle speed, reaction delay, and aiming accuracy. See [the Brick Battle guide](BRICK-BATTLE.md).
 

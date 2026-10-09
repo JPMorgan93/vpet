@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Vpet
@@ -15,14 +17,17 @@ namespace Vpet
         {var canvas=MakerField<DoubleBufferedPanel>(window,"canvas");var image=new Bitmap(canvas.Width,canvas.Height);canvas.DrawToBitmap(image,canvas.ClientRectangle);return image;}
         static void BrickBattleWindows()
         {
+            PreparedBrickAudioTests();
             string root=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference"),name="";double now=10;int saves=0;
+            var cues=new List<BrickSound>();BrickBattle closedBattle=null;
             var prefs=new ArcadePreferences();
-            using(var sprite=SpriteSet.FromReference(Path.Combine(root,"Blue Dragon.png")))using(var window=new ArcadeWindow(()=>sprite,index=>null,prefs,()=>saves++,root,new Random(12),petName:()=>name))
+            using(var audio=new BrickBattleSounds(0))using(var sprite=SpriteSet.FromReference(Path.Combine(root,"Blue Dragon.png")))using(var window=new ArcadeWindow(()=>sprite,index=>null,prefs,()=>saves++,root,new Random(12),petName:()=>name,brickPlayer:audio))
             {
-                window.Time=()=>now;window.Show();Application.DoEvents();MakerField<Timer>(window,"timer").Stop();
+                window.Time=()=>now;window.PlayBrickSound=sound=>{cues.Add(sound);audio.Play(sound);};window.Show();Application.DoEvents();MakerField<System.Windows.Forms.Timer>(window,"timer").Stop();
                 var heading=MakerField<Label>(window,"lobbyHeading");Check(heading.Visible&&heading.Parent.ClientRectangle.Contains(heading.Bounds),"Lobby heading remains visible inside its header");
                 CaptureForm(window,"brick-lobby");ClickCabinet(window,2);Application.DoEvents();
                 Check(window.Game==ArcadeGame.Brick&&window.Text.Contains("Brick Battle")&&window.Brick.State==BrickState.Ready,"Third cabinet opens Brick Battle");
+                window.Brick.Collect(0,BrickPower.Triple);Check(cues.Count==0,"Ready game does not send test fixture effects to the audio player");
                 var canvas=MakerField<DoubleBufferedPanel>(window,"canvas");var round=MakerField<Label>(window,"brickRound");var timer=MakerField<Label>(window,"brickTimer");var points=MakerField<Label[]>(window,"brickPoints");var names=MakerField<Label[]>(window,"brickNames");var powers=MakerField<CheckBox>(window,"brickPowers");var modes=MakerField<RadioButton[]>(window,"brickModes");
                 Check(names[0].Text=="You"&&names[1].Text=="Vpet"&&points.All(label=>label.Text=="0")&&round.Text=="Round 1"&&timer.Text=="2:00","Ready header shows default pet name, match scores, round, and timer");
                 name="Skywing";window.Step();Check(names[1].Text==name,"Score card displays the saved pet name");
@@ -63,7 +68,12 @@ namespace Vpet
                 now+=1.1;window.Step();Check(timer.Text=="1:59","Visible timer counts down after serving");
                 FindButton(window,"Stop").PerformClick();Check(!window.Busy&&window.Brick.State==BrickState.Stopped&&window.Brick.Balls.Count==0&&FindButton(window,"Start").Visible&&powers.Enabled,"Stop ends play without scoring and restores Start/options");
                 FindButton(window,"Start").PerformClick();BrickMouse(window,"OnMouseClick",100,mouseY);window.Brick.Balls.Clear();
+                cues.Clear();PaddleBall(window.Brick,0);now+=.01;window.Step();Check(cues.SequenceEqual(new[]{BrickSound.Paddle}),"Native game forwards paddle impact to the distinct sound player");
+                window.Brick.Balls.Clear();var target=window.Brick.Bricks.Single(item=>item.Row==6&&item.Column==0);var targetBox=window.Brick.BrickBounds(target);
+                window.Brick.Balls.Add(new BrickBall{X=targetBox.Left-window.Brick.Radius-.1f,Y=targetBox.Top+targetBox.Height/2,VX=360});now+=.01;window.Step();
+                Check(cues.SequenceEqual(new[]{BrickSound.Paddle,BrickSound.Brick}),"Native game forwards lower brick impact separately from paddle hits");window.Brick.Balls.Clear();cues.Clear();
                 for(int side=0;side<2;side++)window.Brick.Collect(side,side==0?BrickPower.Triple:BrickPower.Sticky);
+                Check(cues.SequenceEqual(new[]{BrickSound.PowerUp,BrickSound.PowerUp})&&audio.ActiveVoices>=2,"Both native paddles forward pickups to overlapping two-tone chime voices");
                 for(int i=0;i<4;i++)window.Brick.Orbs.Add(new BrickOrb{X=260+i*75,Y=window.Brick.Height*.65f,Power=(BrickPower)(i+1),VX=-120});
                 window.Brick.Balls.Add(new BrickBall{X=300,Y=window.Brick.Height*.4f,VX=360,Bomb=true});window.Step();CaptureForm(window,"brick-powers");
                 window.Brick.Balls.Clear();window.Brick.Orbs.Clear();BattleGoal(window.Brick,0,ref now);window.Step();
@@ -76,9 +86,15 @@ namespace Vpet
                     now+=.34;window.Step();using(var dim=BrickCanvas(window))Check(bright.GetPixel((int)(250*window.SceneScale),window.BrickFieldBounds.Top+(int)(window.Brick.Height/2*window.SceneScale)).ToArgb()!=dim.GetPixel((int)(250*window.SceneScale),window.BrickFieldBounds.Top+(int)(window.Brick.Height/2*window.SceneScale)).ToArgb(),"Winner lettering flashes yellow");
                 }
                 window.StartGame();BattleRound(window.Brick,1,ref now);BattleRound(window.Brick,1,ref now);window.Step();Check(window.Brick.Winner==1&&MakerField<int>(window,"resultReaction")==7,"NPC match victory shows Proud");CaptureForm(window,"brick-pet-winner");
-                window.ShowLobby();Check(window.Game==ArcadeGame.Lobby&&window.Brick==null,"Close Game returns to the lobby and disposes match state");
-                ClickCabinet(window,1);Check(window.Game==ArcadeGame.Simon&&window.Simon!=null,"Simon still opens after Brick Battle");window.ShowLobby();ClickCabinet(window,2);Check(window.Brick.State==BrickState.Ready&&powers.Checked,"Brick Battle can reopen with its saved power-up choice");window.Close();
+                var formerBattle=window.Brick;window.ShowLobby();Check(window.Game==ArcadeGame.Lobby&&window.Brick==null,"Close Game returns to the lobby and disposes match state");
+                Thread.Sleep(30);cues.Clear();formerBattle.Start(now);formerBattle.Collect(0,BrickPower.Tall);Check(cues.Count==0&&audio.ActiveVoices==0,"Lobby silences sounds and ignores abandoned game callbacks");
+                ClickCabinet(window,1);Check(window.Game==ArcadeGame.Simon&&window.Simon!=null,"Simon still opens after Brick Battle");formerBattle.Collect(1,BrickPower.Triple);Check(cues.Count==0,"Other games ignore former Brick callbacks");
+                window.ShowLobby();ClickCabinet(window,2);Check(window.Brick.State==BrickState.Ready&&powers.Checked,"Brick Battle can reopen with its saved power-up choice");window.StartGame();formerBattle.Collect(1,BrickPower.Bomb);Check(cues.Count==0,"New matches cannot play sounds from a replaced Brick model");
+                window.Brick.Collect(0,BrickPower.Tall);Check(audio.ActiveVoices>0,"Active game starts a native pickup voice before Stop");window.StopGame();Thread.Sleep(30);cues.Clear();window.Brick.Collect(0,BrickPower.Sticky);
+                Check(cues.Count==0&&audio.ActiveVoices==0,"Stop silences native voices and ignores stopped model effects");
+                window.StartGame();window.Brick.Collect(0,BrickPower.Tall);Check(audio.ActiveVoices>0,"Active native cue is playing when the window closes");cues.Clear();closedBattle=window.Brick;window.Close();Check(audio.ActiveVoices==0,"Closing arcade disposes all active Brick audio voices");
             }
+            closedBattle.Start(now);closedBattle.Collect(0,BrickPower.Triple);Check(cues.Count==0,"Closed window cannot restart sound playback from a retained model");
         }
     }
 }

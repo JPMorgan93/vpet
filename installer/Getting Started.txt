@@ -262,6 +262,9 @@ round, playback, and its score without changing high scores. Start returns after
 stopping or finishing so you can replay.
 
 BRICK BATTLE
+Paddle hits play a light high tone. Brick hits play a lower tone. Collecting
+a power-up plays an ascending two-tone chime. Sounds overlap during multiball
+play and stop when you stop the game, return to the lobby, or close the arcade.
 The third cabinet opens a full-width paddle battle against your pet. Choose
 Easy, Normal, or Hard; higher difficulty improves the pet's movement and aim.
 Power ups defaults On and remembers your choice. Set match options before Start.

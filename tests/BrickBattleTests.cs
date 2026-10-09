@@ -30,6 +30,7 @@ namespace Vpet
         }
         static void BrickBattleFeatures()
         {
+            BrickAudioFeatures();
             string path=Path.Combine(artifacts,"brick-settings.json");File.WriteAllText(path,"{}");var prefs=Preferences.Load(path);
             Check(prefs.Arcade.BrickPowerUps,"Existing preferences default Brick Battle power ups to On");prefs.Arcade.BrickPowerUps=false;prefs.Save(path);Check(!Preferences.Load(path).Arcade.BrickPowerUps,"Power-up choice survives restart");
             Check(!prefs.Arcade.Record(ArcadeGame.Brick,ArcadeDifficulty.Easy,100)&&prefs.Arcade.SimonHigh.All(value=>value==0),"Match scores cannot overwrite Simon high scores");

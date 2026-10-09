@@ -44,6 +44,7 @@ namespace Vpet
         public readonly List<BattleBrick> Bricks=new List<BattleBrick>();
         public readonly int[] Dots=new int[2],Scores=new int[2];
         public readonly double[][] DotTimes={new double[5],new double[5]};
+        public event Action<BrickSound> SoundPlayed;
         public BrickState State {get;private set;}
         public int Round {get;private set;}
         public int Winner {get;private set;}
@@ -206,7 +207,9 @@ namespace Vpet
         {
             var paddle=Paddles[side];float bonus=power==BrickPower.Tall?(paddle.Power==BrickPower.Tall?paddle.TallBonus+.1f:.2f):0;
             paddle.Power=power;paddle.TallBonus=bonus;paddle.Y=ClampPaddle(side,paddle.Y);FollowHeld();
+            if(power!=BrickPower.None)PlaySound(BrickSound.PowerUp);
         }
+        void PlaySound(BrickSound sound){var handler=SoundPlayed;if(handler!=null)handler(sound);}
         void AwardGoal(int exitedSide,double now)
         {
             int scoring=1-exitedSide;if(Dots[scoring]>=5)return;
@@ -229,6 +232,7 @@ namespace Vpet
         }
         void PaddleHit(BrickBall ball,int side,double now)
         {
+            PlaySound(BrickSound.Paddle);
             var paddle=Paddles[side];ball.LastTouch=side;
             if(ball.Bomb){ball.PulseAt=now;paddle.FrozenUntil=now+.5;paddle.Velocity=0;return;}
             var box=PaddleBounds(side);double angle=Clamp((ball.Y-paddle.Y)/(box.Height/2)*.9f+paddle.Velocity/1200*.15f,-1,1)*Math.PI/3;
@@ -283,6 +287,7 @@ namespace Vpet
                 }
                 else if(kind==4)
                 {
+                    PlaySound(BrickSound.Brick);
                     if(ball.Bomb)
                     {foreach(var adjacent in Bricks.Where(item=>Math.Abs(item.Row-brick.Row)<=1&&Math.Abs(item.Column-brick.Column)<=1).ToArray())BreakBrick(adjacent,ball.LastTouch);ball.PulseAt=now;return;}
                     BreakBrick(brick,ball.LastTouch);if(horizontal)ball.VX=-ball.VX;else ball.VY=-ball.VY;

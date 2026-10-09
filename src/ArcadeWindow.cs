@@ -18,6 +18,7 @@ namespace Vpet
         readonly Stopwatch clock=Stopwatch.StartNew();readonly Timer timer=new Timer{Interval=16};
         readonly ArcadeMusic music;
         readonly ArcadeTones tones=new ArcadeTones();
+        readonly BrickBattleSounds brickSounds;
         internal static readonly Color Neutral=Color.FromArgb(23,18,42);
         readonly DoubleBufferedPanel canvas=new DoubleBufferedPanel{Dock=DockStyle.Fill,BackColor=Neutral};
         readonly Panel volumePanel=new Panel{Name="ArcadeVolumePanel",BackColor=Neutral,Padding=new Padding(8)};
@@ -48,6 +49,7 @@ namespace Vpet
         internal Func<double> Time {get;set;}
         internal Func<double> SongPosition {get;set;}
         internal Action<ArcadeLane> PlayTone {get;set;}
+        internal Action<BrickSound> PlayBrickSound {get;set;}
         bool updating,showingHigh,resultHandled,disposed;
         double resultAt=-100,hopAt=-100,lastHop;
         int resultReaction=-1,facing=2;
@@ -55,12 +57,13 @@ namespace Vpet
         double previous;
         internal double Now {get{return Time==null?clock.Elapsed.TotalSeconds:Time();}}
         internal bool Busy {get{return Game==ArcadeGame.Brick?Brick!=null&&(Brick.State==BrickState.Pending||Brick.State==BrickState.Playing):Game==ArcadeGame.Dance?Dance!=null&&(Dance.State==DanceState.Countdown||Dance.State==DanceState.Running):Game==ArcadeGame.Simon&&Simon!=null&&Simon.State!=SimonState.Ready&&Simon.State!=SimonState.Finished&&Simon.State!=SimonState.Stopped;}}
-        public ArcadeWindow(Func<SpriteSet> sprites,Func<int,Bitmap> emote,ArcadePreferences prefs,Action save,string musicDirectory,Random random,ArcadeMusic musicPlayer=null,Func<string> petName=null)
+        public ArcadeWindow(Func<SpriteSet> sprites,Func<int,Bitmap> emote,ArcadePreferences prefs,Action save,string musicDirectory,Random random,ArcadeMusic musicPlayer=null,Func<string> petName=null,BrickBattleSounds brickPlayer=null)
         {
             this.sprites=sprites;this.emote=emote;this.prefs=prefs;this.save=save;this.musicDirectory=musicDirectory;this.random=random;music=musicPlayer??new ArcadeMusic();
+            brickSounds=brickPlayer??new BrickBattleSounds();
             Text="Arcade Window";Font=new Font("Segoe UI",10);AutoScaleMode=AutoScaleMode.Dpi;BackColor=Color.FromArgb(36,27,58);
             ClientSize=new Size(1040,790);MinimumSize=new Size(700,620);StartPosition=FormStartPosition.CenterScreen;KeyPreview=true;
-            SongPosition=()=>music.Position;PlayTone=tones.Play;score.Font=new Font("Consolas",16,FontStyle.Bold);
+            SongPosition=()=>music.Position;PlayTone=tones.Play;PlayBrickSound=brickSounds.Play;score.Font=new Font("Consolas",16,FontStyle.Bold);
             lobbyHeading.ForeColor=MakerUi.Purple;LoadFloors();music.Preload(musicDirectory);
             var scoreboard=new FlowLayoutPanel{FlowDirection=FlowDirection.TopDown,WrapContents=false,Dock=DockStyle.Right,Width=190,Padding=new Padding(8)};calculated.ForeColor=MakerUi.Purple;
             var difficultyArea=new Panel{Dock=DockStyle.Fill};difficulties.Dock=DockStyle.None;difficultyArea.Controls.Add(difficulties);difficultyArea.Controls.Add(backgroundLabel);difficultyArea.Controls.Add(background);difficultyArea.Controls.Add(songTime);
@@ -100,7 +103,7 @@ namespace Vpet
         void MusicError(Exception ex){music.Close();if(Dance!=null)Dance=null;guidance.Text=ex.Message;RefreshControls();}
         internal void ShowLobby()
         {
-            tones.Stop();music.Close();musicPreparation=null;Game=ArcadeGame.Lobby;Dance=null;Simon=null;Brick=null;held.Clear();resultReaction=-1;Text="Arcade Window";guidance.Text="Click a lit cabinet to play. Close this window to return your pet to the desktop.";RefreshControls();canvas.Invalidate();
+            tones.Stop();brickSounds.Stop();music.Close();musicPreparation=null;Game=ArcadeGame.Lobby;Dance=null;Simon=null;Brick=null;held.Clear();resultReaction=-1;Text="Arcade Window";guidance.Text="Click a lit cabinet to play. Close this window to return your pet to the desktop.";RefreshControls();canvas.Invalidate();
         }
         internal void OpenGame(ArcadeGame game)
         {
@@ -112,14 +115,20 @@ namespace Vpet
         {if(Busy)return;Difficulty=value;showingHigh=false;resultReaction=-1;CreateGame();RefreshControls();canvas.Invalidate();}
         void CreateGame()
         {
-            tones.Stop();held.Clear();resultHandled=false;Dance=null;Simon=null;Brick=null;music.Close();musicPreparation=null;
+            tones.Stop();brickSounds.Stop();held.Clear();resultHandled=false;Dance=null;Simon=null;Brick=null;music.Close();musicPreparation=null;
             if(Game==ArcadeGame.Dance)
             {
                 try{pendingSong=Path.Combine(musicDirectory,Difficulty+".mp3");musicPreparation=music.Prepare(pendingSong);guidance.Text="Preparing music\u2026 Start will be ready when the entire song is loaded.";FinishPreparingMusic();}
                 catch(Exception ex){MusicError(ex);}
             }
             else if(Game==ArcadeGame.Simon){try{tones.Prepare();}catch(IOException){}Simon=new SimonGame(Difficulty,random);Simon.TonePlayed+=delegate(ArcadeLane lane){PlayTone(lane);};guidance.Text="Watch the lights and listen, then repeat the entire sequence within five seconds. Start with "+Simon.InitialLength+" button"+(Simon.InitialLength==1?".":"s.");}
-            else if(Game==ArcadeGame.Brick){Brick=new BrickBattle(Difficulty,prefs.BrickPowerUps,random);guidance.Text="Move your mouse up and down in the field. Click to serve. First to five points, or most after two minutes, wins the round.";}
+            else if(Game==ArcadeGame.Brick)
+            {
+                try{brickSounds.Prepare();}catch(IOException){}catch(System.Runtime.InteropServices.COMException){}
+                var battle=new BrickBattle(Difficulty,prefs.BrickPowerUps,random);Brick=battle;
+                battle.SoundPlayed+=delegate(BrickSound sound){if(!disposed&&Game==ArcadeGame.Brick&&Brick==battle&&Busy)PlayBrickSound(sound);};
+                guidance.Text="Move your mouse up and down in the field. Click to serve. First to five points, or most after two minutes, wins the round.";
+            }
         }
         void FinishPreparingMusic()
         {
@@ -140,7 +149,7 @@ namespace Vpet
         {
             if(!Busy)return;
             if(Game==ArcadeGame.Brick)Brick.Stop(Now);else if(Game==ArcadeGame.Dance){Dance.Stop(Now);music.Stop();}else Simon.Stop(Now);
-            tones.Stop();held.Clear();showingHigh=false;resultReaction=-1;resultHandled=true;
+            tones.Stop();brickSounds.Stop();held.Clear();showingHigh=false;resultReaction=-1;resultHandled=true;
             RefreshControls();Focus();canvas.Invalidate();
         }
         internal void Step()
@@ -226,7 +235,7 @@ namespace Vpet
         internal PointF SceneOrigin {get{if(Game==ArcadeGame.Brick)return new PointF(0,BrickFieldBounds.Top);int reserve=Game==ArcadeGame.Dance?98:0;return new PointF(reserve+(canvas.Width-reserve-SceneSize.Width*SceneScale)/2,(canvas.Height-SceneSize.Height*SceneScale)/2);}}
         internal RectangleF SceneBounds {get{return Game==ArcadeGame.Brick?(RectangleF)BrickFieldBounds:new RectangleF(SceneOrigin.X,SceneOrigin.Y,SceneSize.Width*SceneScale,SceneSize.Height*SceneScale);}}
         protected override void Dispose(bool disposing)
-        {if(disposing&&!disposed){disposed=true;timer.Stop();timer.Dispose();music.Dispose();tones.Dispose();tips.Dispose();switchKeys.Image.Dispose();foreach(var floor in danceFloors)if(floor!=null)floor.Dispose();if(simonFloor!=null)simonFloor.Dispose();save();}base.Dispose(disposing);}
+        {if(disposing&&!disposed){disposed=true;timer.Stop();timer.Dispose();music.Dispose();tones.Dispose();brickSounds.Dispose();tips.Dispose();switchKeys.Image.Dispose();foreach(var floor in danceFloors)if(floor!=null)floor.Dispose();if(simonFloor!=null)simonFloor.Dispose();save();}base.Dispose(disposing);}
     }
     internal static class ArcadeControls
     {
