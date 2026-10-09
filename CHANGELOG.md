@@ -1,6 +1,6 @@
 # Vpet 1.12.1
 
-- Keep the ball, triangle, coin, card, D20, plate, pudding, and joystick above the pet sprite, including both visible portions during movement between displays. Keep the Toy Chest and fences beneath the pet. Continue respecting Window Location and keeping Arcade Window above desktop assets.
+- Keep the ball, triangle, coin, card, D20, plate, pudding, and joystick above the pet sprite, including both visible portions during movement between displays. Keep the Toy Chest and fences beneath the pet. Continue respecting Window Location and keeping Arcade Window above desktop assets. Hovering or clicking an overlapping toy targets the toy instead of pausing or shaking the pet underneath.
 - Play the bundled Blue Dragon's default idle and walking animations at twice their previous speed. Apply the faster speed to new profiles, Restore Default, and exported default sprite packages. Preserve custom sprites' saved animation speeds.
 - Center the Brick Battle NPC directly over the right paddle and draw the pet in front of its bar. Keep it aligned while moving, resizing, growing the paddle, and shaking after an explosive hit.
 

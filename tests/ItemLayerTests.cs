@@ -72,6 +72,20 @@ namespace Vpet
                             Check(Native.GetForegroundWindow()==app.Handle,"Item updates do not steal keyboard focus");
                         }
                     }
+                    pet.Model.Place(new PointF(pet.Model.Current.Work.Left+70,pet.Model.Current.Work.Top+140));
+                    typeof(PetWindow).GetMethod("Render",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);RefreshItems(pet);
+                    var rendered=MakerField<Bitmap>(pet,"rendered");Point ink=Point.Empty;
+                    for(int y=0;y<rendered.Height;y++)for(int x=0;x<rendered.Width;x++)if(rendered.GetPixel(x,y).A==255)ink=new Point(x,y);
+                    Cursor.Position=new Point(pet.PresentedBounds.Left+ink.X,pet.PresentedBounds.Top+ink.Y);PetFrame(pet);
+                    Check(pet.Model.Hovered,"An unobstructed visible pet still detects hover");
+                    var petSize=pet.Model.Current.PetSize(pet.Sprites.Cell);pet.Model.Place(new PointF(toys.Ball.X,toys.Ball.Y+petSize.Height/2));
+                    typeof(PetWindow).GetMethod("Render",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);RefreshItems(pet);
+                    var ballCenter=Point.Round(toys.Ball);Cursor.Position=ballCenter;
+                    Check(Native.WindowFromPoint(new Native.POINT(ballCenter.X,ballCenter.Y))==pet.Toys.Ball.Handle,"An overlapping ball receives pointer input in front of the pet");PetFrame(pet);
+                    Check(!pet.Model.Hovered&&!pet.Model.Paused,"Hovering a foreground toy does not pause the pet underneath");
+                    ToyMouse(pet.Toys.Ball,0x201,ballCenter);ToyMouse(pet.Toys.Ball,0x202,ballCenter);toys.AdvanceBall(.1f);
+                    Check(toys.BounceHeight>0&&!pet.Model.Shaking(pet.Now),"Clicking an overlapping ball bounces it without triggering the pet's click shake");
+                    Cursor.Position=new Point(30,30);
                     pet.Model.Settings.Movement=MovementMode.Restricted;pet.Model.Settings.DisplayRestrictedArea=true;PetFrame(pet);
                     var restricted=MakerField<RestrictedAreaOverlay>(pet,"restrictedOverlay");
                     Check(IsAbove(pet.Handle,restricted.HandleWindow)&&restricted.RingWindows.All(handle=>IsAbove(pet.Handle,handle)),"Separate restricted fence remains below the sprite");
