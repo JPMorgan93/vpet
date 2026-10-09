@@ -1,6 +1,11 @@
 # Virtual Pet Development Specification
 
-Status: original prototype design with a current release addendum. The 1.6.0 rules below supersede earlier baseline details where they differ. See README.md and SPRITE-MAKER.md for the complete current application and editor instructions.
+Status: original prototype design with release addenda. The revised rules below supersede earlier baseline details where they differ. See README.md and SPRITE-MAKER.md for the complete current application and editor instructions.
+
+## Version 1.11.7 sprite revisions
+
+- Use [Blue Dragon.png](assets/reference/Blue%20Dragon.png) as the bundled default. Extract eight idle frames and ten walking frames for each directional animation from its 32 × 36 cells. Preserve visible artwork and transparency. Existing custom pets remain selected during updates; Restore Default selects Blue Dragon.
+- Sprite Maker supports 1–10 frames per movement or optional reaction animation. Save projects and exports using package version 6, retaining old projects' mappings and adding empty slots 6–10. Version 1–5 packages and previously installed legacy PNG pets remain readable. These rules replace the original reference and four/five-frame limits recorded in the baseline below.
 
 ## Version 1.6.0 additions and revised rules
 
@@ -149,7 +154,7 @@ The 512 × 512 limit applies to each custom emote image, not the complete pet sp
 
 ### Base artwork and animation contract
 
-Use [Base Vpet Sprite Sheet.png](assets/reference/Base%20Vpet%20Sprite%20Sheet.png) as the visual base for all frame generation. Preserve its character design, proportions, purple/blue palette, outlines, shading style, and directional poses. Read each cycle from left to right.
+Original baseline: use `Base Vpet Sprite Sheet.png` as the visual base for all frame generation. Preserve its character design, proportions, purple/blue palette, outlines, shading style, and directional poses. Read each cycle from left to right. The 1.11.7 addendum above replaces this reference with Blue Dragon.
 
 The supplied reference is 154 × 704 pixels, contains red row labels, and has an opaque white background (RGB without an alpha channel). It is an annotated reference rather than a runtime-ready transparent grid. Keep the original reference unchanged. Runtime assets must omit labels, spacing used for captions, and the opaque background.
 
