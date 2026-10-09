@@ -61,6 +61,11 @@ namespace Vpet
                         Check(IsAbove(pet.Handle,pet.Toys.Chest.Handle)&&IsAbove(pet.Handle,pet.Toys.Fence.Handle),"Chest and play fence remain below the sprite in "+mode);
                         // Simulate both visible native sprite portions and alternate which portion is higher.
                         crossing.Present(image,new Point(pet.PresentedBounds.Right+10,pet.PresentedBounds.Top));crossing.Show();crossing.SetLayer(mode);RefreshItems(pet);
+                        if(!IsAbove(items[0].Handle,crossing.Handle))
+                        {
+                            var order=new System.Collections.Generic.List<IntPtr>();Native.EnumWindows(delegate(IntPtr h,IntPtr unused){order.Add(h);return true;},IntPtr.Zero);
+                            Console.WriteLine("Layer diagnostics: "+string.Join(", ",new LayeredWindow[]{pet,crossing}.Concat(items).Select(w=>w.Text+"="+order.IndexOf(w.Handle)+" flags="+Native.GetWindowLongPtr(w.Handle,-20)+" companions="+w.CompanionHandle+"/"+w.OtherCompanionHandle)));
+                        }
                         foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" remains above both crossing portions in "+mode);
                         Check(IsAbove(crossing.Handle,pet.Toys.Chest.Handle),"Chest stays below the second sprite portion");
                         Native.SetWindowPos(pet.Handle,IntPtr.Zero,0,0,0,0,0x213);RefreshItems(pet);
