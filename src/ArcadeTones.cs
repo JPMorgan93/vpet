@@ -6,8 +6,8 @@ namespace Vpet
 {
     internal sealed class ArcadeTones : IDisposable
     {
-        readonly byte[][] samples=new byte[4][];
-        readonly GCHandle[] pinned=new GCHandle[4];
+        readonly byte[][] samples;
+        readonly GCHandle[] pinned;
         readonly ArcadeVoice[] voices=new ArcadeVoice[16];
         ArcadeAudioDevice device;
         internal static byte[] CreateWave(ArcadeLane lane,float volume=1)
@@ -30,30 +30,36 @@ namespace Vpet
                 return output.ToArray();
             }
         }
-        public ArcadeTones(float volume=1)
-        {for(int i=0;i<4;i++){byte[] wave=CreateWave((ArcadeLane)i,volume);samples[i]=new byte[wave.Length-44];System.Buffer.BlockCopy(wave,44,samples[i],0,samples[i].Length);}}
+        public ArcadeTones(float volume=1) : this(new[]{CreateWave(ArcadeLane.Up,volume),CreateWave(ArcadeLane.Down,volume),CreateWave(ArcadeLane.Left,volume),CreateWave(ArcadeLane.Right,volume)}){}
+        internal ArcadeTones(byte[][] waves)
+        {
+            samples=new byte[waves.Length][];pinned=new GCHandle[waves.Length];
+            for(int i=0;i<waves.Length;i++){samples[i]=new byte[waves[i].Length-44];System.Buffer.BlockCopy(waves[i],44,samples[i],0,samples[i].Length);}
+        }
         internal void Prepare()
         {
             if(device!=null)return;
             try
             {
                 device=new ArcadeAudioDevice();var format=new ArcadeAudioNative.WaveFormat{Tag=1,Channels=1,Rate=22050,BytesPerSecond=44100,BlockAlign=2,Bits=16};
-                for(int i=0;i<4;i++)pinned[i]=GCHandle.Alloc(samples[i],GCHandleType.Pinned);
+                for(int i=0;i<samples.Length;i++)pinned[i]=GCHandle.Alloc(samples[i],GCHandleType.Pinned);
                 for(int i=0;i<voices.Length;i++)voices[i]=device.Create(format);
             }
             catch{Dispose();throw;}
         }
         internal int ActiveVoices {get{int count=0;foreach(var voice in voices)if(voice!=null&&voice.State.Queued>0)count++;return count;}}
         public void Play(ArcadeLane lane)
+        {Play((int)lane);}
+        internal void Play(int index)
         {
             try
             {
                 Prepare();foreach(var voice in voices)if(voice.State.Queued==0)
-                {voice.Flush();int index=(int)lane;voice.Submit(pinned[index].AddrOfPinnedObject(),samples[index].Length);voice.Play();return;}
+                {voice.Flush();voice.Submit(pinned[index].AddrOfPinnedObject(),samples[index].Length);voice.Play();return;}
             }
             catch(IOException){}catch(COMException){}
         }
         public void Stop(){foreach(var voice in voices)if(voice!=null)voice.Flush();}
-        public void Dispose(){for(int i=0;i<voices.Length;i++)if(voices[i]!=null){voices[i].Dispose();voices[i]=null;}for(int i=0;i<4;i++)if(pinned[i].IsAllocated)pinned[i].Free();if(device!=null){device.Dispose();device=null;}}
+        public void Dispose(){for(int i=0;i<voices.Length;i++)if(voices[i]!=null){voices[i].Dispose();voices[i]=null;}for(int i=0;i<pinned.Length;i++)if(pinned[i].IsAllocated)pinned[i].Free();if(device!=null){device.Dispose();device=null;}}
     }
 }
