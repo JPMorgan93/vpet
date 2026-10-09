@@ -74,6 +74,7 @@ namespace Vpet
                     // Blue Dragon uses paired idle/walk rows, from down through up.
                     int[] sourceRows={8,0,4,6,2,9,1,5,7,3};
                     int[] counts={8,8,8,8,8,10,10,10,10,10};
+                    var speeds=new float[10];for(int row=0;row<speeds.Length;row++)speeds[row]=2;
                     var atlas=new Bitmap(320,360,PixelFormat.Format32bppArgb);
                     try
                     {
@@ -83,7 +84,7 @@ namespace Vpet
                             if(SpriteProject.VisibleBounds(crop).IsEmpty)throw new InvalidDataException("A bundled Blue Dragon frame is empty.");
                             SpritePackage.CopyPixels(g,crop,col*32,row*36);
                         }
-                        return new SpriteSet(atlas,true,counts,null,10);
+                        return new SpriteSet(atlas,true,counts,speeds,10);
                     }
                     catch{atlas.Dispose();throw;}
                 }

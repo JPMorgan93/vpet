@@ -6,7 +6,7 @@ Choose **Easy**, **Normal**, or **Hard**. Higher difficulty makes your pet react
 
 Click **Start**. Round 1 begins with five grey dots on each side, both balls waiting on their paddles, and a **2:00** clock. Move your mouse up/down inside the field to move the left paddle. Click the field to launch. Your first click serves both balls together and starts the timer. A moving paddle angles its serve in that direction.
 
-The right paddle belongs to your pet. It tracks incoming balls and can launch replacement or sticky balls by itself after the first simultaneous serve. Balls bounce from both paddles, the top/bottom walls, and the center bricks. The center wall is three touching bricks wide with twelve rows spanning the field's height. A hit removes the brick. Paddle contact position and motion change the bounce angle; balls keep an even pace.
+The right paddle belongs to your pet, which is centered directly over the bar and drawn in front of it. It tracks incoming balls and can launch replacement or sticky balls by itself after the first simultaneous serve. Balls bounce from both paddles, the top/bottom walls, and the center bricks. The center wall is three touching bricks wide with twelve rows spanning the field's height. A hit removes the brick. Paddle contact position and motion change the bounce angle; balls keep an even pace.
 
 ## Score and rounds
 

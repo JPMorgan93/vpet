@@ -313,7 +313,8 @@ namespace Vpet
         }
         bool IsHovered()
         {
-            return Hit(this,rendered)||(crossingWindow.Visible&&Hit(crossingWindow,crossingRendered));
+            Point cursor=Cursor.Position;IntPtr target=Native.WindowFromPoint(new Native.POINT(cursor.X,cursor.Y));
+            return target==Handle&&Hit(this,rendered)||(crossingWindow.Visible&&target==crossingWindow.Handle&&Hit(crossingWindow,crossingRendered));
         }
         static bool Hit(Form window,Bitmap image)
         {if(image==null)return false;Point p=window.PointToClient(Cursor.Position);return p.X>=0&&p.Y>=0&&p.X<image.Width&&p.Y<image.Height&&image.GetPixel(p.X,p.Y).A>0;}

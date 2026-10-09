@@ -76,6 +76,7 @@ namespace Vpet
             this.model=model;this.pet=pet;this.petWindow=petWindow;this.save=save;this.now=now;
             image=JoystickArtwork.Draw(model.Scale);Text="Vpet joystick";Cursor=Cursors.Hand;
             CompanionHandle=petWindow.Handle;OtherCompanionHandle=crossingWindow.Handle;
+            AboveCompanions=true;
             IntPtr handle=Handle;Native.BackgroundAdornments.Add(handle);FormClosed+=delegate{Native.BackgroundAdornments.Remove(handle);};
             Menu.Items.Add("Remove Joystick",null,delegate{SetVisible(false);});ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
             MouseDown+=delegate(object sender,MouseEventArgs e){if(e.Button!=MouseButtons.Left)return;pressed=true;dragged=false;pointerStart=Cursor.Position;origin=model.JoystickPosition;Capture=true;};
@@ -93,9 +94,9 @@ namespace Vpet
         public void UpdateJoystick()
         {
             if(!model.HasJoystick){if(Visible)Hide();return;}
-            BehindWindow=pet.Settings.Layer==LayerMode.UnderAll?IntPtr.Zero:petWindow.Handle;SetLayer(pet.Settings.Layer);
+            SetLayer(pet.Settings.Layer);
             Present(image,new Point((int)Math.Round(model.JoystickPosition.X-40*model.Scale),(int)Math.Round(model.JoystickPosition.Y-60*model.Scale)));
-            if(!Visible)Show();EnforceUnderAll();
+            if(!Visible)Show();EnforceAboveCompanions();
         }
         protected override void Dispose(bool disposing){if(disposing){dismissal.Dispose();Menu.Dispose();image.Dispose();}base.Dispose(disposing);}
     }

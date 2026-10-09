@@ -155,7 +155,7 @@ namespace Vpet
                         pet.Model.Settings.Layer=mode;pet.ApplyLayer();windows.Update();Application.DoEvents();
                         foreach(var window in windows.Windows.Where(w=>w.Visible))
                         {
-                            Check(IsAbove(pet.Handle,window.Handle),"Toy stays below pet in "+mode);
+                            Check(window.AboveCompanions?IsAbove(window.Handle,pet.Handle):IsAbove(pet.Handle,window.Handle),"Toy stays above pet while chest and fence stay below in "+mode);
                             Check(((Native.GetWindowLongPtr(window.Handle,-20).ToInt64()&8)!=0)==(mode==LayerMode.OverEverything),window.Text+" topmost flag follows "+mode+" ("+Native.GetWindowLongPtr(window.Handle,-20)+", pet "+Native.GetWindowLongPtr(pet.Handle,-20)+")");
                             if(mode==LayerMode.UnderAll)Check(IsAbove(application.Handle,window.Handle),"Under All locks toys below application");
                         }

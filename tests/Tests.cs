@@ -35,6 +35,8 @@ namespace Vpet
                     Console.WriteLine("PASS: "+count+" native window-layer assertions.");return 0;
                 }
                 artifacts=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-artifacts");Directory.CreateDirectory(artifacts);
+                if(Array.IndexOf(args,"--item-layer-tests")>=0)
+                {Native.EnableDpi();Application.EnableVisualStyles();ItemLayerWindows();Console.WriteLine("PASS: "+count+" item layering and default sprite UI checks.");return 0;}
                 if(Array.IndexOf(args,"--arcade-window-tests")>=0)
                 {Native.EnableDpi();Application.EnableVisualStyles();ArcadeWindows();Console.WriteLine("PASS: "+count+" arcade, music, and joystick UI checks.");return 0;}
                 if(Array.IndexOf(args,"--brick-window-tests")>=0)
@@ -251,7 +253,7 @@ namespace Vpet
                 var bounds=fence.HandleBounds;model.SetDestination(new PointF(550,500),"primary");model.Tick(2,.1f);fence.Update();
                 Check(fence.HandleBounds==bounds,"On-screen fence remains stationary while pet moves");
                 model.MoveRestrictedArea(new PointF(800,600));fence.Update();
-                Check(fence.HandleBounds.X==785&&fence.HandleBounds.Y==585,"Fence handle follows an explicitly moved center: "+fence.HandleBounds);
+                Check(fence.HandleBounds.X+fence.HandleBounds.Width/2f==model.Anchor.X&&fence.HandleBounds.Y+fence.HandleBounds.Height/2f==model.Anchor.Y,"Fence handle follows the moved center after keeping its rectangle on-screen: "+fence.HandleBounds);
                 Check(model.Position==model.Anchor,"Moving fence past pet relocates pet to center");
                 model.Settings.DisplayRestrictedArea=false;fence.Update();Check(!fence.IsDisplayed,"Checkbox hides the on-screen fence");
                 model.Settings.DisplayRestrictedArea=true;fence.Update();Check(fence.IsDisplayed,"Checkbox shows the fence again");

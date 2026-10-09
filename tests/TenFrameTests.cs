@@ -93,6 +93,13 @@ namespace Vpet
             using(var source=new Bitmap(reference))using(var sprites=SpriteSet.FromReference(reference))
             {
                 int[] sourceRows={8,0,4,6,2,9,1,5,7,3},facings={6,2,4,5,3};
+                Check(sprites.Speeds!=null&&sprites.Speeds.All(speed=>speed==2),"Bundled Blue Dragon uses twice-speed movement animations");
+                foreach(bool walking in new[]{false,true})foreach(int facing in Enumerable.Range(0,8))
+                {
+                    Check(ReferenceEquals(sprites.FrameAtPhase(walking,facing,1.25),sprites.Frame(walking,facing,2)),"Default playback advances two frames at phase 1.25 in direction "+facing+", walking "+walking);
+                }
+                string package=Path.Combine(artifacts,"twice-speed-default.vpetsprite");sprites.SavePackage(package);
+                using(var imported=SpriteSet.Import(package))Check(imported.Speeds.All(speed=>speed==2)&&imported.Counts.SequenceEqual(sprites.Counts),"Default template export/import retains twice-speed playback and frame counts");
                 for(int row=0;row<10;row++)for(int slot=0;slot<sprites.Counts[row];slot++)
                 {
                     var frame=sprites.Frame(row>=5,facings[row%5],slot);bool equal=true;

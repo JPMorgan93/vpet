@@ -1,4 +1,10 @@
-# Vpet 1.12.0
+# Vpet 1.12.1
+
+- Keep the ball, triangle, coin, card, D20, plate, pudding, and joystick above the pet sprite, including both visible portions during movement between displays. Keep the Toy Chest and fences beneath the pet. Continue respecting Window Location and keeping Arcade Window above desktop assets. Hovering or clicking an overlapping toy targets the toy instead of pausing or shaking the pet underneath.
+- Play the bundled Blue Dragon's default idle and walking animations at twice their previous speed. Apply the faster speed to new profiles, Restore Default, and exported default sprite packages. Preserve custom sprites' saved animation speeds.
+- Center the Brick Battle NPC directly over the right paddle and draw the pet in front of its bar. Keep it aligned while moving, resizing, growing the paddle, and shaking after an explosive hit.
+
+## Vpet 1.12.0
 
 - Add Brick Battle to the third arcade cabinet. Control the left paddle with the mouse and click to serve against the Vpet on the right, with Easy, Normal, and Hard difficulty choices.
 - Use a full-width field with a center wall three bricks wide and twelve rows tall. Balls bounce off walls, paddles, and bricks; broken bricks disappear. Initial serves launch both sides together and start the two-minute round clock.

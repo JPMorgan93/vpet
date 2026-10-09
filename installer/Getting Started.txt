@@ -60,7 +60,8 @@ or Complete saves these speeds in the project and exported pet. New project
 saves and Sprite Maker exports require Vpet 1.11.7 or later. Older files keep
 every mapping, size, offset, and speed, and gain empty frame slots 6 through 10.
 The default pet uses the supplied Blue Dragon artwork with eight idle frames
-and ten walking frames. Updates retain your selected custom pet; Restore
+and ten walking frames, playing idle and walking animations at twice their
+previous speed. Updates retain your selected custom pet and its saved speeds; Restore
 Default switches to Blue Dragon. Save default template exports a 320 x 360 PNG
 with 32 x 36 cells. Use Sprite Maker to map that PNG before using it as a pet.
 Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
@@ -191,6 +192,9 @@ behind the joystick and resumes normal rules. Right-click > Remove Joystick
 puts it away. Closing the toy chest does not remove it.
 Arcade Window always uses normal window stacking, allowing other applications
 above it while keeping all Vpet desktop assets beneath it in every Window Location.
+Outside the arcade, toys, the plate and food, and the joystick stay above the pet
+sprite, including both portions during display crossings. The Toy Chest and
+fences remain below it. All items continue to follow your Window Location setting.
 Closing the arcade restores the assets' configured window stacking.
 
 Click Dance Time, Simon Says, or Brick Battle in the first three arcade cabinets.

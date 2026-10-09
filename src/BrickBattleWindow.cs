@@ -18,6 +18,17 @@ namespace Vpet
         readonly Label[] brickNames=new Label[2],brickPoints=new Label[2];
         Func<string> nameOfPet;
         internal Rectangle BrickFieldBounds {get{return new Rectangle(0,40,canvas.Width,Math.Max(1,canvas.Height-40));}}
+        internal RectangleF BrickPetBounds
+        {
+            get
+            {
+                if(Brick==null)return RectangleF.Empty;
+                var paddle=Brick.PaddleBounds(1);var cell=sprites().Cell;
+                float factor=Math.Min(80f/cell.Width,Math.Min(100,Brick.BasePaddleHeight)/cell.Height);
+                float shake=Now<Brick.Paddles[1].FrozenUntil?(float)Math.Sin(Now*75)*3:0;
+                return new RectangleF(paddle.Left+paddle.Width/2+shake-cell.Width*factor/2,Brick.Paddles[1].Y-cell.Height*factor/2,cell.Width*factor,cell.Height*factor);
+            }
+        }
         void InitializeBrickControls(Func<string> petName)
         {
             nameOfPet=petName??(()=>"Vpet");top.Controls.Add(brickHeader);
@@ -78,20 +89,19 @@ namespace Vpet
                 var box=Brick.BrickBounds(brick);using(var fill=new SolidBrush(new[]{Color.FromArgb(230,123,102),Color.FromArgb(240,183,90),Color.FromArgb(167,117,207)}[brick.Column]))g.FillRectangle(fill,box);
                 using(var pen=new Pen(Color.FromArgb(249,222,174),1))g.DrawRectangle(pen,box.X,box.Y,box.Width,box.Height);
             }
-            var npc=Brick.PaddleBounds(1);float petHeight=Math.Min(100,Brick.BasePaddleHeight),petWidth=80;var set=sprites();float factor=Math.Min(petWidth/set.Cell.Width,petHeight/set.Cell.Height);
-            // Keep the NPC portrait beside the bar, leaving its paddle and pending ball visible.
-            float feetX=npc.Left-Brick.Radius*2-8-set.Cell.Width*factor/2,feetY=Math.Max(set.Cell.Height*factor,Math.Min(Brick.Height-3,npc.Bottom));
+            var petBounds=BrickPetBounds;var set=sprites();
             bool reacting=Brick.State==BrickState.Finished&&resultReaction>=0&&now-resultAt<3;
             Bitmap frame=reacting?set.EmoteAtPhase(resultReaction,(now-resultAt)*6):null;
             frame=frame??set.FrameAtPhase(Math.Abs(Brick.Paddles[1].Velocity)>5,4,now*(Math.Abs(Brick.Paddles[1].Velocity)>5?8:4));
-            var interpolation=g.InterpolationMode;g.InterpolationMode=InterpolationMode.NearestNeighbor;g.PixelOffsetMode=PixelOffsetMode.Half;
-            g.DrawImage(frame,new RectangleF(feetX-set.Cell.Width*factor/2,feetY-set.Cell.Height*factor,set.Cell.Width*factor,set.Cell.Height*factor));g.InterpolationMode=interpolation;
             for(int side=0;side<2;side++)
             {
                 var box=Brick.PaddleBounds(side);float shake=now<Brick.Paddles[side].FrozenUntil?(float)Math.Sin(now*75)*3:0;box.X+=shake;
                 using(var fill=new SolidBrush(PowerColor(Brick.Paddles[side].Power)))g.FillRectangle(fill,box);
                 using(var outline=new Pen(Color.White,1))g.DrawRectangle(outline,box.X,box.Y,box.Width,box.Height);
             }
+            // The NPC is centered over its bar and drawn in front of it, including during a freeze shake.
+            var interpolation=g.InterpolationMode;g.InterpolationMode=InterpolationMode.NearestNeighbor;g.PixelOffsetMode=PixelOffsetMode.Half;
+            g.DrawImage(frame,petBounds);g.InterpolationMode=interpolation;
             foreach(var orb in Brick.Orbs)
             {
                 Color color=PowerColor(orb.Power);using(var fill=new SolidBrush(Color.FromArgb(128,color)))g.FillEllipse(fill,orb.X-14,orb.Y-14,28,28);
@@ -112,7 +122,7 @@ namespace Vpet
             else if(Brick.State==BrickState.Finished)
             {
                 TextAt(g,"WINNER!",Brick.Winner==0?250:750,Brick.Height/2,48,Color.FromArgb((int)(now*3)%2==0?255:90,Color.Gold),true);
-                if(reacting)using(var bubble=Artwork.Bubble(resultReaction,emote(resultReaction),.8f,false))g.DrawImage(bubble,new PointF(Math.Min(1000-bubble.Width,feetX-bubble.Width/2),Math.Max(4,feetY-set.Cell.Height*factor-bubble.Height)));
+                if(reacting)using(var bubble=Artwork.Bubble(resultReaction,emote(resultReaction),.8f,false))g.DrawImage(bubble,new PointF(Math.Min(1000-bubble.Width,petBounds.Left+petBounds.Width/2-bubble.Width/2),Math.Max(4,petBounds.Top-bubble.Height)));
             }
             g.Restore(saved);
         }
