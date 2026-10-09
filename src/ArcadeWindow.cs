@@ -190,7 +190,7 @@ namespace Vpet
             bool game=Game!=ArcadeGame.Lobby;updating=true;for(int i=0;i<3;i++){modes[i].Checked=i==(int)Difficulty;modes[i].Enabled=!Busy;}updating=false;
             bool brick=Game==ArcadeGame.Brick;
             difficulties.Visible=switchKeys.Visible=game&&!brick;closeGame.Visible=game;lobbyHeading.Visible=!game;
-            difficulties.Parent.Visible=score.Parent.Visible=!brick;brickHeader.Visible=brick;if(brick)brickHeader.BringToFront();
+            difficulties.Parent.Visible=score.Parent.Visible=!brick;brickHeader.Visible=brick;if(brick)brickHeader.BringToFront();else if(!game)lobbyHeading.BringToFront();
             practice.Visible=Game==ArcadeGame.Dance;practice.Enabled=!Busy;
             background.Visible=backgroundLabel.Visible=game&&!brick;top.Height=brick?(ClientSize.Width<920?164:124):game?114:110;
             backgroundLabel.Location=new Point(16,72);background.Location=new Point(115,66);

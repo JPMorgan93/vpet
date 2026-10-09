@@ -100,7 +100,9 @@ namespace Vpet
             npcTarget=Paddles[1].Y;nextThink=now;
         }
         public void Stop(double now)
-        {if(State!=BrickState.Pending&&State!=BrickState.Playing)return;State=BrickState.Stopped;Now=previous=now;Balls.Clear();Orbs.Clear();Winner=-1;ResetBricks();}
+        {if(State!=BrickState.Pending&&State!=BrickState.Playing)return;State=BrickState.Stopped;Now=previous=now;Balls.Clear();Orbs.Clear();Winner=-1;ResetBricks();ClearPaddleEffects();}
+        void ClearPaddleEffects()
+        {for(int side=0;side<2;side++){var paddle=Paddles[side];paddle.Power=BrickPower.None;paddle.TallBonus=0;paddle.Velocity=0;paddle.FrozenUntil=0;paddle.Y=ClampPaddle(side,paddle.Y);}}
         public void MovePlayer(float y,double now)
         {
             var paddle=Paddles[0];if(now<paddle.FrozenUntil)return;
@@ -214,7 +216,7 @@ namespace Vpet
         void EndRound(double now)
         {
             int winner=Dots[0]==Dots[1]?-1:Dots[0]>Dots[1]?0:1;if(winner>=0)Scores[winner]++;
-            Balls.Clear();Orbs.Clear();ResetBricks();
+            Balls.Clear();Orbs.Clear();ResetBricks();ClearPaddleEffects();
             bool finished=Round==2&&(Scores[0]==2||Scores[1]==2)||Round>=3&&Scores[0]!=Scores[1];
             if(finished){State=BrickState.Finished;Winner=Scores[0]>Scores[1]?0:1;Now=now;return;}
             Round++;BeginRound(now);
@@ -286,7 +288,7 @@ namespace Vpet
                     BreakBrick(brick,ball.LastTouch);if(horizontal)ball.VX=-ball.VX;else ball.VY=-ball.VY;
                 }
                 // Push out along the new travel direction so a zero-time hit cannot repeat.
-                ball.X+=ball.VX/BallSpeed*.05f;ball.Y+=ball.VY/BallSpeed*.05f;
+                ball.X+=ball.VX/BallSpeed*.05f;ball.Y=Clamp(ball.Y+ball.VY/BallSpeed*.05f,BallRadius(ball),Height-BallRadius(ball));
             }
         }
     }

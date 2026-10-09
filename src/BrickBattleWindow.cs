@@ -79,7 +79,8 @@ namespace Vpet
                 using(var pen=new Pen(Color.FromArgb(249,222,174),1))g.DrawRectangle(pen,box.X,box.Y,box.Width,box.Height);
             }
             var npc=Brick.PaddleBounds(1);float petHeight=Math.Min(100,Brick.BasePaddleHeight),petWidth=80;var set=sprites();float factor=Math.Min(petWidth/set.Cell.Width,petHeight/set.Cell.Height);
-            float feetX=1000-set.Cell.Width*factor/2-4,feetY=Math.Max(set.Cell.Height*factor,Math.Min(Brick.Height-3,npc.Bottom));
+            // Keep the NPC portrait beside the bar, leaving its paddle and pending ball visible.
+            float feetX=npc.Left-Brick.Radius*2-8-set.Cell.Width*factor/2,feetY=Math.Max(set.Cell.Height*factor,Math.Min(Brick.Height-3,npc.Bottom));
             bool reacting=Brick.State==BrickState.Finished&&resultReaction>=0&&now-resultAt<3;
             Bitmap frame=reacting?set.EmoteAtPhase(resultReaction,(now-resultAt)*6):null;
             frame=frame??set.FrameAtPhase(Math.Abs(Brick.Paddles[1].Velocity)>5,4,now*(Math.Abs(Brick.Paddles[1].Velocity)>5?8:4));
