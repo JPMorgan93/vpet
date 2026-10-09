@@ -1,4 +1,10 @@
-# Vpet 1.12.1
+# Vpet 1.12.2
+
+- Add a light, high tone when a Brick Battle ball hits either paddle and a distinct lower tone when it hits a brick. Explosive hits play one impact sound while destroying neighboring bricks.
+- Play an ascending two-tone chime when either paddle collects a power-up, including replacements and repeated paddle-growth pickups.
+- Prepare gently faded sound effects before play and allow overlapping hits without cutting off other cues. Stop sounds when stopping the game, returning to the lobby, switching games, or closing the arcade.
+
+## Vpet 1.12.1
 
 - Keep the ball, triangle, coin, card, D20, plate, pudding, and joystick above the pet sprite, including both visible portions during movement between displays. Keep the Toy Chest and fences beneath the pet. Continue respecting Window Location and keeping Arcade Window above desktop assets. Hovering or clicking an overlapping toy targets the toy instead of pausing or shaking the pet underneath.
 - Play the bundled Blue Dragon's default idle and walking animations at twice their previous speed. Apply the faster speed to new profiles, Restore Default, and exported default sprite packages. Preserve custom sprites' saved animation speeds.

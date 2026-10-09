@@ -1,5 +1,13 @@
 # Vpet validation
 
+## Version 1.12.2
+
+6,609 automated assertions passed. New checks verify distinct high paddle and lower brick tones, two ascending power-up notes separated by silence, valid PCM lengths, gentle sample levels, smooth note endings, mute, and even gain scaling. Physics checks cover both paddles, sticky catches, explosive hits, every power-up type, one sound per impact/pickup, no duplicated explosive neighbor cues, overlapping real paddle impacts, and no unwanted sound for walls, goals, serves, missed or newly spawned orbs, resets, or resize. Existing gameplay, movement, sprites, toys, reminders, and other arcade checks continue to pass.
+
+433 isolated native checks passed: 69 Brick Battle and 364 existing arcade/audio/joystick checks. Prepared native Brick sounds overlap, finish naturally, remain valid through garbage collection, use a bounded voice pool, replay after Stop, and release on disposal. The actual Brick window forwards each collision type to its player and cancels active native cues on Stop, lobby return, and closing. Retained old game models cannot play sounds after replacement, game switching, or disposal. Existing Simon tone overlap, prepared song playback, music gain, scoring, controls, and arcade/desktop stacking checks pass. Audio playback was muted during tests; subjective loudspeaker quality and other PCs' audio hardware were not assessed.
+
+Validated on this development PC on 2026-10-08. Version 1.12.2 follows AGENTS.md's patch policy for adjustments to the existing Brick Battle game.
+
 ## Version 1.12.1
 
 6,560 automated assertions passed, including twice-speed default playback in all eight directions, unchanged Blue Dragon frame pixels, and default sprite package speed/count round trips. Existing custom animation speed, movement, interaction, toy, reminder, audio, and arcade assertions continue to pass.
