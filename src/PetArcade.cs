@@ -13,7 +13,7 @@ namespace Vpet
             if(closing)return;
             if(ArcadeOpen){arcadeWindow.Activate();return;}
             arcadeWindow=new ArcadeWindow(()=>Sprites,index=>Replacements.Get(index),Model.Settings.Arcade,Save,
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference"),random){Icon=Icon};
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference"),random,petName:()=>Model.Settings.PetName){Icon=Icon};
             arcadeWindow.FormClosed+=delegate
             {
                 Native.ArcadeForeground=IntPtr.Zero;

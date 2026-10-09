@@ -73,6 +73,7 @@ namespace Vpet
             ArcadeAdjustmentChecks();
             PracticeFeatures();
             ArcadeFloorFeatures();
+            BrickBattleFeatures();
         }
     }
 }
