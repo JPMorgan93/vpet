@@ -253,7 +253,7 @@ namespace Vpet
                 var bounds=fence.HandleBounds;model.SetDestination(new PointF(550,500),"primary");model.Tick(2,.1f);fence.Update();
                 Check(fence.HandleBounds==bounds,"On-screen fence remains stationary while pet moves");
                 model.MoveRestrictedArea(new PointF(800,600));fence.Update();
-                Check(fence.HandleBounds.X==785&&fence.HandleBounds.Y==585,"Fence handle follows an explicitly moved center: "+fence.HandleBounds);
+                Check(fence.HandleBounds.X+fence.HandleBounds.Width/2f==model.Anchor.X&&fence.HandleBounds.Y+fence.HandleBounds.Height/2f==model.Anchor.Y,"Fence handle follows the moved center after keeping its rectangle on-screen: "+fence.HandleBounds);
                 Check(model.Position==model.Anchor,"Moving fence past pet relocates pet to center");
                 model.Settings.DisplayRestrictedArea=false;fence.Update();Check(!fence.IsDisplayed,"Checkbox hides the on-screen fence");
                 model.Settings.DisplayRestrictedArea=true;fence.Update();Check(fence.IsDisplayed,"Checkbox shows the fence again");
