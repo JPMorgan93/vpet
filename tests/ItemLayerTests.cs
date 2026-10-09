@@ -65,6 +65,9 @@ namespace Vpet
                         {
                             var order=new System.Collections.Generic.List<IntPtr>();Native.EnumWindows(delegate(IntPtr h,IntPtr unused){order.Add(h);return true;},IntPtr.Zero);
                             Console.WriteLine("Layer diagnostics: "+string.Join(", ",new LayeredWindow[]{pet,crossing}.Concat(items).Select(w=>w.Text+"="+order.IndexOf(w.Handle)+" flags="+Native.GetWindowLongPtr(w.Handle,-20)+" companions="+w.CompanionHandle+"/"+w.OtherCompanionHandle)));
+                            var target=Native.AboveCompanionTarget(items[0].Handle,pet.Handle,crossing.Handle,mode);
+                            Console.WriteLine("Direct target index="+(target.HasValue?order.IndexOf(target.Value):-99)+", crossing previous="+order.IndexOf(Native.GetWindow(crossing.Handle,3)));
+                            items[0].EnforceAboveCompanions();Console.WriteLine("Direct ball reordering above crossing="+IsAbove(items[0].Handle,crossing.Handle));
                         }
                         foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" remains above both crossing portions in "+mode);
                         Check(IsAbove(crossing.Handle,pet.Toys.Chest.Handle),"Chest stays below the second sprite portion");
