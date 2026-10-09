@@ -193,8 +193,8 @@ Arcade Window always uses normal window stacking, allowing other applications
 above it while keeping all Vpet desktop assets beneath it in every Window Location.
 Closing the arcade restores the assets' configured window stacking.
 
-Click Dance Time or Simon Says in the arcade lobby. The other three cabinets
-are unavailable. Both games have Easy (default), Normal, and Hard, a three-second
+Click Dance Time, Simon Says, or Brick Battle in the first three arcade cabinets.
+The other two are unavailable. Dance and Simon have Easy (default), Normal, and Hard, a three-second
 countdown, WASD controls, and a circular-arrow button beside the top square to
 switch to arrow keys. Close Game returns to the lobby. Click the score box to
 see that game's high score for the selected difficulty. Scores, controls, and
@@ -253,9 +253,39 @@ changes the display speed: 0.9, 0.6, or 0.4 seconds per step. A wrong key or
 timeout ends the game, banks your points, and records a new high score if greater.
 The final correct input stays highlighted, then the pet looks down for a full
 one-second pause before starting the next sequence.
-Both games replace Start with Stop during countdowns and play. Stop cancels the
+Dance and Simon replace Start with Stop during countdowns and play. Stop cancels the
 round, playback, and its score without changing high scores. Start returns after
 stopping or finishing so you can replay.
+
+BRICK BATTLE
+The third cabinet opens a full-width paddle battle against your pet. Choose
+Easy, Normal, or Hard; higher difficulty improves the pet's movement and aim.
+Power ups defaults On and remembers your choice. Set match options before Start.
+Move the mouse up/down in the field to move your left paddle. Click to serve
+a waiting ball. Every round waits at 2:00 until you click; both initial balls
+launch together. A moving paddle angles its serve. Your pet can serve its own
+replacement balls afterward. Balls bounce off paddles, top/bottom walls, and
+the three-column, twelve-row brick wall. Bricks disappear on impact.
+A ball escaping either open side scores a dot for the opposite side. Your dots
+fill left to right; your pet's fill right to left. New dots flash for two seconds.
+Five dots, or the most when two minutes expire, wins a match point. A tie awards
+none. Each new round resets the field, dots, powers, and clock and waits for you.
+Score Card shows You and the pet's saved name, or Vpet. Two straight wins end a
+match at round two; otherwise play at least three rounds, continuing if tied.
+WINNER! flashes yellow. The pet shows Proud for winning or Sad for losing.
+Start becomes Stop during pending/play; Stop ends play without further scoring.
+Start afterward begins a new match. Other arcade high scores remain unchanged.
+
+Each broken brick has a 25% power-up drop chance. Half-transparent orbs drift
+toward the last touching paddle. Catch one; uncaught orbs disappear at an edge.
+Blue x3 splits the next paddle hit into three balls ten degrees apart.
+Yellow vertical arrows add 20% base paddle height; another yellow adds 10%.
+Green S sticks the next ball at its contact point. Click to release it; the
+pet releases its own. Later incoming balls bounce normally.
+Red ! charges a double-size blinking ball. It destroys a brick and its touching
+neighbors, or shakes/freezes a struck paddle for half a second, then pulses away.
+A new power replaces the previous one. Empty halves receive a pending serve
+after a ball disappears. Resizing keeps ongoing play and scores intact.
 
 REMINDERS
 Right-click the pet > Reminders, between Settings and Check for Updates with

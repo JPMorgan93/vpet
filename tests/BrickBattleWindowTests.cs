@@ -20,7 +20,7 @@ namespace Vpet
             using(var sprite=SpriteSet.FromReference(Path.Combine(root,"Blue Dragon.png")))using(var window=new ArcadeWindow(()=>sprite,index=>null,prefs,()=>saves++,root,new Random(12),petName:()=>name))
             {
                 window.Time=()=>now;window.Show();Application.DoEvents();MakerField<Timer>(window,"timer").Stop();
-                var heading=MakerField<Label>(window,"lobbyHeading");Console.WriteLine("Lobby heading: "+heading.Visible+" "+heading.Bounds+" parent "+heading.Parent.ClientRectangle+" "+heading.Text);
+                var heading=MakerField<Label>(window,"lobbyHeading");Check(heading.Visible&&heading.Parent.ClientRectangle.Contains(heading.Bounds),"Lobby heading remains visible inside its header");
                 CaptureForm(window,"brick-lobby");ClickCabinet(window,2);Application.DoEvents();
                 Check(window.Game==ArcadeGame.Brick&&window.Text.Contains("Brick Battle")&&window.Brick.State==BrickState.Ready,"Third cabinet opens Brick Battle");
                 var canvas=MakerField<DoubleBufferedPanel>(window,"canvas");var round=MakerField<Label>(window,"brickRound");var timer=MakerField<Label>(window,"brickTimer");var points=MakerField<Label[]>(window,"brickPoints");var names=MakerField<Label[]>(window,"brickNames");var powers=MakerField<CheckBox>(window,"brickPowers");var modes=MakerField<RadioButton[]>(window,"brickModes");
