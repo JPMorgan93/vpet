@@ -8,6 +8,8 @@ Click **Start**. Round 1 begins with five grey dots on each side, both balls wai
 
 The right paddle belongs to your pet, which is centered directly over the bar and drawn in front of it. It tracks incoming balls and can launch replacement or sticky balls by itself after the first simultaneous serve. Balls bounce from both paddles, the top/bottom walls, and the center bricks. The center wall is three touching bricks wide with twelve rows spanning the field's height. A hit removes the brick. Paddle contact position and motion change the bounce angle; balls keep an even pace.
 
+Paddle hits play a light, high tone; brick hits play a lower tone. Catching a power-up plays an ascending two-tone chime. Sounds can overlap during multiball play. Stop, Close Game, and closing the arcade silence them.
+
 ## Score and rounds
 
 - A ball reaching the left open edge scores for your pet; one reaching the right edge scores for you, regardless of who last touched it.
