@@ -20,7 +20,9 @@ The installer installs for the current user and provides an uninstaller in Windo
 
 See [GITHUB.md](GITHUB.md) for VS Code save syncing, the `test` branch, and promoting releases to `main`.
 
-Double-click **Launch Vpet.cmd**, or run **bin/Vpet.exe** after building. The launcher builds the app if needed. The supplied Blue Dragon appears on the desktop after a short pause. Updates change the bundled default; an active custom pet stays selected. **Restore Default** switches back to Blue Dragon.
+Double-click **Launch Vpet.cmd**, or run **bin/Vpet.exe** after building. The launcher builds the app if needed. The supplied Blue Dragon appears on the desktop after a short pause, with idle and walking animations at 2× speed. Updates change the bundled default; an active custom pet keeps its selected artwork and animation speeds. **Restore Default** switches back to Blue Dragon.
+
+Toys, the plate and its food, and the joystick display above the pet sprite. The Toy Chest and both fences stay below it. Each follows **Window Location** among other applications; Arcade Window stays above desktop assets while open.
 
 - Hover to pause and greet the pet; it switches to down-facing idle.
 - Left-click without dragging for a **half-second shake** and **Love**, regardless of personality. The shake starts when the click is released and has no duration setting.
@@ -42,6 +44,8 @@ Requires 64-bit Windows 10/11 with .NET Framework 4.x and its C# compiler. The c
 The test executable checks movement timing, diagonal speed, hover and release behavior, restrictions, offset displays, taskbar bounds, disconnected displays, scaling, reaction intervals, persistence, source-frame extraction, mirroring, and import validation. It writes an animation contact sheet and a usable default runtime template to `bin/test-artifacts/`.
 
 `bin/Vpet.Tests.exe --window-tests` briefly creates native test windows to verify Under All ordering, blocked promotion, reaction stacking, switching back to Dynamic or Over Everything, and showing/moving/hiding the restricted fence.
+
+`bin/Vpet.Tests.exe --item-layer-tests` verifies item ordering in all window modes, both visible sprite portions during crossings, custom-speed persistence, and the faster default. See `VALIDATION.md` for results and known harness limitations.
 
 `bin/Vpet.exe --smoke-test` briefly opens the real pet and reaction windows, exercises all four settings tabs and window layers, saves screenshots of its own settings UI, writes a result to `bin/smoke-output/`, then exits after about eight seconds. It uses separate settings under `bin/smoke-data/` and does not change your normal pet settings. `bin/Vpet.Tests.exe --expanded-window-tests` checks the new game controls, independent/shared fences, sound volume, animation speed, and responsive settings with isolated preferences.
 

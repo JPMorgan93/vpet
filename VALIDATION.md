@@ -1,5 +1,13 @@
 # Vpet validation
 
+## Version 1.12.1
+
+6,560 automated assertions passed, including twice-speed default playback in all eight directions, unchanged Blue Dragon frame pixels, and default sprite package speed/count round trips. Existing custom animation speed, movement, interaction, toy, reminder, audio, and arcade assertions continue to pass.
+
+592 native UI checks passed: 179 item/default-sprite, 49 Brick Battle, and 364 existing arcade/audio/joystick checks. Item checks cover all seven toys/items above the pet, the chest and fences below, both visible native crossing portions in either z-order, blocked item demotion, Under All, Dynamic, Over Everything and band transitions, ordinary application stacking, focus retention, menus, hidden-chest independence, new-profile defaults, retained custom speeds on restart, and Restore Default. Brick checks verify centered NPC bounds at default/minimum/wide/tall sizes and both field edges, actual visible blue pixels drawn over the paddle, and matching freeze shake. Existing arcade open/close, prepared audio, music controls, game behavior, and desktop restoration checks pass. Audio tests were muted. The updated Brick Battle capture was visually inspected.
+
+The older `--window-tests` harness passes its 42 assertions after correcting its obsolete circular-fence coordinate expectation, but exits afterward with native callback status 0xC000041D. The previous public 1.12.0 sources reproduce the same shutdown status with that test expectation corrected; this suite is not counted as passing. The focused item and arcade suites exit successfully. Validated on this development PC on 2026-10-08. This is a patch release under AGENTS.md for existing-feature adjustments.
+
 ## Version 1.12.0
 
 6,542 automated assertions passed. New checks exercise initial simultaneous serves and the paused round clock, mouse-directed launch angles, constant speed and swept collision detection, both goal directions and dot order, half-field replacement serves, five-point rounds, timed wins/draws, 2–0 match finishes, split rounds and extra rounds, stopping/restarting, and NPC difficulty settings. Power coverage includes the exact 25% drop boundary, all four types, last-touch direction, catching/removing orbs, ten-degree multiball copies, centered yellow stacking/overwrite, single-ball sticky capture and manual/automatic release, double-size bombs near walls, destruction of touching neighbors, pulsing/removal, half-second freezes, resize recovery, and sustained simulations at every difficulty. Existing sprite, movement, toy, reminder, and arcade assertions pass.
