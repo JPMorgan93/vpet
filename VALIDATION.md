@@ -6,6 +6,8 @@
 
 433 isolated native checks passed: 69 Brick Battle and 364 existing arcade/audio/joystick checks. Prepared native Brick sounds overlap, finish naturally, remain valid through garbage collection, use a bounded voice pool, replay after Stop, and release on disposal. The actual Brick window forwards each collision type to its player and cancels active native cues on Stop, lobby return, and closing. Retained old game models cannot play sounds after replacement, game switching, or disposal. Existing Simon tone overlap, prepared song playback, music gain, scoring, controls, and arcade/desktop stacking checks pass. Audio playback was muted during tests; subjective loudspeaker quality and other PCs' audio hardware were not assessed.
 
+The 1.12.2 EXE installer compiled successfully. Isolated fresh installation and progress-only upgrade checks passed supplied artwork, songs, icon and shortcut paths, retained destination and shortcut choices, preserved skipped-version descriptions, legacy updater support, completion/relaunch smoke testing, and cleanup. The regular installation and personal preferences were unchanged.
+
 Validated on this development PC on 2026-10-08. Version 1.12.2 follows AGENTS.md's patch policy for adjustments to the existing Brick Battle game.
 
 ## Version 1.12.1
