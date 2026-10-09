@@ -19,11 +19,8 @@ namespace Vpet
             try
             {
                 using(var pet=new PetWindow(directory,reference,true,directory))
-                using(var app=new Form{Text="Item stacking test",Size=new Size(100,80),Location=new Point(20,20),StartPosition=FormStartPosition.Manual})
-                using(var topmost=new Form{Text="Topmost stacking test",TopMost=true,Size=new Size(100,80),Location=new Point(130,20),StartPosition=FormStartPosition.Manual})
-                using(var image=new Bitmap(32,36))
                 {
-                    pet.Show();MakerField<Timer>(pet,"timer").Stop();app.Show();topmost.Show();Application.DoEvents();Cursor.Position=new Point(30,30);
+                    pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();Cursor.Position=new Point(30,30);
                     pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.SyncPlayZone=false;
                     Check(!pet.Model.Settings.CustomPet&&pet.Sprites.Speeds.All(speed=>speed==2),"New profiles use twice-speed default animations");
                     var speeds=Enumerable.Repeat(1f,10).ToArray();speeds[5]=.5f;
@@ -36,7 +33,7 @@ namespace Vpet
                 using(var topmost=new Form{Text="Topmost stacking test",TopMost=true,Size=new Size(100,80),Location=new Point(130,20),StartPosition=FormStartPosition.Manual})
                 using(var image=new Bitmap(32,36))
                 {
-                    pet.Show();MakerField<Timer>(pet,"timer").Stop();app.Show();topmost.Show();Application.DoEvents();Cursor.Position=new Point(30,30);
+                    pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();app.Show();topmost.Show();Application.DoEvents();Cursor.Position=new Point(30,30);
                     Check(pet.Model.Settings.CustomPet&&pet.Sprites.Speed(false,2)==1&&pet.Sprites.Speed(true,6)==.5f,"Restarting retains custom speeds rather than applying the default multiplier");
                     pet.RestoreDefault();Check(!pet.Model.Settings.CustomPet&&pet.Sprites.Speeds.All(speed=>speed==2),"Restore Default reapplies twice-speed Blue Dragon animations");
                     pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.SyncPlayZone=false;
@@ -61,14 +58,7 @@ namespace Vpet
                         Check(IsAbove(pet.Handle,pet.Toys.Chest.Handle)&&IsAbove(pet.Handle,pet.Toys.Fence.Handle),"Chest and play fence remain below the sprite in "+mode);
                         // Simulate both visible native sprite portions and alternate which portion is higher.
                         crossing.Present(image,new Point(pet.PresentedBounds.Right+10,pet.PresentedBounds.Top));crossing.Show();crossing.SetLayer(mode);RefreshItems(pet);
-                        if(!IsAbove(items[0].Handle,crossing.Handle))
-                        {
-                            var order=new System.Collections.Generic.List<IntPtr>();Native.EnumWindows(delegate(IntPtr h,IntPtr unused){order.Add(h);return true;},IntPtr.Zero);
-                            Console.WriteLine("Layer diagnostics: "+string.Join(", ",new LayeredWindow[]{pet,crossing}.Concat(items).Select(w=>w.Text+"="+order.IndexOf(w.Handle)+" handle="+w.Handle+" visible="+w.Visible+"/"+Native.IsWindowVisible(w.Handle)+" flags="+Native.GetWindowLongPtr(w.Handle,-20)+" companions="+w.CompanionHandle+"/"+w.OtherCompanionHandle)));
-                            var target=Native.AboveCompanionTarget(items[0].Handle,pet.Handle,crossing.Handle,mode);
-                            Console.WriteLine("Direct target index="+(target.HasValue?order.IndexOf(target.Value):-99)+", crossing previous="+order.IndexOf(Native.GetWindow(crossing.Handle,3)));
-                            items[0].EnforceAboveCompanions();Console.WriteLine("Direct ball reordering above crossing="+IsAbove(items[0].Handle,crossing.Handle));
-                        }
+                        Check(crossing.Visible&&Native.IsWindowVisible(crossing.Handle),"Both sprite portions remain visible during the isolated crossing check");
                         foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" remains above both crossing portions in "+mode);
                         Check(IsAbove(crossing.Handle,pet.Toys.Chest.Handle),"Chest stays below the second sprite portion");
                         Native.SetWindowPos(pet.Handle,IntPtr.Zero,0,0,0,0,0x213);RefreshItems(pet);
