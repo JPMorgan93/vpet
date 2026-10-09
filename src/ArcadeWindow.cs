@@ -192,7 +192,7 @@ namespace Vpet
             difficulties.Visible=switchKeys.Visible=game&&!brick;closeGame.Visible=game;lobbyHeading.Visible=!game;
             difficulties.Parent.Visible=score.Parent.Visible=!brick;brickHeader.Visible=brick;if(brick)brickHeader.BringToFront();
             practice.Visible=Game==ArcadeGame.Dance;practice.Enabled=!Busy;
-            background.Visible=backgroundLabel.Visible=game&&!brick;top.Height=brick?(ClientSize.Width<920?150:124):game?114:110;
+            background.Visible=backgroundLabel.Visible=game&&!brick;top.Height=brick?(ClientSize.Width<920?164:124):game?114:110;
             backgroundLabel.Location=new Point(16,72);background.Location=new Point(115,66);
             score.Visible=calculated.Visible=game&&!brick&&!(Game==ArcadeGame.Dance&&prefs.Practice);
             start.Visible=game;start.Text=Busy?"Stop":"Start";start.Enabled=Game==ArcadeGame.Brick?Brick!=null:Game==ArcadeGame.Simon||Dance!=null;

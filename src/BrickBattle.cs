@@ -231,7 +231,7 @@ namespace Vpet
             if(ball.Bomb){ball.PulseAt=now;paddle.FrozenUntil=now+.5;paddle.Velocity=0;return;}
             var box=PaddleBounds(side);double angle=Clamp((ball.Y-paddle.Y)/(box.Height/2)*.9f+paddle.Velocity/1200*.15f,-1,1)*Math.PI/3;
             ball.VX=(float)Math.Cos(angle)*BallSpeed*(side==0?1:-1);ball.VY=(float)Math.Sin(angle)*BallSpeed;
-            if(paddle.Power==BrickPower.Sticky)
+            if(paddle.Power==BrickPower.Sticky&&!Balls.Any(item=>item.HeldBy==side&&item.StickyHeld))
             {ball.HeldBy=side;ball.Offset=ball.Y-paddle.Y;ball.StickyHeld=true;paddle.LaunchAt=now+.55+random.NextDouble()*.35;FollowHeld();return;}
             if(paddle.Power==BrickPower.Bomb){ball.Bomb=true;paddle.Power=BrickPower.None;ball.X=side==0?box.Right+BallRadius(ball)+.1f:box.Left-BallRadius(ball)-.1f;ball.Y=Clamp(ball.Y,BallRadius(ball),Height-BallRadius(ball));}
             else if(paddle.Power==BrickPower.Triple)

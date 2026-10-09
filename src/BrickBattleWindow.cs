@@ -9,7 +9,7 @@ namespace Vpet
     internal sealed partial class ArcadeWindow
     {
         readonly Panel brickHeader=new Panel{Name="BrickHeader",Dock=DockStyle.Fill};
-        readonly FlowLayoutPanel brickDifficulties=new FlowLayoutPanel{AutoSize=true,WrapContents=false};
+        readonly FlowLayoutPanel brickDifficulties=new FlowLayoutPanel{AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,WrapContents=false};
         readonly RadioButton[] brickModes=new RadioButton[3];
         readonly CheckBox brickPowers=new CheckBox{Name="BrickPowerUps",Text="Power ups",AutoSize=true,ForeColor=MakerUi.Purple};
         readonly Label brickRound=new Label{Name="BrickRound",Text="Round 1",TextAlign=ContentAlignment.MiddleCenter,Size=new Size(240,28)};
@@ -47,8 +47,8 @@ namespace Vpet
             int width=brickHeader.ClientSize.Width;
             // Give the scoreboard a lower row on narrow windows to avoid the difficulty choices.
             brickDifficulties.Location=new Point(12,10);brickPowers.Location=new Point(12,55);
-            brickRound.Location=new Point(Math.Max(0,(width-240)/2),width<920?36:2);brickScores.Location=new Point(Math.Max(0,(width-240)/2),width<920?66:32);
-            brickTimer.Location=new Point(Math.Max(0,width-brickTimer.Width-16),width<920?66:18);
+            brickRound.Location=new Point(Math.Max(0,(width-240)/2),width<920?48:2);brickScores.Location=new Point(Math.Max(0,(width-240)/2),width<920?78:32);
+            brickTimer.Location=new Point(Math.Max(0,width-brickTimer.Width-16),width<920?78:18);
         }
         void RefreshBrickControls()
         {
