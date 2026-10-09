@@ -51,7 +51,7 @@ namespace Vpet
             ArcadeMusicTests();PreparedAudioTests();Point cursor=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();string root=AppDomain.CurrentDomain.BaseDirectory;
             try
             {
-                using(var pet=new PetWindow(Path.Combine(artifacts,"arcade-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"arcade-smoke")))
+                using(var pet=new PetWindow(Path.Combine(artifacts,"arcade-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"arcade-smoke")))
                 {
                     try
                     {

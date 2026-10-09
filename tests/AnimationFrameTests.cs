@@ -72,17 +72,17 @@ namespace Vpet
             using(var legacy=MakerFixture())
             {
                 string path=Path.Combine(artifacts,"legacy-size.vpetproject");
-                var legacyData=new SpriteManifest{Kind="project",Width=legacy.Data.Width,Height=legacy.Data.Height,Frames=legacy.Data.Frames.Take(10).ToArray()};
+                var legacyData=new SpriteManifest{Kind="project",Width=legacy.Data.Width,Height=legacy.Data.Height,Frames=legacy.Data.Frames.Take(10).Select(row=>row.Take(5).ToArray()).ToArray()};
                 SpritePackage.Write(path,legacyData,legacy.Source);
                 using(var loaded=SpriteProject.Load(path))
                 {
                     Check(loaded.Data.Version==1&&Enumerable.Range(0,10).All(row=>loaded.Width(row)==20&&loaded.Height(row)==24),"Version 1 projects retain their original shared size on every cycle");
                     loaded.SetSize(2,25,26);loaded.Save(path);
                 }
-                using(var loaded=SpriteProject.Load(path))Check(loaded.Data.Version==5&&loaded.Width(2)==25&&loaded.Width(0)==20,"Legacy project upgrades without changing other cycles");
+                using(var loaded=SpriteProject.Load(path))Check(loaded.Data.Version==SpritePackage.CurrentVersion&&loaded.Width(2)==25&&loaded.Width(0)==20,"Legacy project upgrades without changing other cycles");
                 using(var built=legacy.Build())
                 {
-                    path=Path.Combine(artifacts,"legacy-sprite.vpetsprite");SpritePackage.Write(path,new SpriteManifest{Kind="sprite",Width=built.Cell.Width,Height=built.Cell.Height,Counts=built.Counts},built.Sheet);
+                    path=Path.Combine(artifacts,"legacy-sprite.vpetsprite");using(var oldAtlas=built.Sheet.Clone(new Rectangle(0,0,built.Cell.Width*5,built.Sheet.Height),System.Drawing.Imaging.PixelFormat.Format32bppArgb))SpritePackage.Write(path,new SpriteManifest{Kind="sprite",Width=built.Cell.Width,Height=built.Cell.Height,Counts=built.Counts},oldAtlas);
                     using(var loaded=SpriteSet.Import(path))Check(loaded.Cell==built.Cell,"Version 1 runtime sprites remain supported");
                 }
             }

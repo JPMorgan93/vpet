@@ -43,7 +43,7 @@ namespace Vpet
             try
             {
                 string root=AppDomain.CurrentDomain.BaseDirectory;
-                using(var pet=new PetWindow(Path.Combine(artifacts,"expanded-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"expanded-smoke")))
+                using(var pet=new PetWindow(Path.Combine(artifacts,"expanded-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"expanded-smoke")))
                 {
                     pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
                     using(var marker=new Bitmap(20,20)){using(var graphics=Graphics.FromImage(marker))graphics.Clear(Color.Purple);pet.Present(marker,new Point(pet.Model.Current.Work.Left+5,pet.Model.Current.Work.Top+5));}

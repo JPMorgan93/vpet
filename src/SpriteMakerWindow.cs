@@ -33,7 +33,7 @@ namespace Vpet
         string projectPath;
         readonly Preferences preferences;
         readonly Action savePreferences;
-        readonly Button[] cycles=new Button[SpriteProject.TotalCycles],slots=new Button[5];
+        readonly Button[] cycles=new Button[SpriteProject.TotalCycles],slots=new Button[SpriteProject.MaximumFrames];
         readonly CheckBox emotes=new CheckBox{Text="Emote Animations (optional)",AutoSize=true,Margin=new Padding(10)};
         readonly ComboBox facing=new ComboBox{DropDownStyle=ComboBoxStyle.DropDownList,Width=125,Margin=new Padding(4,8,4,4)};
         readonly CheckBox diagonal=new CheckBox{Text="Diagonal animations",AutoSize=true,Checked=true,Margin=new Padding(10)};
@@ -74,7 +74,7 @@ namespace Vpet
             var choices=MakerUi.Flow();root.Controls.Add(choices,0,2);
             for(int i=0;i<cycles.Length;i++){int index=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{ChooseCycle(index);});choices.Controls.Add(cycles[i]);}
             var frameChoices=MakerUi.Flow();root.Controls.Add(frameChoices,0,3);
-            for(int i=0;i<5;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);frameChoices.Controls.Add(slots[i]);}
+            for(int i=0;i<slots.Length;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);frameChoices.Controls.Add(slots[i]);}
             frameChoices.Controls.Add(MakerUi.Button("Set",delegate{SetFrame();}));frameChoices.Controls.Add(MakerUi.Button("Clear",delegate{ClearFrame();}));frameChoices.Controls.Add(selectionHelp);
             var preview=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=2};preview.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));preview.RowStyles.Add(new RowStyle(SizeType.AutoSize));preview.RowStyles.Add(new RowStyle(SizeType.Percent,100));workspaceSplit.Panel2.Controls.Add(preview);
             preview.Controls.Add(zoom,0,0);viewport.Controls.Add(sheet);editorSplit.Panel1.Controls.Add(viewport);editorSplit.Panel2.Controls.Add(status);preview.Controls.Add(editorSplit,0,1);
@@ -185,7 +185,7 @@ namespace Vpet
             if(Project==null)return;
             string problem=Project.FrameProblem(Cycle,sheet.Draft,false);
             if(problem!=null){MakerUi.Error(this,new InvalidDataException("Select a valid frame: "+problem));return;}
-            Project.Data.Frames[Cycle][Slot]=sheet.Draft.Copy();Dirty=true;ChooseSlot(Math.Min(4,Slot+1));
+            Project.Data.Frames[Cycle][Slot]=sheet.Draft.Copy();Dirty=true;ChooseSlot(Math.Min(SpriteProject.MaximumFrames-1,Slot+1));
         }
         internal void ClearFrame(){if(Project==null)return;Project.Data.Frames[Cycle][Slot]=null;sheet.Draft=null;Dirty=true;RefreshState();}
         internal void RefreshState()
@@ -194,7 +194,7 @@ namespace Vpet
             updateSheet.Enabled=Project!=null;
             for(int i=0;i<cycles.Length;i++){cycles[i].Visible=Project==null?i<10&&i%5<3:Project.Enabled(i);cycles[i].BackColor=i==Cycle?Color.FromArgb(221,211,241):Color.White;}
             diagonal.Enabled=emotes.Enabled=facing.Enabled=Project!=null;
-            for(int i=0;i<5;i++){bool saved=Project!=null&&Project.Data.Frames[Cycle][i]!=null;slots[i].Text=(i+1)+(saved?" ✓":"");slots[i].ForeColor=saved?Color.DarkGreen:Color.Black;slots[i].BackColor=i==Slot?Color.FromArgb(221,211,241):Color.White;}
+            for(int i=0;i<slots.Length;i++){bool saved=Project!=null&&Project.Data.Frames[Cycle][i]!=null;slots[i].Text=(i+1)+(saved?" ✓":"");slots[i].ForeColor=saved?Color.DarkGreen:Color.Black;slots[i].BackColor=i==Slot?Color.FromArgb(221,211,241):Color.White;}
             selectionHelp.Text=Project==null?"Upload a transparent PNG to begin.":"Frame "+(Slot+1)+": drag border to move; corners resize all "+SpriteProject.Cycles[Cycle]+" frames.";
             complete.Enabled=false;
             if(Project==null)status.Text="Upload a sheet or load a saved project. Use the scrollbars to move around larger sheets."+Environment.NewLine+
@@ -313,7 +313,7 @@ namespace Vpet
             e.Graphics.SetClip(clip,CombineMode.Intersect);MakerUi.Checker(e.Graphics,clip,16);if(Project==null)return;
             e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;
             e.Graphics.DrawImage(Project.Source,new RectangleF(0,0,Project.Source.Width*zoom,Project.Source.Height*zoom),new RectangleF(0,0,Project.Source.Width,Project.Source.Height),GraphicsUnit.Pixel);
-            using(var thin=new Pen(Color.FromArgb(140,Color.Red),1))for(int i=0;i<5;i++)if(i!=Slot&&Project.Data.Frames[Cycle][i]!=null)DrawBox(e.Graphics,Project.Selection(Cycle,Project.Data.Frames[Cycle][i]),thin,false);
+            using(var thin=new Pen(Color.FromArgb(140,Color.Red),1))for(int i=0;i<SpriteProject.MaximumFrames;i++)if(i!=Slot&&Project.Data.Frames[Cycle][i]!=null)DrawBox(e.Graphics,Project.Selection(Cycle,Project.Data.Frames[Cycle][i]),thin,false);
             if(Draft!=null)using(var pen=new Pen(Color.Red,2))DrawBox(e.Graphics,Project.Selection(Cycle,Draft),pen,true);
         }
         protected override void OnPaintBackground(PaintEventArgs e){} // OnPaint fills the visible checkerboard.

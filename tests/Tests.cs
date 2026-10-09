@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Vpet
@@ -255,7 +256,7 @@ namespace Vpet
                 model.ChangeMode(MovementMode.Static,3);fence.Update();Check(!fence.IsDisplayed,"Leaving Restricted removes the fence UI");
             }
             string root=AppDomain.CurrentDomain.BaseDirectory;
-            using(var pet=new PetWindow(Path.Combine(root,"test-artifacts","click-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(root,"test-artifacts","click-output")))
+            using(var pet=new PetWindow(Path.Combine(root,"test-artifacts","click-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(root,"test-artifacts","click-output")))
             {
                 pet.Model.Settings.Movement=MovementMode.Static;pet.Show();Application.DoEvents();
                 foreach(Personality personality in Enum.GetValues(typeof(Personality)))
@@ -529,17 +530,17 @@ namespace Vpet
                 {var pixel=emoji.GetPixel(x,y);if(Math.Max(pixel.R,Math.Max(pixel.G,pixel.B))-Math.Min(pixel.R,Math.Min(pixel.G,pixel.B))>25)coloredPixels++;}
                 Check(coloredPixels>50,"Windows renders "+Reactions.Names[i]+" as a visible color emoji");
             }
-            string reference=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Base Vpet Sprite Sheet.png");
+            string reference=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Blue Dragon.png");
             using(var sprites=SpriteSet.FromReference(reference))
             {
                 Check(sprites.Cell==new Size(32,36),"Reference produces aligned 32 × 36 cells");
-                Check(sprites.Sheet.Width==160&&sprites.Sheet.Height==360,"Runtime grid is 5 × 10");
-                for(int row=0;row<5;row++)for(int y=row*36;y<(row+1)*36;y++)for(int x=128;x<160;x++)
-                    if(sprites.Sheet.GetPixel(x,y).A!=0)throw new Exception("Fifth idle frame is not transparent");
+                Check(sprites.Sheet.Width==320&&sprites.Sheet.Height==360&&sprites.Columns==10&&sprites.Counts.SequenceEqual(new[]{8,8,8,8,8,10,10,10,10,10}),"Blue Dragon runtime grid has eight idle and ten walking frames");
+                for(int row=0;row<5;row++)for(int y=row*36;y<(row+1)*36;y++)for(int x=256;x<320;x++)
+                    if(sprites.Sheet.GetPixel(x,y).A!=0)throw new Exception("Unused idle frame is not transparent");
                 Check(true,"Unused idle cells stay fully transparent");
-                string valid=Path.Combine(artifacts,"default-runtime.png");sprites.Sheet.Save(valid,ImageFormat.Png);
+                string valid=Path.Combine(artifacts,"default-runtime.vpetsprite");sprites.SavePackage(valid);
                 using(var imported=SpriteSet.Import(valid))Check(imported.Cell==sprites.Cell,"Default runtime sheet passes custom import validation");
-                for(int state=0;state<2;state++)for(int facing=0;facing<8;facing++)for(int frame=0;frame<(state==0?4:5);frame++)
+                for(int state=0;state<2;state++)for(int facing=0;facing<8;facing++)for(int frame=0;frame<(state==0?8:10);frame++)
                 {
                     var image=sprites.Frame(state==1,facing,frame);bool visible=false,transparent=false;
                     for(int y=0;y<image.Height;y++)for(int x=0;x<image.Width;x++){if(image.GetPixel(x,y).A>0)visible=true;else transparent=true;}
@@ -548,7 +549,12 @@ namespace Vpet
                 Bitmap left=sprites.Frame(true,4,2),right=sprites.Frame(true,0,2);
                 for(int y=0;y<left.Height;y++)for(int x=0;x<left.Width;x++)if(left.GetPixel(x,y)!=right.GetPixel(left.Width-1-x,y))throw new Exception("Mirrored direction differs");
                 Check(true,"Opposite-facing sprite is an exact horizontal mirror");
-                using(var broken=new Bitmap(sprites.Sheet)){broken.SetPixel(128,0,Color.Red);string p=Path.Combine(artifacts,"invalid-idle.png");broken.Save(p,ImageFormat.Png);Reject(delegate{using(var unused=SpriteSet.Import(p)){}},"Invalid idle column rejected");}
+                using(var legacy=new Bitmap(160,360))
+                {
+                    using(var g=Graphics.FromImage(legacy))for(int row=0;row<10;row++)for(int col=0;col<(row<5?4:5);col++)g.FillRectangle(Brushes.Blue,col*32+8,row*36+8,10,16);
+                    string p=Path.Combine(artifacts,"legacy-runtime.png");legacy.Save(p,ImageFormat.Png);using(var old=SpriteSet.Import(p))Check(old.Columns==5&&old.Cell==sprites.Cell,"Existing five-column PNG pets remain supported");
+                    legacy.SetPixel(128,0,Color.Red);legacy.Save(p,ImageFormat.Png);Reject(delegate{using(var unused=SpriteSet.Import(p)){}},"Invalid legacy idle column rejected");
+                }
                 using(var preview=new Bitmap(640,400))using(var g=Graphics.FromImage(preview))
                 {
                     g.Clear(Color.FromArgb(235,229,245));g.InterpolationMode=System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;g.PixelOffsetMode=System.Drawing.Drawing2D.PixelOffsetMode.Half;
@@ -562,7 +568,7 @@ namespace Vpet
                     preview.Save(Path.Combine(artifacts,"animation-preview.png"),ImageFormat.Png);
                 }
             }
-            Reject(delegate{using(var unused=SpriteSet.Import(reference)){}},"Annotated reference cannot be imported as a runtime sheet");
+            Reject(delegate{using(var unused=SpriteSet.Import(reference)){}},"Reference sheet requires Sprite Maker mappings rather than legacy PNG import");
             using(var image=new Bitmap(513,50)){string p=Path.Combine(artifacts,"large-emote.png");image.Save(p,ImageFormat.Png);Reject(delegate{using(var unused=SpriteSet.ReadPng(p,Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize)){}},"Oversized custom emote rejected");}
             string fake=Path.Combine(artifacts,"fake.png");File.WriteAllText(fake,"This is not a PNG image.");Reject(delegate{using(var unused=SpriteSet.ReadPng(fake,Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize)){}},"Non-PNG contents rejected");
             using(var image=new Bitmap(50,50)){string p=Path.Combine(artifacts,"emote.png");image.Save(p,ImageFormat.Png);using(var loaded=SpriteSet.ReadPng(p,Artwork.MaximumEmoteSize,Artwork.MaximumEmoteSize))Check(loaded.Width==50,"50 × 50 custom PNG accepted");}

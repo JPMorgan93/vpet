@@ -224,7 +224,7 @@ namespace Vpet
                 maker.Dirty=false;maker.Close();
             }
             string dataDirectory=Path.Combine(artifacts,"maker-pet-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(dataDirectory);
-            string reference=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Base Vpet Sprite Sheet.png");
+            string reference=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Blue Dragon.png");
             using(var project=MakerFixture())using(var pet=new PetWindow(dataDirectory,reference,true,dataDirectory))
             {
                 project.Data.Diagonals=false;pet.UseCustom(project.Build());

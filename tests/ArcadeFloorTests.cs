@@ -65,7 +65,7 @@ namespace Vpet
             }
             using(var gate=new ManualResetEventSlim(false))using(var music=new ArcadeMusic((path,token)=>
             {gate.Wait(token);return new ArcadeClip(new byte[88200],new ArcadeAudioNative.WaveFormat{Tag=1,Channels=1,Rate=22050,BytesPerSecond=44100,BlockAlign=2,Bits=16});}))
-            using(var sprites=SpriteSet.FromReference(Path.Combine(root,"Base Vpet Sprite Sheet.png")))
+            using(var sprites=SpriteSet.FromReference(Path.Combine(root,"Blue Dragon.png")))
             using(var arcade=new ArcadeWindow(()=>sprites,index=>null,new ArcadePreferences{Volume=0},()=>{},root,new Random(1),music))
             {
                 arcade.Show();Application.DoEvents();MakerField<System.Windows.Forms.Timer>(arcade,"timer").Stop();arcade.OpenGame(ArcadeGame.Dance);

@@ -123,7 +123,7 @@ namespace Vpet
             string root=AppDomain.CurrentDomain.BaseDirectory;
             try
             {
-                using(var pet=new PetWindow(Path.Combine(artifacts,"toys-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"toy-smoke")))
+                using(var pet=new PetWindow(Path.Combine(artifacts,"toys-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"toy-smoke")))
                 using(var application=new LayeredWindow(false))using(var image=new Bitmap(30,30))
                 {
                     pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;

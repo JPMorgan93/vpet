@@ -66,7 +66,7 @@ namespace Vpet
             foreach(bool auto in new[]{false,true})
             {
             string data=Path.Combine(artifacts,"auto-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(data);new Preferences{AutoUpdate=auto}.Save(Path.Combine(data,"settings.json"));
-            using(var pet=new PetWindow(data,Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"auto-smoke")))
+            using(var pet=new PetWindow(data,Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"auto-smoke")))
             {
                 Check(pet.Model.Settings.AutoUpdate==auto&&MakerField<double>(pet,"nextUpdateCheck")== (auto?0:10),"Saved auto-update option schedules an immediate startup check");int installs=0;
                 pet.ReadUpdate=()=>new AvailableUpdate{Version="9.8.7",Notes="Must only display after completion"};

@@ -114,7 +114,7 @@ namespace Vpet
                 for(int row=10;row<18;row++){project.SetSize(row,20+row%3,24);project.Data.Frames[row][2]=new SpriteFrame{X=0,Y=0,OffsetX=row,OffsetY=-row};project.SetSpeed(row,1+row/20f);}
                 foreach(int version in new[]{3,4})
                 {
-                    var legacy=new SpriteManifest{Version=version,Kind="project",Width=20,Height=24,EmoteAnimations=true,Frames=project.Data.Frames.Take(18).ToArray(),CycleWidths=project.Data.CycleWidths.Take(18).ToArray(),CycleHeights=project.Data.CycleHeights.Take(18).ToArray(),CycleSpeeds=version==4?project.Data.CycleSpeeds.Take(18).ToArray():null};
+                    var legacy=new SpriteManifest{Version=version,Kind="project",Width=20,Height=24,EmoteAnimations=true,Frames=project.Data.Frames.Take(18).Select(row=>row.Take(5).ToArray()).ToArray(),CycleWidths=project.Data.CycleWidths.Take(18).ToArray(),CycleHeights=project.Data.CycleHeights.Take(18).ToArray(),CycleSpeeds=version==4?project.Data.CycleSpeeds.Take(18).ToArray():null};
                     string old=Path.Combine(artifacts,"old-emotes-v"+version+".vpetproject");SpritePackage.Write(old,legacy,project.Source);
                     using(var loaded=SpriteProject.Load(old))
                     {
@@ -144,7 +144,7 @@ namespace Vpet
             Point original=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();string root=AppDomain.CurrentDomain.BaseDirectory;
             try
             {
-                using(var pet=new PetWindow(Path.Combine(artifacts,"plate-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"plate-smoke")))
+                using(var pet=new PetWindow(Path.Combine(artifacts,"plate-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"plate-smoke")))
                 using(var app=new LayeredWindow(false))using(var solid=new Bitmap(30,30))
                 {
                     pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
