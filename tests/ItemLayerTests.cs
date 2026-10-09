@@ -76,10 +76,10 @@ namespace Vpet
                     }
                     pet.Model.Place(new PointF(pet.Model.Current.Work.Left+70,pet.Model.Current.Work.Top+140));
                     typeof(PetWindow).GetMethod("Render",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);RefreshItems(pet);
-                    var rendered=MakerField<Bitmap>(pet,"rendered");Point ink=Point.Empty;
-                    for(int y=0;y<rendered.Height;y++)for(int x=0;x<rendered.Width;x++)if(rendered.GetPixel(x,y).A==255)ink=new Point(x,y);
-                    Cursor.Position=new Point(pet.PresentedBounds.Left+ink.X,pet.PresentedBounds.Top+ink.Y);PetFrame(pet);
-                    if(!pet.Model.Hovered)Console.WriteLine("Pet hover diagnostic: target="+Native.WindowFromPoint(new Native.POINT(Cursor.Position.X,Cursor.Position.Y))+", pet="+pet.Handle+", bubble="+MakerField<LayeredWindow>(pet,"bubble").Handle+", bounds="+pet.PresentedBounds+", cursor="+Cursor.Position+", point="+pet.PointToClient(Cursor.Position)+", ink="+ink+", paused="+pet.Model.Paused);
+                    var rendered=MakerField<Bitmap>(pet,"rendered");Point ink=Point.Empty;int nearest=int.MaxValue;
+                    for(int y=0;y<rendered.Height;y++)for(int x=0;x<rendered.Width;x++)if(rendered.GetPixel(x,y).A==255)
+                    {int distance=(x-rendered.Width/2)*(x-rendered.Width/2)+(y-rendered.Height/2)*(y-rendered.Height/2);if(distance<nearest){nearest=distance;ink=new Point(x,y);}}
+                    Cursor.Position=new Point(pet.PresentedBounds.Left+ink.X,pet.PresentedBounds.Top+ink.Y);Application.DoEvents();PetFrame(pet);
                     Check(pet.Model.Hovered,"An unobstructed visible pet still detects hover");
                     var petSize=pet.Model.Current.PetSize(pet.Sprites.Cell);pet.Model.Place(new PointF(toys.Ball.X,toys.Ball.Y+petSize.Height/2));
                     typeof(PetWindow).GetMethod("Render",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);RefreshItems(pet);
