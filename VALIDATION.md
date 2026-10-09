@@ -8,6 +8,8 @@
 
 The older `--window-tests` harness passes its 42 assertions after correcting its obsolete circular-fence coordinate expectation, but exits afterward with native callback status 0xC000041D. The previous public 1.12.0 sources reproduce the same shutdown status with that test expectation corrected; this suite is not counted as passing. The focused item and arcade suites exit successfully. Validated on this development PC on 2026-10-08. This is a patch release under AGENTS.md for existing-feature adjustments.
 
+The final 1.12.1 EXE installer built successfully. Isolated fresh installation and progress-only upgrade checks passed bundled asset/icon hashes, retained destination and shortcut choices, skipped-version completion descriptions, the legacy updater entry point, completion/relaunch smoke testing, and cleanup. The normal installation and personal preferences were unchanged.
+
 ## Version 1.12.0
 
 6,542 automated assertions passed. New checks exercise initial simultaneous serves and the paused round clock, mouse-directed launch angles, constant speed and swept collision detection, both goal directions and dot order, half-field replacement serves, five-point rounds, timed wins/draws, 2–0 match finishes, split rounds and extra rounds, stopping/restarting, and NPC difficulty settings. Power coverage includes the exact 25% drop boundary, all four types, last-touch direction, catching/removing orbs, ten-degree multiball copies, centered yellow stacking/overwrite, single-ball sticky capture and manual/automatic release, double-size bombs near walls, destruction of touching neighbors, pulsing/removal, half-second freezes, resize recovery, and sustained simulations at every difficulty. Existing sprite, movement, toy, reminder, and arcade assertions pass.
