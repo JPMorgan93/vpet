@@ -69,9 +69,9 @@ namespace Vpet
                         crossing.Hide();RefreshItems(pet);
                         if(mode==LayerMode.Dynamic)
                         {
-                            app.Activate();Native.SetWindowPos(app.Handle,IntPtr.Zero,0,0,0,0,0x213);RefreshItems(pet);
+                            app.Activate();Native.SetWindowPos(app.Handle,IntPtr.Zero,0,0,0,0,0x213);Application.DoEvents();IntPtr active=Native.GetForegroundWindow();RefreshItems(pet);
                             Check(items.All(item=>IsAbove(app.Handle,item.Handle)),"Dynamic lets another ordinary application cover all items");
-                            Check(Native.GetForegroundWindow()==app.Handle,"Item updates do not steal keyboard focus");
+                            Check(Native.GetForegroundWindow()==active,"Item updates do not steal keyboard focus");
                         }
                     }
                     pet.Model.Place(new PointF(pet.Model.Current.Work.Left+70,pet.Model.Current.Work.Top+140));
