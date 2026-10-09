@@ -20,6 +20,7 @@ namespace Vpet
             {
                 using(var pet=new PetWindow(directory,reference,true,directory))
                 {
+                    typeof(PetWindow).GetField("smokeStep",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(pet,99);
                     pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();Cursor.Position=new Point(30,30);
                     pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.SyncPlayZone=false;
                     Check(!pet.Model.Settings.CustomPet&&pet.Sprites.Speeds.All(speed=>speed==2),"New profiles use twice-speed default animations");
@@ -33,6 +34,7 @@ namespace Vpet
                 using(var topmost=new Form{Text="Topmost stacking test",TopMost=true,Size=new Size(100,80),Location=new Point(130,20),StartPosition=FormStartPosition.Manual})
                 using(var image=new Bitmap(32,36))
                 {
+                    typeof(PetWindow).GetField("smokeStep",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(pet,99);
                     pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();app.Show();topmost.Show();Application.DoEvents();Cursor.Position=new Point(30,30);
                     Check(pet.Model.Settings.CustomPet&&pet.Sprites.Speed(false,2)==1&&pet.Sprites.Speed(true,6)==.5f,"Restarting retains custom speeds rather than applying the default multiplier");
                     pet.RestoreDefault();Check(!pet.Model.Settings.CustomPet&&pet.Sprites.Speeds.All(speed=>speed==2),"Restore Default reapplies twice-speed Blue Dragon animations");
