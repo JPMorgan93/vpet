@@ -1,4 +1,12 @@
-# Vpet 1.11.7
+# Vpet 1.12.0
+
+- Add Brick Battle to the third arcade cabinet. Control the left paddle with the mouse and click to serve against the Vpet on the right, with Easy, Normal, and Hard difficulty choices.
+- Use a full-width field with a center wall three bricks wide and twelve rows tall. Balls bounce off walls, paddles, and bricks; broken bricks disappear. Initial serves launch both sides together and start the two-minute round clock.
+- Award a point when a ball exits the opponent's side, with five dots per side and a two-second flash for each new point. Win rounds by reaching five points or leading when time runs out. Finish a match at 2–0 after two rounds, or after round three or later when one side leads; tied rounds and matches continue without awarding a draw point.
+- Add optional power-ups, enabled by default: blue three-ball launches, yellow paddle growth, green sticky catches, and red explosive balls that destroy neighboring bricks or briefly freeze a paddle. Broken bricks have a 25% drop chance; power-ups move toward the paddle that last touched the ball.
+- Show the pet's configured name on its score card, or Vpet when unnamed. Display a flashing WINNER! on the winning half, with Proud when the pet wins and Sad when it loses. Keep Start/Stop, resizing, saved power-up preferences, and existing Dance Time and Simon Says controls available.
+
+## Vpet 1.11.7
 
 - Increase Sprite Maker's limit from five to ten frames for each movement and optional reaction animation. Include all ten slots in selection, previews, Magic Tweak, undo, saving, and sprite export.
 - Use the supplied Blue Dragon PNG as Vpet's default sprite, with eight idle frames and ten walking frames in all eight directions. Preserve its visible pixels and transparency, and use the new artwork for Restore Default and the default template.

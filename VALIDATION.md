@@ -1,12 +1,12 @@
 # Vpet validation
 
-## Pending release: Brick Battle
+## Version 1.12.0
 
 6,542 automated assertions passed. New checks exercise initial simultaneous serves and the paused round clock, mouse-directed launch angles, constant speed and swept collision detection, both goal directions and dot order, half-field replacement serves, five-point rounds, timed wins/draws, 2–0 match finishes, split rounds and extra rounds, stopping/restarting, and NPC difficulty settings. Power coverage includes the exact 25% drop boundary, all four types, last-touch direction, catching/removing orbs, ten-degree multiball copies, centered yellow stacking/overwrite, single-ball sticky capture and manual/automatic release, double-size bombs near walls, destruction of touching neighbors, pulsing/removal, half-second freezes, resize recovery, and sustained simulations at every difficulty. Existing sprite, movement, toy, reminder, and arcade assertions pass.
 
 404 native UI checks passed: 40 Brick Battle and 364 existing arcade/audio/joystick checks. New checks cover the third cabinet, pet-name fallback and long-name ellipsis, saved power-up setting, difficulty selection, Start/Stop, initial waiting, native mouse event handling, full-width field and nonoverlapping header controls at default/minimum/wide/tall sizes, countdown display, two-second dot flashing, match score updates, winner flashing, and both Proud/Sad outcomes. Existing Dance/Simon, prepared audio, score persistence, game controls, desktop restoration, and normal window stacking checks remain passing. The lobby, minimum/default field, pending serves, all power symbols, and both winner captures were visually inspected. Audio tests were muted.
 
-The candidate EXE installer compiled using the unchanged 1.11.7 metadata while awaiting the owner's release-version choice; it has not been promoted to main or published as an update. Isolated installation/update checks verified bundled artwork/music/icon hashes, retained destination and shortcut choices, progress-only updates, skipped-version descriptions, legacy updater support, completion/relaunch, and cleanup. The regular installation and user preferences were unchanged. Validated on this development PC on 2026-10-08. Final release metadata and notes will be set after the AGENTS.md version choice.
+The owner explicitly chose minor version 1.12.0 for the new Brick Battle game under AGENTS.md. Isolated installation/update checks on the candidate verified bundled artwork/music/icon hashes, retained destination and shortcut choices, progress-only updates, skipped-version descriptions, legacy updater support, completion/relaunch, and cleanup. The regular installation and user preferences were unchanged. Validated on this development PC on 2026-10-08.
 
 ## Version 1.11.7
 
