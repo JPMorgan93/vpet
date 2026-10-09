@@ -64,7 +64,7 @@ namespace Vpet
                         if(!IsAbove(items[0].Handle,crossing.Handle))
                         {
                             var order=new System.Collections.Generic.List<IntPtr>();Native.EnumWindows(delegate(IntPtr h,IntPtr unused){order.Add(h);return true;},IntPtr.Zero);
-                            Console.WriteLine("Layer diagnostics: "+string.Join(", ",new LayeredWindow[]{pet,crossing}.Concat(items).Select(w=>w.Text+"="+order.IndexOf(w.Handle)+" flags="+Native.GetWindowLongPtr(w.Handle,-20)+" companions="+w.CompanionHandle+"/"+w.OtherCompanionHandle)));
+                            Console.WriteLine("Layer diagnostics: "+string.Join(", ",new LayeredWindow[]{pet,crossing}.Concat(items).Select(w=>w.Text+"="+order.IndexOf(w.Handle)+" handle="+w.Handle+" visible="+w.Visible+"/"+Native.IsWindowVisible(w.Handle)+" flags="+Native.GetWindowLongPtr(w.Handle,-20)+" companions="+w.CompanionHandle+"/"+w.OtherCompanionHandle)));
                             var target=Native.AboveCompanionTarget(items[0].Handle,pet.Handle,crossing.Handle,mode);
                             Console.WriteLine("Direct target index="+(target.HasValue?order.IndexOf(target.Value):-99)+", crossing previous="+order.IndexOf(Native.GetWindow(crossing.Handle,3)));
                             items[0].EnforceAboveCompanions();Console.WriteLine("Direct ball reordering above crossing="+IsAbove(items[0].Handle,crossing.Handle));
