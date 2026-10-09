@@ -1,5 +1,15 @@
 # Vpet validation
 
+## Version 1.11.7
+
+6,467 automated assertions passed. New coverage checks ten populated movement and optional reaction frames, sparse slot ordering, tenth-frame clipping and Magic Tweak, independent speeds, project/export round trips, maximum 100 × 150 frames in a 1,000-pixel-wide atlas, and rejection of excess slots/counts or mismatched atlas columns. Projects in package versions 1–5 retain their existing selections, offsets, and speeds while gaining empty slots 6–10. Existing runtime and legacy PNG compatibility checks continue to pass.
+
+All 90 Blue Dragon source frames preserve their visible pixel values and alpha exactly in the mapped runtime rows. The supplied PNG remains unchanged. Eight idle and ten walking frames loop correctly in all eight directions; right-facing artwork is mirrored. Default templates and exported packages retain the larger counts.
+
+497 isolated native UI checks passed: 133 Sprite Maker and 364 arcade/audio/joystick checks. Editor checks cover selecting, clearing, setting, scrubbing, aligning, and undoing frame 10, including access at the actual minimum window size. New profiles load Blue Dragon; active custom pets still survive restarting. Existing animation sizes, zoom, source replacement, recent projects, optional reactions, arcade rendering, prepared music, scoring, controls, and window stacking checks pass. The Blue Dragon contact sheet, ten-frame editor/preview captures, minimum-size editor, and installed default-pet capture were visually inspected. Audio checks used muted playback.
+
+The 1.11.7 EXE installer built successfully. Isolated fresh installation and progress-only update checks verified the exact Blue Dragon asset hash, other bundled artwork and songs, retained destination and shortcut choices, skipped-version descriptions, legacy updater entry point, successful relaunch with 32 × 36 cells on two displays, and cleanup. Tests used separate preferences and installer identity; the regular Vpet installation and personal settings were unchanged. Validated on this development PC on 2026-10-08. This update follows AGENTS.md's patch policy for changes to existing features and artwork.
+
 ## Version 1.11.6
 
 6,265 automated assertions passed, retaining existing movement, artwork, toys, reminders, music, scoring, and Practice coverage. No scoring constants or audio playback settings changed.
