@@ -29,7 +29,7 @@ try {
  if(-not (Test-Path (Join-Path $app 'Vpet.exe'))){throw 'Missing installed executable'}
  $iconPath=Join-Path $app 'assets\reference\Vpet-Pixel.ico'
  if((Get-FileHash -LiteralPath $iconPath).Hash -ne (Get-FileHash -LiteralPath (Join-Path $root 'assets\reference\Vpet.ico')).Hash){throw 'Installed shortcut icon differs from supplied icon'}
- foreach($asset in @('Heads.png','Tails.png','Joystick.png','Dance Floor.png','Simon Floor.png','Easy.mp3','Normal.mp3','Hard.mp3')){
+ foreach($asset in @('Blue Dragon.png','Heads.png','Tails.png','Joystick.png','Dance Floor.png','Simon Floor.png','Easy.mp3','Normal.mp3','Hard.mp3')){
   $relative='assets\reference\'+$asset
   if((Get-FileHash -LiteralPath (Join-Path $app $relative)).Hash -ne (Get-FileHash -LiteralPath (Join-Path $root $relative)).Hash){throw ('Installed reference asset differs: '+$asset)}
  }

@@ -1,4 +1,11 @@
-# Vpet 1.11.6
+# Vpet 1.11.7
+
+- Increase Sprite Maker's limit from five to ten frames for each movement and optional reaction animation. Include all ten slots in selection, previews, Magic Tweak, undo, saving, and sprite export.
+- Use the supplied Blue Dragon PNG as Vpet's default sprite, with eight idle frames and ten walking frames in all eight directions. Preserve its visible pixels and transparency, and use the new artwork for Restore Default and the default template.
+- Keep existing custom pets selected during updates. Continue loading older sprite packages and projects; older projects gain empty frame slots 6–10 while retaining their existing selections, dimensions, facing, offsets, and speeds.
+- Save new Sprite Maker projects and exports in package version 6 for ten-frame support. These files require Vpet 1.11.7 or later; previously installed legacy PNG pets remain supported.
+
+## Vpet 1.11.6
 
 - Enlarge the pet and all four surrounding directional squares in Dance Time and Simon Says to use the arcade lobby's on-screen proportions as the window resizes. Scale the square labels and moving targets with them. Keep the key-mapping button at its existing size beside the upper square.
 - Make Dance Time's Misses label larger and bold, with room for its counters and Practice total.

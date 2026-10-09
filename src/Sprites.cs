@@ -11,15 +11,16 @@ namespace Vpet
     {
         public Bitmap Sheet { get; private set; }
         public Size Cell { get; private set; }
+        public int Columns {get;private set;}
         public bool HasDiagonals {get;private set;}
         public int[] Counts {get;private set;}
         public float[] Speeds {get;private set;}
         readonly Bitmap[][] frames,mirrors;
         public SpriteSet(Bitmap sheet) : this(sheet,true,new[]{4,4,4,4,4,5,5,5,5,5}) {}
-        public SpriteSet(Bitmap sheet,bool diagonals,int[] counts,float[] speeds=null)
+        public SpriteSet(Bitmap sheet,bool diagonals,int[] counts,float[] speeds=null,int columns=5)
         {
             Speeds=speeds==null?null:(float[])speeds.Clone();
-            Sheet=sheet;Cell=new Size(sheet.Width/5,sheet.Height/counts.Length);HasDiagonals=diagonals;Counts=(int[])counts.Clone();
+            Columns=columns;Sheet=sheet;Cell=new Size(sheet.Width/columns,sheet.Height/counts.Length);HasDiagonals=diagonals;Counts=(int[])counts.Clone();
             frames=new Bitmap[counts.Length][];mirrors=new Bitmap[counts.Length][];
             for(int row=0;row<counts.Length;row++)
             {
@@ -56,7 +57,7 @@ namespace Vpet
             return (((int)Math.Floor(angle/90+.5))%4+4)%4*2;
         }
         public void SavePackage(string path)
-        {SpritePackage.Write(path,new SpriteManifest{Version=Counts.Length>18?5:Speeds!=null?4:Counts.Length>10?3:2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts,CycleSpeeds=Speeds},Sheet);}
+        {SpritePackage.Write(path,new SpriteManifest{Version=Columns==SpriteProject.MaximumFrames?SpritePackage.CurrentVersion:Counts.Length>18?5:Speeds!=null?4:Counts.Length>10?3:2,Kind="sprite",Width=Cell.Width,Height=Cell.Height,Diagonals=HasDiagonals,Counts=Counts,CycleSpeeds=Speeds},Sheet);}
         public Bitmap EmoteFrame(int reaction,int index)
         {
             int row=SpriteProject.MovementCycles+reaction;
@@ -68,6 +69,24 @@ namespace Vpet
             int[,] bands={{38,62},{108,134},{177,203},{239,265},{305,335},{372,396},{445,471},{520,546},{596,621},{669,699}};
             using(var source=new Bitmap(path))
             {
+                if((source.Width==352||source.Width==320)&&source.Height==360)
+                {
+                    // Blue Dragon uses paired idle/walk rows, from down through up.
+                    int[] sourceRows={8,0,4,6,2,9,1,5,7,3};
+                    int[] counts={8,8,8,8,8,10,10,10,10,10};
+                    var atlas=new Bitmap(320,360,PixelFormat.Format32bppArgb);
+                    try
+                    {
+                        using(var g=Graphics.FromImage(atlas))for(int row=0;row<10;row++)for(int col=0;col<counts[row];col++)
+                        using(var crop=source.Clone(new Rectangle(col*32,sourceRows[row]*36,32,36),PixelFormat.Format32bppArgb))
+                        {
+                            if(SpriteProject.VisibleBounds(crop).IsEmpty)throw new InvalidDataException("A bundled Blue Dragon frame is empty.");
+                            SpritePackage.CopyPixels(g,crop,col*32,row*36);
+                        }
+                        return new SpriteSet(atlas,true,counts,null,10);
+                    }
+                    catch{atlas.Dispose();throw;}
+                }
                 if(source.Width!=154||source.Height!=704)throw new InvalidDataException("The bundled artwork reference has unexpected dimensions.");
                 var sheet=new Bitmap(160,360,PixelFormat.Format32bppArgb);
                 try
@@ -148,7 +167,7 @@ namespace Vpet
         public static SpriteSet Import(string path)
         {
             if(string.Equals(Path.GetExtension(path),".vpetsprite",StringComparison.OrdinalIgnoreCase))
-            {SpriteManifest data;var atlas=SpritePackage.Read(path,"sprite",out data);return new SpriteSet(atlas,data.Diagonals,data.Counts,data.CycleSpeeds);}
+            {SpriteManifest data;var atlas=SpritePackage.Read(path,"sprite",out data);return new SpriteSet(atlas,data.Diagonals,data.Counts,data.CycleSpeeds,SpritePackage.Columns(data));}
             var bitmap=ReadPng(path,500,1500);
             try
             {

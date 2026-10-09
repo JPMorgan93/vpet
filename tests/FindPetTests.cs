@@ -84,7 +84,7 @@ namespace Vpet
             Point original=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();string root=AppDomain.CurrentDomain.BaseDirectory;
             try
             {
-                using(var pet=new PetWindow(Path.Combine(artifacts,"finder-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"finder-smoke")))
+                using(var pet=new PetWindow(Path.Combine(artifacts,"finder-ui-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"finder-smoke")))
                 using(var focus=new Form{Text="Vpet locator test input",StartPosition=FormStartPosition.Manual,Bounds=new Rectangle(40,40,240,140)})
                 {
                     try

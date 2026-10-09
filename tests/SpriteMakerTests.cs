@@ -27,6 +27,8 @@ namespace Vpet
         {
             GroundAlignment();
             AnimationFrames();
+            TenFrameProjects();
+            BlueDragonFrames();
             using(var project=MakerFixture())
             {
                 Check(project.Problems(true).Count==0,"Variable-count project is complete");
@@ -181,6 +183,7 @@ namespace Vpet
         {
             MakerZoomWindows();
             MakerScrollAndDrag();
+            TenFrameWindows();
             using(var maker=new SpriteMakerWindow())
             {
                 maker.SetProject(MakerFixture(),null);maker.Show();Application.DoEvents();
@@ -189,7 +192,7 @@ namespace Vpet
                 var sheet=(SpriteSheetView)typeof(SpriteMakerWindow).GetField("sheet",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(maker);
                 Check(sheet.Draft!=null&&sheet.Draft.X==96,"Selecting numbered frame restores its rectangle");
                 maker.ClearFrame();Check(maker.Project.Data.Frames[4][4]==null,"Clear removes selected frame only");
-                sheet.Draft=new SpriteFrame{X=96,Y=100};maker.SetFrame();Check(maker.Slot==4&&maker.Project.Data.Frames[4][4]!=null,"Set frame five keeps last slot selected");
+                sheet.Draft=new SpriteFrame{X=96,Y=100};maker.SetFrame();Check(maker.Slot==5&&maker.Project.Data.Frames[4][4]!=null,"Set frame five advances to the sixth slot");
                 maker.ChooseSlot(0);sheet.Draft=new SpriteFrame{X=0,Y=100};maker.SetFrame();Check(maker.Slot==1,"Set advances to the next slot");
                 maker.SetDimensions(21,24);Check(maker.Project.Width(4)==21&&maker.Project.Width(0)==20,"Resizing an animation leaves other animation types unchanged");
                 sheet.Zoom=2;sheet.Draft=new SpriteFrame{X=0,Y=100};
@@ -224,7 +227,7 @@ namespace Vpet
                 maker.Dirty=false;maker.Close();
             }
             string dataDirectory=Path.Combine(artifacts,"maker-pet-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(dataDirectory);
-            string reference=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Base Vpet Sprite Sheet.png");
+            string reference=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Blue Dragon.png");
             using(var project=MakerFixture())using(var pet=new PetWindow(dataDirectory,reference,true,dataDirectory))
             {
                 project.Data.Diagonals=false;pet.UseCustom(project.Build());

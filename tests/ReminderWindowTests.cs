@@ -58,7 +58,7 @@ namespace Vpet
             try
             {
                 string root=AppDomain.CurrentDomain.BaseDirectory;
-                using(var pet=new PetWindow(Path.Combine(artifacts,"reminder-pet-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"reminder-smoke")))
+                using(var pet=new PetWindow(Path.Combine(artifacts,"reminder-pet-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"reminder-smoke")))
                 {
                     pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();typeof(PetWindow).GetField("smokeStep",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(pet,100);
                     var work=pet.Model.Current.Work;pet.Model.Place(new PointF(work.Left+100,work.Top+200));pet.Model.Settings.Movement=MovementMode.FreeRoam;pet.Model.Settings.Speed=50;

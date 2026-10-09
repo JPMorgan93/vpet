@@ -82,7 +82,7 @@ namespace Vpet
         }
         void Remember()
         {
-            var copy=new SpriteFrame[SpriteProject.TotalCycles][];for(int row=0;row<copy.Length;row++){copy[row]=new SpriteFrame[5];for(int col=0;col<5;col++)if(project.Data.Frames[row][col]!=null)copy[row][col]=project.Data.Frames[row][col].Copy();}history.Push(copy);
+            var copy=new SpriteFrame[SpriteProject.TotalCycles][];for(int row=0;row<copy.Length;row++){copy[row]=new SpriteFrame[SpriteProject.MaximumFrames];for(int col=0;col<SpriteProject.MaximumFrames;col++)if(project.Data.Frames[row][col]!=null)copy[row][col]=project.Data.Frames[row][col].Copy();}history.Push(copy);
         }
         void RefreshPreview()
         {

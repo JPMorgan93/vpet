@@ -20,7 +20,7 @@ Use **Save Project** to embed the revised sheet and retained mappings, then **Tw
 
 Choose an animation type and set its frame width and height, up to 100 × 150 pixels. Every frame of that type shares its dimensions; other types can have different sizes.
 
-Choose a numbered slot. Click the sheet to place the red frame, drag its border to move it, or drag a corner to resize all frames of this animation type. Choose **Set** to save the selection and advance to the next slot. The scroll position stays fixed. **Clear** removes a slot. Each required animation needs 1–5 nonempty selections, played in numbered order. Gaps in slot numbering are allowed.
+Choose a numbered slot, from **1 through 10**. Click the sheet to place the red frame, drag its border to move it, or drag a corner to resize all frames of this animation type. Choose **Set** to save the selection and advance to the next slot; setting frame 10 keeps that slot selected. The scroll position stays fixed. **Clear** removes a slot. Each required animation needs **1–10 nonempty selections**, played in numbered order. Gaps in slot numbering are allowed. Optional reaction animations also allow up to ten frames.
 
 Turn **Diagonal animations** off if your sheet has no diagonal poses. Saved diagonal selections remain in the project and can be enabled again.
 
@@ -53,6 +53,6 @@ Each animation is clipped before export. Smaller frames receive transparent padd
 
 ## File compatibility
 
-Vpet 1.9.0 loads all existing version 1–4 projects and sprites. Opening an older project preserves every frame mapping, size, offset, and animation speed, and adds empty optional Hunger slots at 1× speed. New project saves and exports containing reaction animations use package version 5 and require Vpet 1.9.0 or later. Movement-only exports still use version 2 without speed metadata, or version 4 with saved speeds. Older files without speed metadata continue at 1×.
+Vpet 1.11.7 loads all existing version 1–5 projects and sprites. Opening an older project preserves every frame mapping, size, offset, sheet facing, and animation speed, and adds empty slots 6–10 to every animation. Missing optional reaction rows start empty at 1× speed. New project saves and Sprite Maker exports use package version 6, with ten slots/atlas columns, and require Vpet 1.11.7 or later. Older files without speed metadata continue at 1×. An installed custom pet remains selected when updating the bundled default to Blue Dragon; Restore Default selects the new artwork.
 
 Previously installed legacy PNG pets remain supported. New PNG sheets go through Sprite Maker before use. New runtime atlases with emotes have nine additional rows in the reaction order above; older eight-reaction atlases still load. Downloaded PNGs carry artwork only: use Sprite Maker to select populated cells and restore frame counts and animation speeds before exporting a usable `.vpetsprite`.

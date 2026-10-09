@@ -35,7 +35,7 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 
 [Files]
 Source: "..\bin\release\Vpet.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\release\assets\reference\Base Vpet Sprite Sheet.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Blue Dragon.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Heads.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Tails.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Joystick.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion

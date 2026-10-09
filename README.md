@@ -1,10 +1,10 @@
-# Vpet 1.11.6
+# Vpet 1.11.7
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.11.6-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.11.7-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -20,7 +20,7 @@ The installer installs for the current user and provides an uninstaller in Windo
 
 See [GITHUB.md](GITHUB.md) for VS Code save syncing, the `test` branch, and promoting releases to `main`.
 
-Double-click **Launch Vpet.cmd**, or run **bin/Vpet.exe** after building. The launcher builds the app if needed. A small purple pet appears on the desktop after a short pause.
+Double-click **Launch Vpet.cmd**, or run **bin/Vpet.exe** after building. The launcher builds the app if needed. The supplied Blue Dragon appears on the desktop after a short pause. Updates change the bundled default; an active custom pet stays selected. **Restore Default** switches back to Blue Dragon.
 
 - Hover to pause and greet the pet; it switches to down-facing idle.
 - Left-click without dragging for a **half-second shake** and **Love**, regardless of personality. The shake starts when the click is released and has no duration setting.
@@ -53,8 +53,8 @@ The shortcut circles the pet and dims all connected displays, following the pet 
 
 ## Included
 
-- Four-frame directional idle and five-frame walking cycles with eight facings.
-- Original artwork read from the unchanged reference. The renderer isolates the 45 source frames and removes only exterior white background pixels at runtime; no new AI artwork is required.
+- Eight-frame directional idle and ten-frame walking cycles with eight facings.
+- Blue Dragon artwork read from the unchanged reference PNG. The renderer extracts its 90 frames and arranges them in runtime animation order, preserving visible pixels and transparency.
 - Per-pixel alpha window transparency: empty pixels pass clicks through.
 - Free Roam, a fixed restricted area with a draggable center and on-screen fence, and Static mode. Each selection shows its own description.
 - A 0–100 speed slider with 50 centered on its tick marks; 0 stops autonomous movement.
@@ -70,26 +70,26 @@ The shortcut circles the pet and dims all connected displays, following the pet 
 
 Use [Sprite Maker](SPRITE-MAKER.md) to turn a PNG sheet into a `.vpetsprite` package, with frame selections, optional diagonals and reactions, alignment, and independent animation speeds. Upload Custom Sprite accepts these packages. Previously installed legacy PNG pets still load.
 
-The original annotated image is preserved at `assets/reference/Base Vpet Sprite Sheet.png`. It is an artwork guide, not an uploadable runtime grid.
+The bundled default is `assets/reference/Blue Dragon.png`, a 352 × 360 transparent PNG with 32 × 36 cells. Its source rows alternate idle and walking from Down through Up; the final column is unused. Use Sprite Maker to map the source sheet when creating a custom pet.
 
-Use **Settings → Sprite → Save default template** to export a transparent PNG. Default cells are **32 × 36**, in a **160 × 360** sheet with the rows below. Custom sheets can have any layout; Sprite Maker frames are at most **100 × 150** pixels.
+Use **Settings → Sprite → Save default template** to export a transparent PNG. Default cells are **32 × 36**, in a **320 × 360** sheet with the rows below. Custom sheets can have any layout; Sprite Maker accepts **1–10 frames per animation**, each at most **100 × 150** pixels.
 
 Use **Download current sprite sheet**, below the default template button, to save the active pet's transparent PNG. Edit that image and upload it to Sprite Maker to select frames and export a .vpetsprite. Directional rows in downloaded sheets face left; optional emote rows follow the ten movement rows. The PNG alone does not contain frame-count metadata.
 
 | Row | Cycle | Active frames |
 | --- | --- | --- |
-| 1 | Idle up | 4 |
-| 2 | Idle down | 4 |
-| 3 | Idle left | 4 |
-| 4 | Idle up-left | 4 |
-| 5 | Idle down-left | 4 |
-| 6 | Walk up | 5 |
-| 7 | Walk down | 5 |
-| 8 | Walk left | 5 |
-| 9 | Walk up-left | 5 |
-| 10 | Walk down-left | 5 |
+| 1 | Idle up | 8 |
+| 2 | Idle down | 8 |
+| 3 | Idle left | 8 |
+| 4 | Idle up-left | 8 |
+| 5 | Idle down-left | 8 |
+| 6 | Walk up | 10 |
+| 7 | Walk down | 10 |
+| 8 | Walk left | 10 |
+| 9 | Walk up-left | 10 |
+| 10 | Walk down-left | 10 |
 
-Column five must be transparent in idle rows. Right-facing cycles are mirrored from the corresponding left-facing rows. Align artwork to a consistent bottom-center anchor. Empty active cells, invalid dimensions, corrupt files, and non-PNG imports are rejected before replacing the current pet.
+Columns nine and ten are transparent in the default idle rows. Right-facing cycles are mirrored from the corresponding left-facing rows. Align artwork to a consistent bottom-center anchor. New exported `.vpetsprite` files store up to ten frames and require Vpet 1.11.7 or later; older projects and sprite packages remain supported. Previously installed legacy five-column PNG pets retain their original four idle/five walking frame rules. Custom sheets and downloaded templates go through Sprite Maker to export frame-count metadata.
 
 Custom emotes must be PNGs with both dimensions at most **512 pixels**. Use a clean 128 × 128 source for typical display scaling; resizing a blurry source cannot recover detail. Images resize smoothly and appear on a white speech-bubble background, centered horizontally and vertically using the visible artwork (transparent padding is ignored). At 100% display scaling, the complete bubble is 68 × 62 pixels including its tail and transparent margins; the rounded body is 65 × 50 pixels. Custom artwork fits proportionally inside a 46 × 42 pixel area. These dimensions scale with Windows display scaling. Open their folder from the Personality tab; added, modified, and removed files refresh within three seconds. Each custom image has priority 2 (weight 3). Under **Your custom emotes**, each loaded image is listed by name with a **Try It Out** button to preview it on your pet. Custom replacements for default reactions appear here too, and the list refreshes as images change.
 
@@ -226,7 +226,7 @@ The detailed behavior and source artwork mapping are in [Vpet Development Specif
 
 ## Sprite Maker
 
-Open **Settings → Sprite → Open Sprite Maker** to select frames from any transparent PNG sheet, save editing projects, preview animations, and export a custom pet. Drag the red border to move a selection or a corner to resize it. Magic Tweak aligns poses by their lowest visible pixels to a shared ground point without stretching. Each animation supports 1–5 frames, with optional diagonals. See the [Sprite Maker guide](SPRITE-MAKER.md) for the full workflow.
+Open **Settings → Sprite → Open Sprite Maker** to select frames from any transparent PNG sheet, save editing projects, preview animations, and export a custom pet. Drag the red border to move a selection or a corner to resize it. Magic Tweak aligns poses by their lowest visible pixels to a shared ground point without stretching. Each animation supports 1–10 frames, with optional diagonals. See the [Sprite Maker guide](SPRITE-MAKER.md) for the full workflow.
 
 **Load Last Project**, next to Load Project in Sprite Maker, reopens the most recently opened or saved .vpetproject. The path is remembered across Vpet restarts. Open or save a project once to enable the button; save edits before closing to resume them later. If the file moves, use Load Project to locate it again. Missing or unreadable projects leave current work intact.
 

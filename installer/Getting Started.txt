@@ -45,7 +45,7 @@ second. It keeps keyboard focus in your current app and passes clicks through.
 
 SPRITE MAKER
 Settings > Sprite > Open Sprite Maker lets you select animation frames from a
-transparent PNG sheet. Set 1-5 frames per animation, then Tweak and Complete.
+transparent PNG sheet. Set 1-10 frames per animation, then Tweak and Complete.
 Each animation type has its own frame size, shared by all frames of that type.
 Update Sprite Sheet replaces the PNG in an open project, keeping all mappings,
 sizes, tweaks, and animation options. Keep the same sheet layout for mappings to
@@ -56,9 +56,13 @@ In Tweak and Complete, artwork outside the frame is cut off in the preview
 and final sprite. Projects retain the source art and your crop offsets.
 Animation speed controls each selected type independently, from 0.25x to 3x.
 The default is 1x. Moving its slider resumes playback immediately. Save Tweaks
-or Complete saves these speeds in the project and exported pet. New projects
-and reaction-enabled sprites require Vpet 1.9.0 or later. Older files
-keep every existing mapping, size, offset, and speed; Hunger starts empty at 1x.
+or Complete saves these speeds in the project and exported pet. New project
+saves and Sprite Maker exports require Vpet 1.11.7 or later. Older files keep
+every mapping, size, offset, and speed, and gain empty frame slots 6 through 10.
+The default pet uses the supplied Blue Dragon artwork with eight idle frames
+and ten walking frames. Updates retain your selected custom pet; Restore
+Default switches to Blue Dragon. Save default template exports a 320 x 360 PNG
+with 32 x 36 cells. Use Sprite Maker to map that PNG before using it as a pet.
 Both previews have zoom buttons, a percentage field, Fit, and 100% controls.
 In Sprite Maker, drag the divider above Preview zoom to resize the display/edit
 area inside the window. Upper controls scroll independently. A second divider

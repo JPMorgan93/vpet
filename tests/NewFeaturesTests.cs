@@ -42,12 +42,12 @@ namespace Vpet
                     string output=Path.Combine(artifacts,"emote-facing.vpetsprite");sprite.SavePackage(output);
                     using(var imported=SpriteSet.Import(output))Check(imported.Counts.SequenceEqual(sprite.Counts)&&imported.EmoteFrame(1,0).GetPixel(2,2).A>0,"Optional runtime animations survive export/import");
                     loaded.Data.EmoteAnimations=false;
-                    using(var normal=loaded.Build())Check(normal.Counts.Length==10&&normal.EmoteFrame(1,0)==null,"Turning off optional emotes exports a legacy-compatible movement atlas");
+                    using(var normal=loaded.Build())Check(normal.Counts.Length==10&&normal.EmoteFrame(1,0)==null,"Turning off optional emotes exports only movement rows");
                     Check(loaded.Data.Frames[11][0]!=null,"Turning off optional emotes retains project selections");
                 }
                 project.Data.Frames[11][0].X=4096;Check(project.Problems(true).Any(p=>p.StartsWith("Love,")),"Invalid selected optional artwork is explained before export");
                 // A true v2 file has ten size entries and ten frame rows, unlike new projects.
-                var legacy=new SpriteManifest{Version=2,Kind="project",Width=20,Height=24,Frames=project.Data.Frames.Take(10).ToArray(),CycleWidths=Enumerable.Repeat(20,10).ToArray(),CycleHeights=Enumerable.Repeat(24,10).ToArray()};
+                var legacy=new SpriteManifest{Version=2,Kind="project",Width=20,Height=24,Frames=project.Data.Frames.Take(10).Select(row=>row.Take(5).ToArray()).ToArray(),CycleWidths=Enumerable.Repeat(20,10).ToArray(),CycleHeights=Enumerable.Repeat(24,10).ToArray()};
                 path=Path.Combine(artifacts,"v2-migration.vpetproject");SpritePackage.Write(path,legacy,project.Source);
                 using(var migrated=SpriteProject.Load(path))
                 {Check(migrated.Data.Frames.Length==SpriteProject.TotalCycles&&migrated.Slots(11).Length==0&&migrated.Width(11)==20,"V2 projects gain empty optional slots and valid dimensions");migrated.Save(path);using(var sprite=migrated.Build())Check(sprite.EmoteFrame(1,0)==null,"Migrated project keeps ordinary runtime behavior");}
@@ -140,7 +140,7 @@ namespace Vpet
                 maker.Dirty=false;maker.Close();
             }
             string root=AppDomain.CurrentDomain.BaseDirectory;
-            using(var pet=new PetWindow(Path.Combine(artifacts,"pause-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),true,Path.Combine(artifacts,"pause-smoke")))
+            using(var pet=new PetWindow(Path.Combine(artifacts,"pause-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"pause-smoke")))
             {
                 pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Paused=true;
                 Check(!pet.ShowPause,"Pausing movement alone never shows the pause symbol");

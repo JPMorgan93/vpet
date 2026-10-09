@@ -31,7 +31,7 @@ namespace Vpet
                     Application.Exit();
                 };
                 Application.ThreadException+=delegate(object sender,ThreadExceptionEventArgs e){report(e.Exception);};
-                try{Application.Run(new PetWindow(data,Path.Combine(root,"assets","reference","Base Vpet Sprite Sheet.png"),smoke,output));}
+                try{Application.Run(new PetWindow(data,Path.Combine(root,"assets","reference","Blue Dragon.png"),smoke,output));}
                 catch(Exception ex){report(ex);}
             }
         }
