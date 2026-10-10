@@ -142,7 +142,7 @@ namespace Vpet
                     // every layered redraw makes overlapping toys exchange layers and visibly blink.
                     bool aboveRule=AboveCompanions&&!behindArcade&&BehindWindow==IntPtr.Zero;
                     bool preserve=!correctingLayer&&noZOrder&&bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
-                    if(preserve)position.Flags|=4u; // NOZORDER also blocks attempts to violate a locked layer.
+                    if(preserve)position.Flags|=4u; // Keep NOZORDER for content and position refreshes.
                     else if(target.HasValue){position.InsertAfter=target.Value;position.Flags&=~4u;}
                     position.Flags|=0x210u; // NOACTIVATE and NOOWNERZORDER.
                     Marshal.StructureToPtr(position,m.LParam,false);
@@ -196,7 +196,7 @@ namespace Vpet
         {
             // Windows can expose a proposed order inside WINDOWPOSCHANGING. An intentional
             // repair must still be applied even when that temporary order already looks valid.
-            correctingLayer=true;try{Native.SetWindowPos(Handle,target,0,0,0,0,0x213);}finally{correctingLayer=false;}
+            bool previous=correctingLayer;correctingLayer=true;try{Native.SetWindowPos(Handle,target,0,0,0,0,0x213);}finally{correctingLayer=previous;}
         }
     }
 }

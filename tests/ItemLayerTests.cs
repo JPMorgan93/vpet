@@ -22,6 +22,7 @@ namespace Vpet
                 {
                     typeof(PetWindow).GetField("smokeStep",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(pet,99);
                     pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();Cursor.Position=new Point(30,30);
+                    UpdatedPetMenu(pet);
                     pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.SyncPlayZone=false;
                     Check(!pet.Model.Settings.CustomPet&&pet.Sprites.Speeds.All(speed=>speed==2),"New profiles use twice-speed default animations");
                     var speeds=Enumerable.Repeat(1f,10).ToArray();speeds[5]=.5f;
