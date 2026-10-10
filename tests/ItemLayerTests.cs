@@ -61,7 +61,7 @@ namespace Vpet
                         // Simulate both visible native sprite portions and alternate which portion is higher.
                         crossing.Present(image,new Point(pet.PresentedBounds.Right+10,pet.PresentedBounds.Top));crossing.Show();crossing.SetLayer(mode);RefreshItems(pet);
                         Check(crossing.Visible&&Native.IsWindowVisible(crossing.Handle),"Both sprite portions remain visible during the isolated crossing check");
-                        foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" remains above both crossing portions in "+mode);
+                        foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" remains above both crossing portions in "+mode+"; pet="+IsAbove(item.Handle,pet.Handle)+", crossing="+IsAbove(item.Handle,crossing.Handle)+", target="+Native.AboveCompanionTarget(item.Handle,pet.Handle,crossing.Handle,mode,true)+", order="+ItemOrder(items)+", handles="+string.Join(",",items.Select(w=>w.Text+":"+w.Handle.ToInt64())));
                         Check(IsAbove(crossing.Handle,pet.Toys.Chest.Handle),"Chest stays below the second sprite portion");
                         Native.SetWindowPos(pet.Handle,IntPtr.Zero,0,0,0,0,0x213);RefreshItems(pet);
                         foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" follows a change of the higher crossing portion");
