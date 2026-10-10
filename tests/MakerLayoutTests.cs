@@ -36,19 +36,23 @@ namespace Vpet
                     Check(MakerField<SpriteSheetViewport>(maker,"viewport").Height>=80,"Grouping buttons retains a usable resizable sheet preview");
                 }
                 MakerField<CheckBox>(maker,"diagonal").Checked=true;maker.ClientSize=new Size(1000,800);scroll.AutoScrollPosition=Point.Empty;Application.DoEvents();CaptureForm(maker,"maker-grouped-buttons");
+                scroll.ScrollControlIntoView(Descendants(maker).OfType<TableLayoutPanel>().Single(panel=>panel.Name=="AnimationFrames"));Application.DoEvents();CaptureForm(maker,"maker-frame-rows");
                 using(var tweak=new SpriteTweakWindow(maker))
                 {
                     tweak.Show();Application.DoEvents();
-                    foreach(Size size in new[]{new Size(880,750),new Size(740,640),new Size(1200,900)})
+                    foreach(Size size in new[]{tweak.Size,tweak.MinimumSize,new Size(1200,900)})
                     {
-                        tweak.Size=size==new Size(740,640)?tweak.MinimumSize:size;Application.DoEvents();AnimationRows(tweak,MakerField<Button[]>(tweak,"cycles"),"Tweak "+size);
+                        tweak.Size=size;Application.DoEvents();AnimationRows(tweak,MakerField<Button[]>(tweak,"cycles"),"Tweak "+size);
                         var viewport=MakerField<SpriteSheetViewport>(tweak,"viewport");
                         var choiceScroll=Descendants(tweak).OfType<Panel>().Single(panel=>panel.Name=="AnimationChoicesScroll");
                         foreach(var button in MakerField<Button[]>(tweak,"cycles").Take(10))Check(choiceScroll.RectangleToScreen(choiceScroll.ClientRectangle).Contains(button.RectangleToScreen(button.ClientRectangle)),"Idle/Walk buttons are fully visible above the preview: "+button.Text);
                         Check(viewport.Height>=80&&tweak.ClientRectangle.Contains(OnForm(tweak,viewport)),"Tweak keeps at least 80 pixels of visible preview space at "+size+" (height "+viewport.Height+")");
                         foreach(string caption in new[]{"Tweak","Magic Tweak","Complete","How to Guide"})Check(tweak.ClientRectangle.Contains(OnForm(tweak,FindButton(tweak,caption))),"Tweak action remains within resized window: "+caption);
-                        CaptureForm(tweak,size==new Size(740,640)?"tweak-grouped-minimum":"tweak-grouped-buttons");
+                        CaptureForm(tweak,size==tweak.MinimumSize?"tweak-grouped-minimum":"tweak-grouped-buttons");
                     }
+                    var emoteButton=MakerField<Button[]>(tweak,"cycles")[18];var animationScroll=Descendants(tweak).OfType<Panel>().Single(panel=>panel.Name=="AnimationChoicesScroll");
+                    animationScroll.ScrollControlIntoView(emoteButton);Application.DoEvents();Check(animationScroll.RectangleToScreen(animationScroll.ClientRectangle).Contains(emoteButton.RectangleToScreen(emoteButton.ClientRectangle)),"Optional Hunger animation is reachable through the scrollable animation list");
+                    emoteButton.PerformClick();Check(MakerField<TweakPreview>(tweak,"preview").Cycle==18,"Selecting a scrolled emote button updates the animation preview");
                     tweak.Close();
                 }
                 maker.Dirty=false;maker.Close();
