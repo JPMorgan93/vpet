@@ -81,7 +81,7 @@ namespace Vpet
                     for(int y=0;y<rendered.Height;y++)for(int x=0;x<rendered.Width;x++)if(rendered.GetPixel(x,y).A==255)
                     {int distance=(x-rendered.Width/2)*(x-rendered.Width/2)+(y-rendered.Height/2)*(y-rendered.Height/2);if(distance<nearest){nearest=distance;ink=new Point(x,y);}}
                     Cursor.Position=new Point(pet.PresentedBounds.Left+ink.X,pet.PresentedBounds.Top+ink.Y);Application.DoEvents();PetFrame(pet);
-                    Check(pet.Model.Hovered,"An unobstructed visible pet still detects hover");
+                    Check(pet.Model.Hovered,"An unobstructed visible pet still detects hover; cursor="+Cursor.Position+", native target="+Native.WindowFromPoint(new Native.POINT(Cursor.Position.X,Cursor.Position.Y))+", pet="+pet.Handle+", layer="+pet.Model.Settings.Layer+", style="+Native.GetWindowLongPtr(pet.Handle,-20)+", paused="+pet.Model.Paused+", pet bounds="+pet.PresentedBounds);
                     var petSize=pet.Model.Current.PetSize(pet.Sprites.Cell);pet.Model.Place(new PointF(toys.Ball.X,toys.Ball.Y+petSize.Height/2));
                     typeof(PetWindow).GetMethod("Render",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);RefreshItems(pet);
                     var ballCenter=Point.Round(toys.Ball);Cursor.Position=ballCenter;
