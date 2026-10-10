@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -126,7 +127,8 @@ namespace Vpet
                 using(var pet=new PetWindow(Path.Combine(artifacts,"toys-"+Guid.NewGuid().ToString("N")),Path.Combine(root,"assets","reference","Blue Dragon.png"),true,Path.Combine(artifacts,"toy-smoke")))
                 using(var application=new LayeredWindow(false))using(var image=new Bitmap(30,30))
                 {
-                    pet.Show();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
+                    typeof(PetWindow).GetField("smokeStep",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(pet,99);
+                    pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();pet.Model.Settings.Movement=MovementMode.Static;
                     using(var g=Graphics.FromImage(image))g.Clear(Color.White);application.Present(image,new Point(50,50));application.Show();
                     var windows=pet.Toys;var toys=windows.Model;
                     var items=(ToolStripMenuItem)pet.ContextMenuStrip.Items[0];
@@ -201,7 +203,7 @@ namespace Vpet
                     Check(windows.HelpAt(new Point((int)toys.Zone.Left+45,(int)toys.Zone.Top+45),windows.Fence.Handle)==null,"Empty play-space interior never shows fence help");
                     Check(windows.HelpAt(hover,application.Handle)==null,"A covering application prevents toy hover help");
                     pet.Present(image,new Point(pet.Model.Current.Work.Left+10,pet.Model.Current.Work.Top+10));
-                    Cursor.Position=hover;windows.Update();Application.DoEvents();
+                    Cursor.Position=hover;Application.DoEvents();windows.Update();Application.DoEvents();
                     IntPtr hoverWindow=Native.WindowFromPoint(new Native.POINT(hover.X,hover.Y));
                     Check(windows.Help.Visible,"Hovering the actual ball displays help (hit "+hoverWindow+", ball "+windows.Ball.Handle+", pet "+pet.Handle+", fence "+windows.Fence.Handle+", help "+windows.Help.Handle+")");
                     Native.RECT helpBounds,chestBounds;Native.GetWindowRect(windows.Help.Handle,out helpBounds);Native.GetWindowRect(windows.Chest.Handle,out chestBounds);
