@@ -24,7 +24,8 @@ namespace Vpet
         }
         static void OverlappingItems(PetWindow pet,LayeredWindow[] items)
         {
-            var toys=pet.Toys.Model;var center=toys.Center;
+            var toys=pet.Toys.Model;var center=toys.Center;var modeBefore=pet.Model.Settings.Layer;
+            PointF ball=toys.Ball,triangle=toys.Triangle,coin=toys.Coin,card=toys.Card,die=toys.Die,plate=toys.PlatePosition,joystick=toys.JoystickPosition;
             toys.DragBall(center,pet.Now);toys.DragTriangle(center);toys.DragGame(PlayTarget.Coin,center);toys.DragGame(PlayTarget.Card,center);toys.DragDie(center,pet.Now);
             toys.DragPlate(center);toys.DragJoystick(new PointF(center.X,center.Y+22*toys.Scale));
             foreach(LayerMode mode in new[]{LayerMode.Dynamic,LayerMode.OverEverything,LayerMode.UnderAll})
@@ -43,6 +44,8 @@ namespace Vpet
                 finally{foreach(var observer in observers)observer.Dispose();}
                 RefreshItems(pet);
             }
+            toys.DragBall(ball,pet.Now);toys.DragTriangle(triangle);toys.DragGame(PlayTarget.Coin,coin);toys.DragGame(PlayTarget.Card,card);toys.DragDie(die,pet.Now);toys.DragPlate(plate);toys.DragJoystick(joystick);
+            pet.Model.Settings.Layer=modeBefore;pet.ApplyLayer();RefreshItems(pet);
         }
     }
 }
