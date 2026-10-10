@@ -144,7 +144,6 @@ namespace Vpet
                     bool preserve=!correctingLayer&&bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
                     if(preserve)position.Flags|=4u; // NOZORDER also blocks attempts to violate a locked layer.
                     else if(target.HasValue){position.InsertAfter=target.Value;position.Flags&=~4u;}
-                    if(Text=="Vpet plate")Console.WriteLine("plate changing correct="+correctingLayer+", preserve="+preserve+", target="+target+", insert="+position.InsertAfter+", flags="+position.Flags+", cross="+Native.IsAbove(Handle,OtherCompanionHandle));
                     position.Flags|=0x210u; // NOACTIVATE and NOOWNERZORDER.
                     Marshal.StructureToPtr(position,m.LParam,false);
                 }
@@ -190,14 +189,14 @@ namespace Vpet
         public void EnforceAboveCompanions()
         {
             if(!AboveCompanions||!IsHandleCreated)return;EnforceUnderAll();
-            if(Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,true).HasValue)
-                CorrectLayer(IntPtr.Zero);
+            IntPtr? target=Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,true);
+            if(target.HasValue)CorrectLayer(target.Value);
         }
         void CorrectLayer(IntPtr target)
         {
             // Windows can expose a proposed order inside WINDOWPOSCHANGING. An intentional
             // repair must still be applied even when that temporary order already looks valid.
-            correctingLayer=true;try{bool success=Native.SetWindowPos(Handle,target,0,0,0,0,0x213);if(Text=="Vpet plate")Console.WriteLine("plate repair success="+success+", cross="+Native.IsAbove(Handle,OtherCompanionHandle));}finally{correctingLayer=false;}
+            correctingLayer=true;try{Native.SetWindowPos(Handle,target,0,0,0,0,0x213);}finally{correctingLayer=false;}
         }
     }
 }
