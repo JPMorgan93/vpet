@@ -74,6 +74,7 @@ namespace Vpet
                             Check(Native.GetForegroundWindow()==active,"Item updates do not steal keyboard focus");
                         }
                     }
+                    OverlappingItems(pet,items);
                     pet.Model.Place(new PointF(pet.Model.Current.Work.Left+70,pet.Model.Current.Work.Top+140));
                     typeof(PetWindow).GetMethod("Render",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);RefreshItems(pet);
                     var rendered=MakerField<Bitmap>(pet,"rendered");Point ink=Point.Empty;int nearest=int.MaxValue;
