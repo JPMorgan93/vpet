@@ -139,7 +139,8 @@ namespace Vpet
                 {
                     // Keep correct existing ordering. Re-inserting each item just above the pet on
                     // every layered redraw makes overlapping toys exchange layers and visibly blink.
-                    bool preserve=bandMatches&&(!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
+                    bool aboveRule=AboveCompanions&&!behindArcade&&BehindWindow==IntPtr.Zero;
+                    bool preserve=bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
                     if(preserve)position.Flags|=4u; // NOZORDER also blocks attempts to violate a locked layer.
                     else if(target.HasValue){position.InsertAfter=target.Value;position.Flags&=~4u;}
                     position.Flags|=0x210u; // NOACTIVATE and NOOWNERZORDER.
