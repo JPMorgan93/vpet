@@ -134,7 +134,7 @@ namespace Vpet
                 if(layerMode==LayerMode.UnderAll&&AboveCompanions)
                 {
                     IntPtr under=Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
-                    if(!bandMatches||(under.ToInt64()>0&&!Native.IsAbove(under,Handle)))target=under;
+                    if(!bandMatches||!noZOrder||(under.ToInt64()>0&&!Native.IsAbove(under,Handle)))target=under;
                 }
                 if(target.HasValue||AboveCompanions)
                 {
