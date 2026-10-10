@@ -33,14 +33,15 @@ namespace Vpet
         public string ExportedPath {get;private set;}
         public SpriteTweakWindow(SpriteMakerWindow maker)
         {
-            this.maker=maker;project=maker.Project;Text="Tweak and Complete";Font=new Font("Segoe UI",10);ClientSize=new Size(880,750);MinimumSize=new Size(740,640);
+            this.maker=maker;project=maker.Project;Text="Tweak and Complete";Font=new Font("Segoe UI",10);ClientSize=new Size(880,750);MinimumSize=new Size(740,770);
             BackColor=Color.FromArgb(248,247,252);StartPosition=FormStartPosition.CenterParent;AutoScaleMode=AutoScaleMode.Dpi;
             var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=9,Padding=new Padding(16)};
             root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,52));
-            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute,166));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,48));
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,54));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
             for(int i=0;i<cycles.Length;i++)if(project.Enabled(i)&&project.Slots(i).Length>0){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});}
-            root.Controls.Add(MakerUi.AnimationChoices(cycles,"Choose an animation, then use its controls to adjust the sprite the way you like."),0,0);
+            var animationScroll=new Panel{Name="AnimationChoicesScroll",Dock=DockStyle.Fill,AutoScroll=true};
+            animationScroll.Controls.Add(MakerUi.AnimationChoices(cycles,"Choose an animation, then use its controls to adjust the sprite the way you like."));root.Controls.Add(animationScroll,0,0);
             root.Controls.Add(zoom,0,1);var speedControls=MakerUi.Flow();speedControls.Controls.Add(speedLabel);speedControls.Controls.Add(animationSpeed);
             speedControls.Controls.Add(MakerUi.Button("Reset to 1x",delegate{animationSpeed.Value=100;}));root.Controls.Add(speedControls,0,2);
             animationSpeed.ValueChanged+=delegate
@@ -66,6 +67,7 @@ namespace Vpet
             var bottom=MakerUi.Flow();bottom.FlowDirection=FlowDirection.RightToLeft;root.Controls.Add(bottom,0,8);
             bottom.Controls.Add(MakerUi.Button("Complete",Complete));
             bottom.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,true);}));
+            foreach(Control control in root.Controls){control.Margin=Padding.Empty;var flow=control as FlowLayoutPanel;if(flow!=null)flow.Padding=Padding.Empty;}
             timer.Tick+=delegate{if(!tweaking)RefreshPreview();};timer.Start();
             FormClosed+=delegate{timer.Dispose();};SelectCycle(0);
         }

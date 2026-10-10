@@ -24,14 +24,23 @@ namespace Vpet
             section.RowStyles.Add(new RowStyle(SizeType.AutoSize));section.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             section.Controls.Add(new Label{Name=name+"Title",Text=title,AutoSize=true,Font=new Font("Segoe UI",10,FontStyle.Bold),ForeColor=Purple,Margin=new Padding(8,6,4,2)},0,0);
             var help=new Label{Name=name+"Description",Text=description,AutoSize=true,Margin=new Padding(8,0,4,4)};section.Controls.Add(help,0,1);
-            section.SizeChanged+=delegate{var size=new Size(Math.Max(100,section.ClientSize.Width-16),0);if(help.MaximumSize!=size)help.MaximumSize=size;};
+            section.SizeChanged+=delegate{var size=new Size(Math.Max(100,section.ClientSize.Width-16),0);if(help.MaximumSize!=size)help.MaximumSize=size;LayoutChoiceRows(section);};
             return section;
         }
         public static void ChoiceRow(TableLayoutPanel section,string name,params Control[] controls)
         {
             var row=Flow();row.Name=name;
             foreach(var control in controls)if(control!=null)row.Controls.Add(control);
-            row.Visible=row.Controls.Count>0;int index=section.RowCount++;section.RowStyles.Add(new RowStyle(SizeType.AutoSize));section.Controls.Add(row,0,index);
+            row.AutoSize=false;row.Visible=row.Controls.Count>0;int index=section.RowCount++;section.RowStyles.Add(new RowStyle(SizeType.Absolute,0));section.Controls.Add(row,0,index);
+            row.VisibleChanged+=delegate{LayoutChoiceRows(section);};LayoutChoiceRows(section);
+        }
+        static void LayoutChoiceRows(TableLayoutPanel section)
+        {
+            foreach(var row in section.Controls.OfType<FlowLayoutPanel>())
+            {
+                int height=row.Visible?row.GetPreferredSize(new Size(Math.Max(100,section.ClientSize.Width-row.Margin.Horizontal),0)).Height+row.Margin.Vertical:0;
+                var style=section.RowStyles[section.GetRow(row)];if(style.Height!=height)style.Height=height;
+            }
         }
         public static TableLayoutPanel AnimationChoices(Button[] buttons,string description)
         {
