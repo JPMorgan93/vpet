@@ -188,8 +188,10 @@ namespace Vpet
         public void EnforceAboveCompanions()
         {
             if(!AboveCompanions||!IsHandleCreated)return;EnforceUnderAll();
+            if(Text=="Vpet plate")Console.WriteLine("enforce plate "+layerMode+" target="+Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,true)+" cross-visible="+Native.IsWindowVisible(OtherCompanionHandle));
             if(Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,true).HasValue)
                 Native.SetWindowPos(Handle,IntPtr.Zero,0,0,0,0,0x213);
+            if(Text=="Vpet plate")Console.WriteLine("after enforce="+Native.IsAbove(Handle,OtherCompanionHandle));
         }
     }
 }

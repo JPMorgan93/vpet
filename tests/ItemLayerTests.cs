@@ -10,7 +10,13 @@ namespace Vpet
     internal static partial class Tests
     {
         static void RefreshItems(PetWindow pet)
-        {pet.Toys.Update();pet.Plate.UpdatePlate();pet.Joystick.UpdateJoystick();Application.DoEvents();}
+        {
+            pet.Toys.Update();pet.Plate.UpdatePlate();pet.Joystick.UpdateJoystick();
+            var cross=MakerField<LayeredWindow>(pet,"crossingWindow");
+            if(cross.Visible)Console.WriteLine("before events plate/cross="+IsAbove(pet.Plate.Handle,cross.Handle)+", joystick/cross="+IsAbove(pet.Joystick.Handle,cross.Handle)+", plate companion="+pet.Plate.OtherCompanionHandle+", cross="+cross.Handle+", band="+Native.GetWindowLongPtr(pet.Plate.Handle,-20));
+            Application.DoEvents();
+            if(cross.Visible)Console.WriteLine("after events plate/cross="+IsAbove(pet.Plate.Handle,cross.Handle)+", joystick/cross="+IsAbove(pet.Joystick.Handle,cross.Handle));
+        }
         static void ItemLayerWindows()
         {
             Point cursor=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();
