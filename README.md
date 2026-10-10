@@ -1,10 +1,10 @@
-# Vpet 1.12.2
+# Vpet 1.12.3
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.2-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.3-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -123,7 +123,7 @@ The fence stays fixed until you move or resize it. Dragging the pet, changing sp
 
 **Advanced > Sync Play Zone with Restricted Area** defaults on. In Restricted mode, the pet uses the toy play-zone fence instead of the separate restricted fence. **Display restricted area** and **Display Play Zone** control the same overlay; it works even with the chest closed. Turn sync off to restore the independent saved restricted fence. Toy boundaries remain active in either case.
 
-The right-click menu also has **Movement Controls → Display restricted area**, directly below **Movement settings…**. This toggle is enabled in Restricted mode and shares the settings checkbox's value.
+The right-click menu's **Movement Controls** contains **Type**, **Location**, and **Display restricted area**, in that order. The area toggle is enabled in Restricted mode and shares the settings checkbox's value. Use **Settings** for the full movement, reaction frequency, and Sprite options.
 
 Speech bubbles use one continuous body-and-tail outline, drawn after the emoji or custom image. This keeps the full border visible for both upward- and downward-pointing bubbles.
 

@@ -20,6 +20,8 @@ Use **Save Project** to embed the revised sheet and retained mappings, then **Tw
 
 Choose an animation type and set its frame width and height, up to 100 × 150 pixels. Every frame of that type shares its dimensions; other types can have different sizes.
 
+Under **Animation types**, Idle buttons share one row and Walk buttons share the next. **Animation frames** shows slots **1-5** on the first row and **6-10** on the second, with **Set** and **Clear** beneath them. Instructions above each group explain what to choose. The upper controls scroll independently of the sheet preview when space is limited.
+
 Choose a numbered slot, from **1 through 10**. Click the sheet to place the red frame, drag its border to move it, or drag a corner to resize all frames of this animation type. Choose **Set** to save the selection and advance to the next slot; setting frame 10 keeps that slot selected. The scroll position stays fixed. **Clear** removes a slot. Each required animation needs **1–10 nonempty selections**, played in numbered order. Gaps in slot numbering are allowed. Optional reaction animations also allow up to ten frames.
 
 Turn **Diagonal animations** off if your sheet has no diagonal poses. Saved diagonal selections remain in the project and can be enabled again.
@@ -37,6 +39,8 @@ Check each slot and resolve any missing-frame or invalid-selection messages. Use
 ## Step 5 — Tweak, complete, and use your pet
 
 When required animations are ready, choose **Tweak and Complete**. Its own **How to Guide** covers the controls:
+
+The **Animation types** title and instructions sit above separate Idle and Walk rows. Scroll this animation list to reach populated optional emote animations; the preview and editing controls stay visible below it.
 
 - Choose an animation to watch it play. Only populated optional reaction rows appear here.
 - **Animation speed** changes only the selected type, from **0.25× to 3×**. **1×** keeps its original speed; **Reset to 1x** restores it. Moving the slider resumes playback immediately, so you can compare speeds. Speed affects animation playback, independently of the pet's walking speed. Save Tweaks or Complete saves it with the project and export.
