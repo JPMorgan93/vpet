@@ -43,6 +43,7 @@ namespace Vpet
                     {
                         tweak.Size=size==new Size(740,640)?tweak.MinimumSize:size;Application.DoEvents();AnimationRows(tweak,MakerField<Button[]>(tweak,"cycles"),"Tweak "+size);
                         var viewport=MakerField<SpriteSheetViewport>(tweak,"viewport");
+                        CaptureForm(tweak,"tweak-layout-inspection");Console.WriteLine("Tweak rows: "+string.Join(",",tweak.Controls.OfType<TableLayoutPanel>().Single().GetRowHeights()));
                         Check(viewport.Height>=80&&tweak.ClientRectangle.Contains(OnForm(tweak,viewport)),"Tweak keeps at least 80 pixels of visible preview space at "+size+" (height "+viewport.Height+")");
                         foreach(string caption in new[]{"Tweak","Magic Tweak","Complete","How to Guide"})Check(tweak.ClientRectangle.Contains(OnForm(tweak,FindButton(tweak,caption))),"Tweak action remains within resized window: "+caption);
                         CaptureForm(tweak,size==new Size(740,640)?"tweak-grouped-minimum":"tweak-grouped-buttons");

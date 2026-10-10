@@ -36,6 +36,7 @@ namespace Vpet
             this.maker=maker;project=maker.Project;Text="Tweak and Complete";Font=new Font("Segoe UI",10);ClientSize=new Size(880,750);MinimumSize=new Size(740,640);
             BackColor=Color.FromArgb(248,247,252);StartPosition=FormStartPosition.CenterParent;AutoScaleMode=AutoScaleMode.Dpi;
             var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=9,Padding=new Padding(16)};
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,52));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
             for(int i=0;i<cycles.Length;i++)if(project.Enabled(i)&&project.Slots(i).Length>0){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});}
