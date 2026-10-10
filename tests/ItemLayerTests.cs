@@ -10,13 +10,7 @@ namespace Vpet
     internal static partial class Tests
     {
         static void RefreshItems(PetWindow pet)
-        {
-            pet.Toys.Update();pet.Plate.UpdatePlate();pet.Joystick.UpdateJoystick();
-            var cross=MakerField<LayeredWindow>(pet,"crossingWindow");
-            if(cross.Visible)Console.WriteLine("before events plate/cross="+IsAbove(pet.Plate.Handle,cross.Handle)+", joystick/cross="+IsAbove(pet.Joystick.Handle,cross.Handle)+", plate companion="+pet.Plate.OtherCompanionHandle+", cross="+cross.Handle+", band="+Native.GetWindowLongPtr(pet.Plate.Handle,-20));
-            Application.DoEvents();
-            if(cross.Visible)Console.WriteLine("after events plate/cross="+IsAbove(pet.Plate.Handle,cross.Handle)+", joystick/cross="+IsAbove(pet.Joystick.Handle,cross.Handle));
-        }
+        {pet.Toys.Update();pet.Plate.UpdatePlate();pet.Joystick.UpdateJoystick();Application.DoEvents();}
         static void ItemLayerWindows()
         {
             Point cursor=Cursor.Position;IntPtr foreground=Native.GetForegroundWindow();
@@ -67,7 +61,7 @@ namespace Vpet
                         // Simulate both visible native sprite portions and alternate which portion is higher.
                         crossing.Present(image,new Point(pet.PresentedBounds.Right+10,pet.PresentedBounds.Top));crossing.Show();crossing.SetLayer(mode);RefreshItems(pet);
                         Check(crossing.Visible&&Native.IsWindowVisible(crossing.Handle),"Both sprite portions remain visible during the isolated crossing check");
-                        foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" remains above both crossing portions in "+mode+"; pet="+IsAbove(item.Handle,pet.Handle)+", crossing="+IsAbove(item.Handle,crossing.Handle)+", target="+Native.AboveCompanionTarget(item.Handle,pet.Handle,crossing.Handle,mode,true)+", order="+ItemOrder(items)+", handles="+string.Join(",",items.Select(w=>w.Text+":"+w.Handle.ToInt64())));
+                        foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" remains above both crossing portions in "+mode);
                         Check(IsAbove(crossing.Handle,pet.Toys.Chest.Handle),"Chest stays below the second sprite portion");
                         Native.SetWindowPos(pet.Handle,IntPtr.Zero,0,0,0,0,0x213);RefreshItems(pet);
                         foreach(var item in items)Check(IsAbove(item.Handle,pet.Handle)&&IsAbove(item.Handle,crossing.Handle),item.Text+" follows a change of the higher crossing portion");

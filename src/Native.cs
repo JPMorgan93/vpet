@@ -111,6 +111,7 @@ namespace Vpet
         public bool AboveCompanions;
         LayerMode layerMode;
         bool layerConfigured;
+        bool correctingLayer;
         public LayeredWindow(bool clickThrough)
         {
             this.clickThrough=clickThrough; FormBorderStyle=FormBorderStyle.None; ShowInTaskbar=false;
@@ -129,7 +130,7 @@ namespace Vpet
                 var position=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));
                 bool behindArcade=BehindArcade,bandMatches=IsTopmost==(layerMode==LayerMode.OverEverything&&!behindArcade);
                 IntPtr? target=behindArcade?Native.ArcadeForeground:BehindWindow!=IntPtr.Zero?BehindWindow:AboveCompanions?
-                    Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,bandMatches):layerMode==LayerMode.UnderAll?(IntPtr?)Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle):null;
+                    Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,bandMatches&&!correctingLayer):layerMode==LayerMode.UnderAll?(IntPtr?)Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle):null;
                 if(layerMode==LayerMode.UnderAll&&AboveCompanions)
                 {
                     IntPtr under=Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
@@ -140,7 +141,7 @@ namespace Vpet
                     // Keep correct existing ordering. Re-inserting each item just above the pet on
                     // every layered redraw makes overlapping toys exchange layers and visibly blink.
                     bool aboveRule=AboveCompanions&&!behindArcade&&BehindWindow==IntPtr.Zero;
-                    bool preserve=bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
+                    bool preserve=!correctingLayer&&bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
                     if(preserve)position.Flags|=4u; // NOZORDER also blocks attempts to violate a locked layer.
                     else if(target.HasValue){position.InsertAfter=target.Value;position.Flags&=~4u;}
                     position.Flags|=0x210u; // NOACTIVATE and NOOWNERZORDER.
@@ -175,7 +176,7 @@ namespace Vpet
             bool changed=!layerConfigured||layerMode!=mode;layerConfigured=true;
             layerMode=mode;
             bool topmost=mode==LayerMode.OverEverything&&!BehindArcade;
-            if(changed||IsTopmost!=topmost)Native.SetWindowPos(Handle,topmost?new IntPtr(-1):new IntPtr(-2),0,0,0,0,0x213);
+            if(changed||IsTopmost!=topmost)CorrectLayer(topmost?new IntPtr(-1):new IntPtr(-2));
             EnforceUnderAll();
         }
         public void EnforceUnderAll()
@@ -183,15 +184,19 @@ namespace Vpet
             if(layerMode!=LayerMode.UnderAll||!IsHandleCreated)return;
             IntPtr target=Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
             if(!IsTopmost&&(target==new IntPtr(-2)||Native.IsAbove(target,Handle)))return;
-            Native.SetWindowPos(Handle,target,0,0,0,0,0x213);
+            CorrectLayer(target);
         }
         public void EnforceAboveCompanions()
         {
             if(!AboveCompanions||!IsHandleCreated)return;EnforceUnderAll();
-            if(Text=="Vpet plate")Console.WriteLine("enforce plate "+layerMode+" target="+Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,true)+" cross-visible="+Native.IsWindowVisible(OtherCompanionHandle));
             if(Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,true).HasValue)
-                Native.SetWindowPos(Handle,IntPtr.Zero,0,0,0,0,0x213);
-            if(Text=="Vpet plate")Console.WriteLine("after enforce="+Native.IsAbove(Handle,OtherCompanionHandle));
+                CorrectLayer(IntPtr.Zero);
+        }
+        void CorrectLayer(IntPtr target)
+        {
+            // Windows can expose a proposed order inside WINDOWPOSCHANGING. An intentional
+            // repair must still be applied even when that temporary order already looks valid.
+            correctingLayer=true;try{Native.SetWindowPos(Handle,target,0,0,0,0,0x213);}finally{correctingLayer=false;}
         }
     }
 }
