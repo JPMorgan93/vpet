@@ -8,6 +8,8 @@
 
 The overlap regression reproduced 440 intermediate item-order changes during 20 Dynamic refreshes before the fix. The corrected version records zero temporary reorderings across 60 iterations with all seven foreground toys/items overlapping and moving in Dynamic, Over Everything, and Under All. Existing tests verify items above both native sprite portions during monitor crossings, the chest/fences below, band changes, ordinary application stacking and focus, overlapping toy input, and hidden-chest independence. Arcade remains in ordinary stacking, above every desktop asset despite attempted promotion in all three modes, and restores their selected layers when closed. Toy interactions, fence controls, launches, bounces, triangle menu/sounds, cleanup, and hover help pass. The toy harness now processes Shown before stopping its timer, disables scripted smoke actions, and processes cursor movement before testing hover. Arcade audio checks used muted playback.
 
+The 1.12.3 EXE installer compiled successfully. Isolated fresh installation and progress-only upgrade checks passed supplied artwork, songs, icon and shortcut paths, retained destination and shortcut choices, preserved skipped-version descriptions, legacy updater support, completion/relaunch smoke testing, and cleanup. The regular installation and personal preferences were unchanged.
+
 Validated on this development PC on 2026-10-10. Other DPI configurations were not directly assessed. Version 1.12.3 follows AGENTS.md's patch policy for adjustments to existing features.
 
 ## Version 1.12.2
