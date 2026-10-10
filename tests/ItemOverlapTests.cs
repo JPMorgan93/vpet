@@ -24,7 +24,7 @@ namespace Vpet
         }
         static void OverlappingItems(PetWindow pet,LayeredWindow[] items)
         {
-            var toys=pet.Toys.Model;var center=toys.Center;var modeBefore=pet.Model.Settings.Layer;
+            var toys=pet.Toys.Model;var center=toys.Center;var modeBefore=pet.Model.Settings.Layer;var movementBefore=pet.Model.Settings.Movement;pet.Model.Settings.Movement=MovementMode.Static;
             PointF ball=toys.Ball,triangle=toys.Triangle,coin=toys.Coin,card=toys.Card,die=toys.Die,plate=toys.PlatePosition,joystick=toys.JoystickPosition;
             toys.DragBall(center,pet.Now);toys.DragTriangle(center);toys.DragGame(PlayTarget.Coin,center);toys.DragGame(PlayTarget.Card,center);toys.DragDie(center,pet.Now);
             toys.DragPlate(center);toys.DragJoystick(new PointF(center.X,center.Y+22*toys.Scale));
@@ -37,6 +37,8 @@ namespace Vpet
                     foreach(var item in items)observers.Add(new ItemOrderWatch(item.Handle,delegate{if(ItemOrder(items)!=order)changes++;}));
                     for(int frame=0;frame<20;frame++)
                     {
+                        var shifted=new PointF(center.X+frame%2,center.Y);
+                        toys.DragBall(shifted,pet.Now);toys.DragTriangle(shifted);toys.DragGame(PlayTarget.Coin,shifted);toys.DragGame(PlayTarget.Card,shifted);toys.DragDie(shifted,pet.Now);toys.DragPlate(shifted);toys.DragJoystick(new PointF(shifted.X,shifted.Y+22*toys.Scale));
                         RefreshItems(pet);PetFrame(pet);
                     }
                     Check(changes==0&&ItemOrder(items)==order,"Overlapping toys, plate, and joystick never exchange layers during intermediate redraws in "+mode+" (changes: "+changes+")");
@@ -45,7 +47,7 @@ namespace Vpet
                 RefreshItems(pet);
             }
             toys.DragBall(ball,pet.Now);toys.DragTriangle(triangle);toys.DragGame(PlayTarget.Coin,coin);toys.DragGame(PlayTarget.Card,card);toys.DragDie(die,pet.Now);toys.DragPlate(plate);toys.DragJoystick(joystick);
-            pet.Model.Settings.Layer=modeBefore;pet.ApplyLayer();RefreshItems(pet);
+            pet.Model.Settings.Layer=modeBefore;pet.Model.Settings.Movement=movementBefore;pet.ApplyLayer();RefreshItems(pet);
         }
     }
 }

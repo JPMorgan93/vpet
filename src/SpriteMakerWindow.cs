@@ -78,7 +78,7 @@ namespace Vpet
         readonly TableLayoutPanel animationChoices;
         readonly Panel controlScroll=new Panel{Dock=DockStyle.Fill,AutoScroll=true};
         readonly SpriteSheetView sheet=new SpriteSheetView();
-        readonly SplitContainer editorSplit=new SplitContainer{Dock=DockStyle.Fill,Orientation=Orientation.Horizontal,SplitterWidth=8,FixedPanel=FixedPanel.Panel2,Size=new Size(960,350),Panel1MinSize=80,Panel2MinSize=45,SplitterDistance=242};
+        readonly SplitContainer editorSplit=new SplitContainer{Dock=DockStyle.Fill,Orientation=Orientation.Horizontal,SplitterWidth=8,FixedPanel=FixedPanel.Panel2,Size=new Size(960,350),Panel1MinSize=80,Panel2MinSize=45,SplitterDistance=270};
         readonly SplitContainer workspaceSplit=new SplitContainer{Dock=DockStyle.Fill,Orientation=Orientation.Horizontal,SplitterWidth=8,FixedPanel=FixedPanel.Panel1,Size=new Size(960,760),Panel1MinSize=100,Panel2MinSize=190,SplitterDistance=450};
         readonly Button complete,loadLast,updateSheet;
         bool syncing;
