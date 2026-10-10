@@ -144,11 +144,13 @@ namespace Vpet
                     bool preserve=!correctingLayer&&bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
                     if(preserve)position.Flags|=4u; // NOZORDER also blocks attempts to violate a locked layer.
                     else if(target.HasValue){position.InsertAfter=target.Value;position.Flags&=~4u;}
+                    if(Text=="Vpet plate")Console.WriteLine("plate rule correct="+correctingLayer+", above="+AboveCompanions+", behind="+BehindWindow+", target="+target+", final="+position.InsertAfter+", flags="+position.Flags);
                     position.Flags|=0x210u; // NOACTIVATE and NOOWNERZORDER.
                     Marshal.StructureToPtr(position,m.LParam,false);
                 }
             }
             base.WndProc(ref m);
+            if(Text=="Vpet plate"&&m.Msg==0x46&&m.LParam!=IntPtr.Zero){var final=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));Console.WriteLine("plate after base insert="+final.InsertAfter+", flags="+final.Flags);}
         }
         bool BehindArcade {get{return layerMode!=LayerMode.UnderAll&&Native.ArcadeForeground!=IntPtr.Zero&&Native.BackgroundAdornments.Contains(Handle)&&Native.IsWindowVisible(Native.ArcadeForeground);}}
         bool IsTopmost {get{return (Native.GetWindowLongPtr(Handle,-20).ToInt64()&8)!=0;}}
