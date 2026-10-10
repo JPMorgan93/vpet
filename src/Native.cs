@@ -128,9 +128,9 @@ namespace Vpet
             if(m.Msg==0x46&&m.LParam!=IntPtr.Zero)
             {
                 var position=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));
-                bool behindArcade=BehindArcade,bandMatches=IsTopmost==(layerMode==LayerMode.OverEverything&&!behindArcade);
+                bool behindArcade=BehindArcade,bandMatches=IsTopmost==(layerMode==LayerMode.OverEverything&&!behindArcade),noZOrder=(position.Flags&4u)!=0;
                 IntPtr? target=behindArcade?Native.ArcadeForeground:BehindWindow!=IntPtr.Zero?BehindWindow:AboveCompanions?
-                    Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,bandMatches&&!correctingLayer):layerMode==LayerMode.UnderAll?(IntPtr?)Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle):null;
+                    Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,bandMatches&&noZOrder&&!correctingLayer):layerMode==LayerMode.UnderAll?(IntPtr?)Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle):null;
                 if(layerMode==LayerMode.UnderAll&&AboveCompanions)
                 {
                     IntPtr under=Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
@@ -141,16 +141,14 @@ namespace Vpet
                     // Keep correct existing ordering. Re-inserting each item just above the pet on
                     // every layered redraw makes overlapping toys exchange layers and visibly blink.
                     bool aboveRule=AboveCompanions&&!behindArcade&&BehindWindow==IntPtr.Zero;
-                    bool preserve=!correctingLayer&&bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
+                    bool preserve=!correctingLayer&&noZOrder&&bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
                     if(preserve)position.Flags|=4u; // NOZORDER also blocks attempts to violate a locked layer.
                     else if(target.HasValue){position.InsertAfter=target.Value;position.Flags&=~4u;}
-                    if(Text=="Vpet plate")Console.WriteLine("plate rule correct="+correctingLayer+", above="+AboveCompanions+", behind="+BehindWindow+", target="+target+", final="+position.InsertAfter+", flags="+position.Flags);
                     position.Flags|=0x210u; // NOACTIVATE and NOOWNERZORDER.
                     Marshal.StructureToPtr(position,m.LParam,false);
                 }
             }
             base.WndProc(ref m);
-            if(m.Msg==0x46&&m.LParam!=IntPtr.Zero&&Text=="Vpet plate"){var final=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));Console.WriteLine("plate after base insert="+final.InsertAfter+", flags="+final.Flags);}
         }
         bool BehindArcade {get{return layerMode!=LayerMode.UnderAll&&Native.ArcadeForeground!=IntPtr.Zero&&Native.BackgroundAdornments.Contains(Handle)&&Native.IsWindowVisible(Native.ArcadeForeground);}}
         bool IsTopmost {get{return (Native.GetWindowLongPtr(Handle,-20).ToInt64()&8)!=0;}}
@@ -198,12 +196,7 @@ namespace Vpet
         {
             // Windows can expose a proposed order inside WINDOWPOSCHANGING. An intentional
             // repair must still be applied even when that temporary order already looks valid.
-            correctingLayer=true;try
-            {
-                if(Text=="Vpet plate")Console.WriteLine("plate before target="+target+", platePrev="+Native.GetWindow(Handle,3)+", crossPrev="+Native.GetWindow(OtherCompanionHandle,3)+", target-cross="+Native.IsAbove(target,OtherCompanionHandle)+", top="+IsTopmost+", targetstyle="+(target.ToInt64()>0?Native.GetWindowLongPtr(target,-20).ToInt64():0)+", crossStyle="+Native.GetWindowLongPtr(OtherCompanionHandle,-20));
-                Native.SetWindowPos(Handle,target,0,0,0,0,0x213);
-                if(Text=="Vpet plate")Console.WriteLine("plate after prev="+Native.GetWindow(Handle,3)+", crossPrev="+Native.GetWindow(OtherCompanionHandle,3)+", top="+IsTopmost+", aboveCross="+Native.IsAbove(Handle,OtherCompanionHandle));
-            }finally{correctingLayer=false;}
+            correctingLayer=true;try{Native.SetWindowPos(Handle,target,0,0,0,0,0x213);}finally{correctingLayer=false;}
         }
     }
 }
