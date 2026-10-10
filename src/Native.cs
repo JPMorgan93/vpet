@@ -196,7 +196,12 @@ namespace Vpet
         {
             // Windows can expose a proposed order inside WINDOWPOSCHANGING. An intentional
             // repair must still be applied even when that temporary order already looks valid.
-            correctingLayer=true;try{Native.SetWindowPos(Handle,target,0,0,0,0,0x213);}finally{correctingLayer=false;}
+            correctingLayer=true;try
+            {
+                if(Text=="Vpet plate")Console.WriteLine("plate before target="+target+", platePrev="+Native.GetWindow(Handle,3)+", crossPrev="+Native.GetWindow(OtherCompanionHandle,3)+", target-cross="+Native.IsAbove(target,OtherCompanionHandle)+", top="+IsTopmost+", targetstyle="+(target.ToInt64()>0?Native.GetWindowLongPtr(target,-20).ToInt64():0)+", crossStyle="+Native.GetWindowLongPtr(OtherCompanionHandle,-20));
+                Native.SetWindowPos(Handle,target,0,0,0,0,0x213);
+                if(Text=="Vpet plate")Console.WriteLine("plate after prev="+Native.GetWindow(Handle,3)+", crossPrev="+Native.GetWindow(OtherCompanionHandle,3)+", top="+IsTopmost+", aboveCross="+Native.IsAbove(Handle,OtherCompanionHandle));
+            }finally{correctingLayer=false;}
         }
     }
 }
