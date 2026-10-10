@@ -38,8 +38,8 @@ namespace Vpet
             var root=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=9,Padding=new Padding(16)};
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Percent,100));root.RowStyles.Add(new RowStyle(SizeType.Absolute,52));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,60));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(root);
-            var choices=MakerUi.Flow();root.Controls.Add(choices,0,0);
-            for(int i=0;i<cycles.Length;i++)if(project.Enabled(i)&&project.Slots(i).Length>0){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});choices.Controls.Add(cycles[i]);}
+            for(int i=0;i<cycles.Length;i++)if(project.Enabled(i)&&project.Slots(i).Length>0){int row=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{SelectCycle(row);});}
+            root.Controls.Add(MakerUi.AnimationChoices(cycles,"Choose an animation, then use its controls to adjust the sprite the way you like."),0,0);
             root.Controls.Add(zoom,0,1);var speedControls=MakerUi.Flow();speedControls.Controls.Add(speedLabel);speedControls.Controls.Add(animationSpeed);
             speedControls.Controls.Add(MakerUi.Button("Reset to 1x",delegate{animationSpeed.Value=100;}));root.Controls.Add(speedControls,0,2);
             animationSpeed.ValueChanged+=delegate

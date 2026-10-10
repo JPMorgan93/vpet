@@ -17,6 +17,29 @@ namespace Vpet
             b.FlatAppearance.BorderColor=Color.FromArgb(190,179,208);if(click!=null)b.Click+=click;return b;
         }
         public static Label Label(string text){return new Label{Text=text,AutoSize=true,Margin=new Padding(8,11,4,4)};}
+        public static TableLayoutPanel ChoiceSection(string name,string title,string description)
+        {
+            var section=new TableLayoutPanel{Name=name,Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=1,RowCount=2};
+            section.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            section.RowStyles.Add(new RowStyle(SizeType.AutoSize));section.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            section.Controls.Add(new Label{Name=name+"Title",Text=title,AutoSize=true,Font=new Font("Segoe UI",10,FontStyle.Bold),ForeColor=Purple,Margin=new Padding(8,6,4,2)},0,0);
+            var help=new Label{Name=name+"Description",Text=description,AutoSize=true,Margin=new Padding(8,0,4,4)};section.Controls.Add(help,0,1);
+            section.SizeChanged+=delegate{var size=new Size(Math.Max(100,section.ClientSize.Width-16),0);if(help.MaximumSize!=size)help.MaximumSize=size;};
+            return section;
+        }
+        public static void ChoiceRow(TableLayoutPanel section,string name,params Control[] controls)
+        {
+            var row=Flow();row.Name=name;
+            foreach(var control in controls)if(control!=null)row.Controls.Add(control);
+            row.Visible=row.Controls.Count>0;int index=section.RowCount++;section.RowStyles.Add(new RowStyle(SizeType.AutoSize));section.Controls.Add(row,0,index);
+        }
+        public static TableLayoutPanel AnimationChoices(Button[] buttons,string description)
+        {
+            var section=ChoiceSection("AnimationTypes","Animation types",description);
+            ChoiceRow(section,"IdleAnimations",buttons.Take(5).ToArray());
+            ChoiceRow(section,"WalkAnimations",buttons.Skip(5).Take(5).ToArray());
+            ChoiceRow(section,"EmoteAnimations",buttons.Skip(10).ToArray());return section;
+        }
         public static void Error(IWin32Window owner,Exception ex){MessageBox.Show(owner,ex.Message,"Sprite Maker",MessageBoxButtons.OK,MessageBoxIcon.Information);}
         public static void Checker(Graphics g,Rectangle clip,int step)
         {
@@ -43,9 +66,11 @@ namespace Vpet
         readonly SpriteSheetViewport viewport=new SpriteSheetViewport{Dock=DockStyle.Fill,AutoScroll=true,BackColor=Color.FromArgb(220,216,229),BorderStyle=BorderStyle.FixedSingle};
         readonly TextBox status=new TextBox{ReadOnly=true,Multiline=true,ScrollBars=ScrollBars.Vertical,Dock=DockStyle.Fill,BorderStyle=BorderStyle.None,BackColor=Color.FromArgb(248,247,252)};
         readonly Label selectionHelp=MakerUi.Label("Upload a transparent PNG to begin.");
+        readonly TableLayoutPanel animationChoices;
+        readonly Panel controlScroll=new Panel{Dock=DockStyle.Fill,AutoScroll=true};
         readonly SpriteSheetView sheet=new SpriteSheetView();
         readonly SplitContainer editorSplit=new SplitContainer{Dock=DockStyle.Fill,Orientation=Orientation.Horizontal,SplitterWidth=8,FixedPanel=FixedPanel.Panel2,Size=new Size(960,350),Panel1MinSize=80,Panel2MinSize=45,SplitterDistance=242};
-        readonly SplitContainer workspaceSplit=new SplitContainer{Dock=DockStyle.Fill,Orientation=Orientation.Horizontal,SplitterWidth=8,FixedPanel=FixedPanel.Panel1,Size=new Size(960,660),Panel1MinSize=100,Panel2MinSize=190,SplitterDistance=310};
+        readonly SplitContainer workspaceSplit=new SplitContainer{Dock=DockStyle.Fill,Orientation=Orientation.Horizontal,SplitterWidth=8,FixedPanel=FixedPanel.Panel1,Size=new Size(960,760),Panel1MinSize=100,Panel2MinSize=190,SplitterDistance=450};
         readonly Button complete,loadLast,updateSheet;
         bool syncing;
         public string ExportedPath {get;private set;}
@@ -55,7 +80,7 @@ namespace Vpet
             Text="Vpet Sprite Maker";Font=new Font("Segoe UI",10);ClientSize=new Size(1000,800);MinimumSize=new Size(800,650);
             StartPosition=FormStartPosition.CenterParent;BackColor=Color.FromArgb(248,247,252);AutoScaleMode=AutoScaleMode.Dpi;
             var outer=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=2,Padding=new Padding(12)};outer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));outer.RowStyles.Add(new RowStyle(SizeType.Percent,100));outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(outer);outer.Controls.Add(workspaceSplit,0,0);
-            var controlScroll=new Panel{Dock=DockStyle.Fill,AutoScroll=true};workspaceSplit.Panel1.Controls.Add(controlScroll);
+            workspaceSplit.Panel1.Controls.Add(controlScroll);
             var root=new TableLayoutPanel{Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=1,RowCount=4};root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             for(int i=0;i<4;i++)root.RowStyles.Add(new RowStyle(SizeType.AutoSize));controlScroll.Controls.Add(root);
             var commands=MakerUi.Flow();root.Controls.Add(commands,0,0);
@@ -71,11 +96,13 @@ namespace Vpet
             var options=MakerUi.Flow();root.Controls.Add(options,0,1);
             options.Controls.Add(diagonal);options.Controls.Add(MakerUi.Label("Animation frame width"));options.Controls.Add(frameWidth);options.Controls.Add(MakerUi.Label("Height"));options.Controls.Add(frameHeight);
             options.Controls.Add(MakerUi.Label("Sheet faces"));facing.Items.AddRange(new object[]{"Left","Right"});facing.SelectedIndex=0;options.Controls.Add(facing);options.Controls.Add(emotes);
-            var choices=MakerUi.Flow();root.Controls.Add(choices,0,2);
-            for(int i=0;i<cycles.Length;i++){int index=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{ChooseCycle(index);});choices.Controls.Add(cycles[i]);}
-            var frameChoices=MakerUi.Flow();root.Controls.Add(frameChoices,0,3);
-            for(int i=0;i<slots.Length;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);frameChoices.Controls.Add(slots[i]);}
-            frameChoices.Controls.Add(MakerUi.Button("Set",delegate{SetFrame();}));frameChoices.Controls.Add(MakerUi.Button("Clear",delegate{ClearFrame();}));frameChoices.Controls.Add(selectionHelp);
+            for(int i=0;i<cycles.Length;i++){int index=i;cycles[i]=MakerUi.Button(SpriteProject.Cycles[i],delegate{ChooseCycle(index);});}
+            animationChoices=MakerUi.AnimationChoices(cycles,"Choose the animation you want to edit.");root.Controls.Add(animationChoices,0,2);
+            var frameChoices=MakerUi.ChoiceSection("AnimationFrames","Animation frames","Set each frame in the chosen animation's cycle, in playback order.");root.Controls.Add(frameChoices,0,3);
+            for(int i=0;i<slots.Length;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].MinimumSize=new Size(48,34);}
+            MakerUi.ChoiceRow(frameChoices,"FramesOneToFive",slots.Take(5).ToArray());MakerUi.ChoiceRow(frameChoices,"FramesSixToTen",slots.Skip(5).ToArray());
+            MakerUi.ChoiceRow(frameChoices,"FrameActions",MakerUi.Button("Set",delegate{SetFrame();}),MakerUi.Button("Clear",delegate{ClearFrame();}));
+            MakerUi.ChoiceRow(frameChoices,"FrameSelectionHelp",selectionHelp);
             var preview=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=2};preview.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));preview.RowStyles.Add(new RowStyle(SizeType.AutoSize));preview.RowStyles.Add(new RowStyle(SizeType.Percent,100));workspaceSplit.Panel2.Controls.Add(preview);
             preview.Controls.Add(zoom,0,0);viewport.Controls.Add(sheet);editorSplit.Panel1.Controls.Add(viewport);editorSplit.Panel2.Controls.Add(status);preview.Controls.Add(editorSplit,0,1);
             workspaceSplit.BackColor=editorSplit.BackColor=Color.FromArgb(213,204,226);
@@ -193,6 +220,7 @@ namespace Vpet
             loadLast.Enabled=!string.IsNullOrWhiteSpace(preferences.LastSpriteProject);
             updateSheet.Enabled=Project!=null;
             for(int i=0;i<cycles.Length;i++){cycles[i].Visible=Project==null?i<10&&i%5<3:Project.Enabled(i);cycles[i].BackColor=i==Cycle?Color.FromArgb(221,211,241):Color.White;}
+            animationChoices.Controls["EmoteAnimations"].Visible=Project!=null&&Project.Data.EmoteAnimations;
             diagonal.Enabled=emotes.Enabled=facing.Enabled=Project!=null;
             for(int i=0;i<slots.Length;i++){bool saved=Project!=null&&Project.Data.Frames[Cycle][i]!=null;slots[i].Text=(i+1)+(saved?" ✓":"");slots[i].ForeColor=saved?Color.DarkGreen:Color.Black;slots[i].BackColor=i==Slot?Color.FromArgb(221,211,241):Color.White;}
             selectionHelp.Text=Project==null?"Upload a transparent PNG to begin.":"Frame "+(Slot+1)+": drag border to move; corners resize all "+SpriteProject.Cycles[Cycle]+" frames.";

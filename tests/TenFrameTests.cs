@@ -124,7 +124,7 @@ namespace Vpet
                 maker.ChooseSlot(8);sheet.Draft=new SpriteFrame{X=256};maker.SetFrame();Check(maker.Slot==9,"Setting frame 9 advances to frame 10");
                 sheet.Draft=new SpriteFrame{X=288};maker.SetFrame();Check(maker.Slot==9&&maker.Project.Data.Frames[0][9]!=null,"Setting frame 10 stays within the last allowed slot");
                 maker.Size=maker.MinimumSize;Application.DoEvents();buttons[9].Focus();Application.DoEvents();
-                var controlScroll=(Panel)buttons[9].Parent.Parent.Parent;
+                var controlScroll=MakerField<Panel>(maker,"controlScroll");
                 Check(controlScroll.RectangleToScreen(controlScroll.ClientRectangle).Contains(buttons[9].RectangleToScreen(buttons[9].ClientRectangle)),"Frame 10 remains fully reachable at minimum editor size");
                 CaptureForm(maker,"sprite-maker-ten-minimum");
                 maker.ClientSize=new Size(1100,850);Application.DoEvents();CaptureForm(maker,"sprite-maker-ten-frames");

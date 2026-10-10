@@ -74,14 +74,13 @@ namespace Vpet
                             Check(Native.GetForegroundWindow()==active,"Item updates do not steal keyboard focus");
                         }
                     }
-                    OverlappingItems(pet,items);
                     pet.Model.Place(new PointF(pet.Model.Current.Work.Left+70,pet.Model.Current.Work.Top+140));
                     typeof(PetWindow).GetMethod("Render",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);RefreshItems(pet);
                     var rendered=MakerField<Bitmap>(pet,"rendered");Point ink=Point.Empty;int nearest=int.MaxValue;
                     for(int y=0;y<rendered.Height;y++)for(int x=0;x<rendered.Width;x++)if(rendered.GetPixel(x,y).A==255)
                     {int distance=(x-rendered.Width/2)*(x-rendered.Width/2)+(y-rendered.Height/2)*(y-rendered.Height/2);if(distance<nearest){nearest=distance;ink=new Point(x,y);}}
                     Cursor.Position=new Point(pet.PresentedBounds.Left+ink.X,pet.PresentedBounds.Top+ink.Y);Application.DoEvents();PetFrame(pet);
-                    Check(pet.Model.Hovered,"An unobstructed visible pet still detects hover; cursor="+Cursor.Position+", native target="+Native.WindowFromPoint(new Native.POINT(Cursor.Position.X,Cursor.Position.Y))+", pet="+pet.Handle+", layer="+pet.Model.Settings.Layer+", style="+Native.GetWindowLongPtr(pet.Handle,-20)+", paused="+pet.Model.Paused+", pet bounds="+pet.PresentedBounds);
+                    Check(pet.Model.Hovered,"An unobstructed visible pet still detects hover");
                     var petSize=pet.Model.Current.PetSize(pet.Sprites.Cell);pet.Model.Place(new PointF(toys.Ball.X,toys.Ball.Y+petSize.Height/2));
                     typeof(PetWindow).GetMethod("Render",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(pet,null);RefreshItems(pet);
                     var ballCenter=Point.Round(toys.Ball);Cursor.Position=ballCenter;
@@ -94,6 +93,7 @@ namespace Vpet
                     var restricted=MakerField<RestrictedAreaOverlay>(pet,"restrictedOverlay");
                     Check(IsAbove(pet.Handle,restricted.HandleWindow)&&restricted.RingWindows.All(handle=>IsAbove(pet.Handle,handle)),"Separate restricted fence remains below the sprite");
                     pet.Toys.Menu.Show(pet.Toys.Chest,new Point(10,10));RefreshItems(pet);Check(items.All(item=>IsAbove(item.Handle,pet.Handle)),"Opening the toy menu preserves foreground item ordering");pet.Toys.Menu.Close();
+                    OverlappingItems(pet,items);
                     pet.Toys.SetVisible(false);RefreshItems(pet);Check(!pet.Toys.Chest.Visible&&pet.Plate.Visible&&pet.Joystick.Visible&&IsAbove(pet.Plate.Handle,pet.Handle)&&IsAbove(pet.Joystick.Handle,pet.Handle),"Plate and joystick remain above pet when chest is hidden");
                     pet.Close();
                 }
