@@ -150,7 +150,7 @@ namespace Vpet
                 }
             }
             base.WndProc(ref m);
-            if(Text=="Vpet plate"&&m.Msg==0x46&&m.LParam!=IntPtr.Zero){var final=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));Console.WriteLine("plate after base insert="+final.InsertAfter+", flags="+final.Flags);}
+            if(m.Msg==0x46&&m.LParam!=IntPtr.Zero&&Text=="Vpet plate"){var final=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));Console.WriteLine("plate after base insert="+final.InsertAfter+", flags="+final.Flags);}
         }
         bool BehindArcade {get{return layerMode!=LayerMode.UnderAll&&Native.ArcadeForeground!=IntPtr.Zero&&Native.BackgroundAdornments.Contains(Handle)&&Native.IsWindowVisible(Native.ArcadeForeground);}}
         bool IsTopmost {get{return (Native.GetWindowLongPtr(Handle,-20).ToInt64()&8)!=0;}}
