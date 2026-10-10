@@ -139,7 +139,7 @@ namespace Vpet
                 var captured=value;var item=new ToolStripMenuItem(Names.Movement(value)){Tag=value};
                 item.Click+=delegate{Model.ChangeMode(captured,Now);Save();};type.DropDownItems.Add(item);
             }
-            movement.DropDownItems.Add(type);movement.DropDownItems.Add("Movement settings…",null,delegate{OpenSettings(0);});
+            movement.DropDownItems.Add(type);
             var displayArea=new ToolStripMenuItem("Display restricted area"){CheckOnClick=true};
             displayArea.Click+=delegate
             {
@@ -147,17 +147,15 @@ namespace Vpet
                 if(SettingsOpen)settingsWindow.SyncRestrictedAreaVisibility();
                 SettingsChanged(false);
             };
-            movement.DropDownItems.Add(displayArea);
             var layer=new ToolStripMenuItem("Location");
             foreach(LayerMode value in Enum.GetValues(typeof(LayerMode)))
             {var captured=value;var item=new ToolStripMenuItem(Names.Layer(value)){Tag=value};item.Click+=delegate{Model.Settings.Layer=captured;ApplyLayer();Save();};layer.DropDownItems.Add(item);}
-            movement.DropDownItems.Add(layer);menu.Items.Add(movement);
+            movement.DropDownItems.Add(layer);movement.DropDownItems.Add(displayArea);menu.Items.Add(movement);
             var personality=new ToolStripMenuItem("Personality");
             foreach(Personality value in Enum.GetValues(typeof(Personality)))
             {var captured=value;var item=new ToolStripMenuItem(value.ToString()){Tag=value};item.Click+=delegate{Model.Settings.Personality=captured;Save();};personality.DropDownItems.Add(item);}
-            personality.DropDownItems.Add(new ToolStripSeparator());personality.DropDownItems.Add("Emote frequency…",null,delegate{OpenSettings(1);});
+            personality.DropDownItems.Add(new ToolStripSeparator());
             personality.DropDownItems.Add("Custom emote folder…",null,delegate{OpenEmoteFolder();});menu.Items.Add(personality);
-            menu.Items.Add("Upload Vpet…",null,delegate{OpenSettings(2);});
             installUpdate=new ToolStripMenuItem("Install update…"){Visible=false};installUpdate.Click+=delegate{if(availableUpdate!=null)InstallAvailable(availableUpdate);};menu.Items.Add(installUpdate);
             menu.Items.Add("Settings…",null,delegate{OpenSettings(0);});
             menu.Items.Add(new ToolStripSeparator());menu.Items.Add("Reminders",null,delegate{OpenReminders();});

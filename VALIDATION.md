@@ -1,5 +1,17 @@
 # Vpet validation
 
+## Version 1.12.3
+
+6,609 automated assertions passed, retaining movement, interaction, sprite pixels and speeds, project/package compatibility, toys, reminders, Brick Battle sounds and physics, and the other arcade games.
+
+916 native UI checks passed: 283 Sprite Maker/Tweak, 190 item/menu/layer, 79 toy chest, and 364 arcade/music/joystick checks. Editor checks cover separate complete Idle/Walk rows with and without diagonals, titles and descriptions above them, frames 1-5 and 6-10, Set/Clear underneath, reachable actions at minimum size, optional Hunger animation access after scrolling, a usable sheet/animation preview, and unchanged ten-frame editing, zoom, scroll position, Magic Tweak, undo, source replacement, and project workflows. The new grouped animation, frame, and minimum-size Tweak captures were visually inspected.
+
+The overlap regression reproduced 440 intermediate item-order changes during 20 Dynamic refreshes before the fix. The corrected version records zero temporary reorderings across 60 iterations with all seven foreground toys/items overlapping and moving in Dynamic, Over Everything, and Under All. Existing tests verify items above both native sprite portions during monitor crossings, the chest/fences below, band changes, ordinary application stacking and focus, overlapping toy input, and hidden-chest independence. Arcade remains in ordinary stacking, above every desktop asset despite attempted promotion in all three modes, and restores their selected layers when closed. Toy interactions, fence controls, launches, bounces, triangle menu/sounds, cleanup, and hover help pass. The toy harness now processes Shown before stopping its timer, disables scripted smoke actions, and processes cursor movement before testing hover. Arcade audio checks used muted playback.
+
+The 1.12.3 EXE installer compiled successfully. Isolated fresh installation and progress-only upgrade checks passed supplied artwork, songs, icon and shortcut paths, retained destination and shortcut choices, preserved skipped-version descriptions, legacy updater support, completion/relaunch smoke testing, and cleanup. The regular installation and personal preferences were unchanged.
+
+Validated on this development PC on 2026-10-10. Other DPI configurations were not directly assessed. Version 1.12.3 follows AGENTS.md's patch policy for adjustments to existing features.
+
 ## Version 1.12.2
 
 6,609 automated assertions passed. New checks verify distinct high paddle and lower brick tones, two ascending power-up notes separated by silence, valid PCM lengths, gentle sample levels, smooth note endings, mute, and even gain scaling. Physics checks cover both paddles, sticky catches, explosive hits, every power-up type, one sound per impact/pickup, no duplicated explosive neighbor cues, overlapping real paddle impacts, and no unwanted sound for walls, goals, serves, missed or newly spawned orbs, resets, or resize. Existing gameplay, movement, sprites, toys, reminders, and other arcade checks continue to pass.

@@ -121,7 +121,7 @@ namespace Vpet
                 Check(finish.Parent==guideButton.Parent&&guideButton.Right<finish.Left&&finish.Top==guideButton.Top&&maker.PointToClient(finish.PointToScreen(Point.Empty)).Y>maker.ClientSize.Height-90,"Sprite Maker guide sits left of Tweak and Complete at the bottom right");
                 MakerField<ComboBox>(maker,"facing").SelectedIndex=1;MakerField<CheckBox>(maker,"emotes").Checked=true;Application.DoEvents();
                 Check(maker.Project.Data.FacesRight&&maker.Project.Data.EmoteAnimations,"Facing and optional emote controls update the project");
-                var cycles=MakerField<Button[]>(maker,"cycles");Check(cycles.Skip(10).All(b=>b.Visible)&&MakerField<SpriteSheetViewport>(maker,"viewport").Height>=100,"Optional buttons are visible and leave usable sheet space");
+                var cycles=MakerField<Button[]>(maker,"cycles");Check(cycles.Skip(10).All(b=>b.Visible)&&MakerField<SpriteSheetViewport>(maker,"viewport").Height>=100,"Optional buttons are visible and leave usable sheet space (visible="+cycles.Skip(10).Count(b=>b.Visible)+", preview="+MakerField<SpriteSheetViewport>(maker,"viewport").Height+")");
                 Check(cycles.Length==19&&cycles[18].Text=="Hunger","Sprite Maker exposes Hunger as an optional reaction animation");
                 maker.ChooseCycle(18);maker.SetDimensions(20,24);maker.Project.Data.Frames[18][0]=new SpriteFrame();
                 maker.ChooseCycle(11);maker.SetDimensions(25,27);maker.Project.Data.Frames[11][0]=new SpriteFrame();

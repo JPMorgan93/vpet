@@ -181,6 +181,7 @@ namespace Vpet
         }
         static void MakerWindows()
         {
+            MakerLayoutWindows();
             MakerZoomWindows();
             MakerScrollAndDrag();
             TenFrameWindows();

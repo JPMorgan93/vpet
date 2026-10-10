@@ -22,6 +22,7 @@ namespace Vpet
                 {
                     typeof(PetWindow).GetField("smokeStep",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(pet,99);
                     pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();Cursor.Position=new Point(30,30);
+                    UpdatedPetMenu(pet);
                     pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.SyncPlayZone=false;
                     Check(!pet.Model.Settings.CustomPet&&pet.Sprites.Speeds.All(speed=>speed==2),"New profiles use twice-speed default animations");
                     var speeds=Enumerable.Repeat(1f,10).ToArray();speeds[5]=.5f;
@@ -93,6 +94,7 @@ namespace Vpet
                     var restricted=MakerField<RestrictedAreaOverlay>(pet,"restrictedOverlay");
                     Check(IsAbove(pet.Handle,restricted.HandleWindow)&&restricted.RingWindows.All(handle=>IsAbove(pet.Handle,handle)),"Separate restricted fence remains below the sprite");
                     pet.Toys.Menu.Show(pet.Toys.Chest,new Point(10,10));RefreshItems(pet);Check(items.All(item=>IsAbove(item.Handle,pet.Handle)),"Opening the toy menu preserves foreground item ordering");pet.Toys.Menu.Close();
+                    OverlappingItems(pet,items);
                     pet.Toys.SetVisible(false);RefreshItems(pet);Check(!pet.Toys.Chest.Visible&&pet.Plate.Visible&&pet.Joystick.Visible&&IsAbove(pet.Plate.Handle,pet.Handle)&&IsAbove(pet.Joystick.Handle,pet.Handle),"Plate and joystick remain above pet when chest is hidden");
                     pet.Close();
                 }

@@ -1,4 +1,11 @@
-# Vpet 1.12.2
+# Vpet 1.12.3
+
+- Simplify the pet's right-click menu: remove Movement settings, Emote frequency, and Upload Vpet shortcuts. Place Location directly below Type in Movement Controls. Keep those settings available in Settings.
+- Give Sprite Maker separate Idle and Walk button rows, with an Animation types title and instructions. Group frame buttons into rows 1-5 and 6-10, place Set and Clear underneath, and explain frame selection above the numbered rows.
+- Give Tweak and Complete separate Idle and Walk rows with instructions above them. Keep the preview and editing controls usable, with scrolling access to optional emote animations.
+- Fix rapid blinking when toys overlap each other, the plate, or the joystick. Preserve existing item order during content and position refreshes while maintaining Window Location, items above both pet portions, the Toy Chest and fences below, and Arcade Window above desktop assets.
+
+## Vpet 1.12.2
 
 - Add a light, high tone when a Brick Battle ball hits either paddle and a distinct lower tone when it hits a brick. Explosive hits play one impact sound while destroying neighboring bricks.
 - Play an ascending two-tone chime when either paddle collects a power-up, including replacements and repeated paddle-growth pickups.

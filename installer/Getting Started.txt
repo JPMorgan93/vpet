@@ -8,6 +8,8 @@ Open Vpet from the Start menu or optional desktop shortcut.
 Right-click the pet or notification-area icon to open settings.
 Left-click for Love and a brief shake. Drag to move your pet.
 Choose Close Vpet from its menu to quit; closing Settings keeps it running.
+Movement Controls contains Type, Location, and Display restricted area.
+Use Settings for full movement, reaction frequency, and Sprite options.
 
 The installer installs for your Windows account without administrator access.
 Close Vpet before reinstalling, updating, or uninstalling it.
@@ -46,6 +48,11 @@ second. It keeps keyboard focus in your current app and passes clicks through.
 SPRITE MAKER
 Settings > Sprite > Open Sprite Maker lets you select animation frames from a
 transparent PNG sheet. Set 1-10 frames per animation, then Tweak and Complete.
+Choose Idle animations on the first Animation types row or Walk on the next.
+Animation frames are grouped into rows 1-5 and 6-10, with Set and Clear below.
+Scroll the upper controls if needed; the sheet preview scrolls independently.
+Tweak and Complete also separates Idle and Walk; scroll its animation choices
+to reach any optional emote animations with saved frames.
 Each animation type has its own frame size, shared by all frames of that type.
 Update Sprite Sheet replaces the PNG in an open project, keeping all mappings,
 sizes, tweaks, and animation options. Keep the same sheet layout for mappings to

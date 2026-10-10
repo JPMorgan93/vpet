@@ -75,15 +75,21 @@ namespace Vpet
             },IntPtr.Zero);
             return lastApp!=IntPtr.Zero?lastApp:new IntPtr(-2); // No apps: normal non-topmost desktop-visible window.
         }
-        internal static IntPtr? AboveCompanionTarget(IntPtr window,IntPtr companion,IntPtr otherCompanion,LayerMode mode)
+        internal static bool IsAbove(IntPtr above,IntPtr below)
         {
-            IntPtr highest=IntPtr.Zero;
+            for(int i=0;i<10000;i++){below=GetWindow(below,3);if(below==above)return true;if(below==IntPtr.Zero)return false;}
+            return false;
+        }
+        internal static IntPtr? AboveCompanionTarget(IntPtr window,IntPtr companion,IntPtr otherCompanion,LayerMode mode,bool onlyWhenBelow=false)
+        {
+            IntPtr highest=IntPtr.Zero;bool alreadyAbove=false;
             EnumWindows(delegate(IntPtr hwnd,IntPtr unused)
             {
+                if(hwnd==window)alreadyAbove=true;
                 if((hwnd==companion||hwnd==otherCompanion)&&IsWindowVisible(hwnd)){highest=hwnd;return false;}
                 return true;
             },IntPtr.Zero);
-            if(highest==IntPtr.Zero)return null;
+            if(highest==IntPtr.Zero||(onlyWhenBelow&&alreadyAbove))return null;
             IntPtr previous=GetWindow(highest,3); // GW_HWNDPREV: insert immediately above the highest sprite portion.
             if(previous==window)previous=GetWindow(window,3);
             // A normal item must not enter the topmost band by following a topmost application.
@@ -104,6 +110,8 @@ namespace Vpet
         public IntPtr BehindWindow;
         public bool AboveCompanions;
         LayerMode layerMode;
+        bool layerConfigured;
+        bool correctingLayer;
         public LayeredWindow(bool clickThrough)
         {
             this.clickThrough=clickThrough; FormBorderStyle=FormBorderStyle.None; ShowInTaskbar=false;
@@ -117,19 +125,33 @@ namespace Vpet
         protected override void WndProc(ref Message m)
         {
             if(m.Msg==0x21){m.Result=new IntPtr(3);return;} // MA_NOACTIVATE
-            bool behindArcade=m.Msg==0x46&&m.LParam!=IntPtr.Zero&&layerMode!=LayerMode.UnderAll&&Native.ArcadeForeground!=IntPtr.Zero&&
-                Native.BackgroundAdornments.Contains(Handle)&&Native.IsWindowVisible(Native.ArcadeForeground);
-            IntPtr? above=m.Msg==0x46&&m.LParam!=IntPtr.Zero&&!behindArcade&&AboveCompanions?
-                Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode):null;
-            if(m.Msg==0x46&&m.LParam!=IntPtr.Zero&&(behindArcade||BehindWindow!=IntPtr.Zero||above.HasValue||layerMode==LayerMode.UnderAll))
+            if(m.Msg==0x46&&m.LParam!=IntPtr.Zero)
             {
                 var position=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));
-                position.InsertAfter=behindArcade?Native.ArcadeForeground:BehindWindow!=IntPtr.Zero?BehindWindow:above.HasValue?above.Value:Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
-                position.Flags=(position.Flags&~4u)|0x210u; // Clear NOZORDER; keep NOACTIVATE and NOOWNERZORDER.
-                Marshal.StructureToPtr(position,m.LParam,false);
+                bool behindArcade=BehindArcade,bandMatches=IsTopmost==(layerMode==LayerMode.OverEverything&&!behindArcade),noZOrder=(position.Flags&4u)!=0;
+                IntPtr? target=behindArcade?Native.ArcadeForeground:BehindWindow!=IntPtr.Zero?BehindWindow:AboveCompanions?
+                    Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,bandMatches&&noZOrder&&!correctingLayer):layerMode==LayerMode.UnderAll?(IntPtr?)Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle):null;
+                if(layerMode==LayerMode.UnderAll&&AboveCompanions)
+                {
+                    IntPtr under=Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
+                    if(!bandMatches||!noZOrder||(under.ToInt64()>0&&!Native.IsAbove(under,Handle)))target=under;
+                }
+                if(target.HasValue||AboveCompanions)
+                {
+                    // Keep correct existing ordering. Re-inserting each item just above the pet on
+                    // every layered redraw makes overlapping toys exchange layers and visibly blink.
+                    bool aboveRule=AboveCompanions&&!behindArcade&&BehindWindow==IntPtr.Zero;
+                    bool preserve=!correctingLayer&&noZOrder&&bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
+                    if(preserve)position.Flags|=4u; // Keep NOZORDER for content and position refreshes.
+                    else if(target.HasValue){position.InsertAfter=target.Value;position.Flags&=~4u;}
+                    position.Flags|=0x210u; // NOACTIVATE and NOOWNERZORDER.
+                    Marshal.StructureToPtr(position,m.LParam,false);
+                }
             }
             base.WndProc(ref m);
         }
+        bool BehindArcade {get{return layerMode!=LayerMode.UnderAll&&Native.ArcadeForeground!=IntPtr.Zero&&Native.BackgroundAdornments.Contains(Handle)&&Native.IsWindowVisible(Native.ArcadeForeground);}}
+        bool IsTopmost {get{return (Native.GetWindowLongPtr(Handle,-20).ToInt64()&8)!=0;}}
         public void Present(Bitmap image,Point screenPosition,byte opacity=255)
         {
             IntPtr screen=Native.GetDC(IntPtr.Zero), dc=Native.CreateCompatibleDC(screen), bitmap=IntPtr.Zero,old=IntPtr.Zero;
@@ -151,18 +173,30 @@ namespace Vpet
         }
         public void SetLayer(LayerMode mode)
         {
+            bool changed=!layerConfigured||layerMode!=mode;layerConfigured=true;
             layerMode=mode;
-            Native.SetWindowPos(Handle,mode==LayerMode.OverEverything?new IntPtr(-1):new IntPtr(-2),0,0,0,0,0x213);
+            bool topmost=mode==LayerMode.OverEverything&&!BehindArcade;
+            if(changed||IsTopmost!=topmost)CorrectLayer(topmost?new IntPtr(-1):new IntPtr(-2));
             EnforceUnderAll();
         }
         public void EnforceUnderAll()
         {
             if(layerMode!=LayerMode.UnderAll||!IsHandleCreated)return;
-            Native.SetWindowPos(Handle,Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle),0,0,0,0,0x213);
+            IntPtr target=Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle);
+            if(!IsTopmost&&(target==new IntPtr(-2)||Native.IsAbove(target,Handle)))return;
+            CorrectLayer(target);
         }
         public void EnforceAboveCompanions()
         {
-            if(AboveCompanions&&IsHandleCreated)Native.SetWindowPos(Handle,IntPtr.Zero,0,0,0,0,0x213);
+            if(!AboveCompanions||!IsHandleCreated)return;EnforceUnderAll();
+            IntPtr? target=Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,true);
+            if(target.HasValue)CorrectLayer(target.Value);
+        }
+        void CorrectLayer(IntPtr target)
+        {
+            // Windows can expose a proposed order inside WINDOWPOSCHANGING. An intentional
+            // repair must still be applied even when that temporary order already looks valid.
+            bool previous=correctingLayer;correctingLayer=true;try{Native.SetWindowPos(Handle,target,0,0,0,0,0x213);}finally{correctingLayer=previous;}
         }
     }
 }
