@@ -1,8 +1,5 @@
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
 
@@ -34,8 +31,9 @@ namespace Vpet
             float best=float.MaxValue;PointF chosen=requested;string displayId=null;
             foreach(var display in pet.Displays)
             {
-                var work=display.Work;var allowed=RectangleF.FromLTRB(work.Left+40*Scale,work.Top+60*Scale,
-                    Math.Max(work.Left+40*Scale,work.Right-40*Scale),Math.Max(work.Top+60*Scale,work.Bottom-12*Scale));
+                var work=display.Work;var size=ItemArtwork.CanvasSize(Scale);var anchor=JoystickArtwork.Anchor(Scale);
+                var allowed=RectangleF.FromLTRB(work.Left+anchor.X,work.Top+anchor.Y,
+                    Math.Max(work.Left+anchor.X,work.Right-size.Width+anchor.X),Math.Max(work.Top+anchor.Y,work.Bottom-size.Height+anchor.Y));
                 var candidate=Geometry.Clamp(requested,allowed);float distance=Geometry.Distance(requested,candidate);
                 if(distance<best){best=distance;chosen=candidate;displayId=display.Id;}
             }
@@ -95,26 +93,18 @@ namespace Vpet
         {
             if(!model.HasJoystick){if(Visible)Hide();return;}
             SetLayer(pet.Settings.Layer);
-            Present(image,new Point((int)Math.Round(model.JoystickPosition.X-40*model.Scale),(int)Math.Round(model.JoystickPosition.Y-60*model.Scale)));
+            var anchor=JoystickArtwork.Anchor(model.Scale);
+            Present(image,new Point((int)Math.Round(model.JoystickPosition.X-anchor.X),(int)Math.Round(model.JoystickPosition.Y-anchor.Y)));
             if(!Visible)Show();EnforceAboveCompanions();
         }
         protected override void Dispose(bool disposing){if(disposing){dismissal.Dispose();Menu.Dispose();image.Dispose();}base.Dispose(disposing);}
     }
     internal static class JoystickArtwork
     {
+        internal static PointF Anchor(float scale){float pixel=ItemArtwork.PixelScale(scale);return new PointF(16*pixel,26*pixel);}
         public static Bitmap Draw(float scale)
         {
-            var image=new Bitmap((int)Math.Ceiling(80*scale),(int)Math.Ceiling(72*scale),PixelFormat.Format32bppArgb);
-            using(var source=new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference","Joystick.png")))
-            using(var g=Graphics.FromImage(image))using(var attributes=new ImageAttributes())
-            {
-                float factor=Math.Min(image.Width/(float)source.Width,image.Height/(float)source.Height);
-                int width=(int)Math.Round(source.Width*factor),height=(int)Math.Round(source.Height*factor);
-                g.InterpolationMode=InterpolationMode.HighQualityBicubic;g.PixelOffsetMode=PixelOffsetMode.HighQuality;
-                attributes.SetWrapMode(WrapMode.TileFlipXY);
-                g.DrawImage(source,new Rectangle((image.Width-width)/2,(image.Height-height)/2,width,height),0,0,source.Width,source.Height,GraphicsUnit.Pixel,attributes);
-            }
-            return image;
+            return ItemArtwork.Sprite("Joystick.png",scale);
         }
     }
 }

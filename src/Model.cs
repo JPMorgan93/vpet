@@ -101,12 +101,13 @@ namespace Vpet
 
     public sealed class DisplayArea
     {
+        public const int SpriteMagnification=2;
         public string Id;
         public Rectangle Work;
         public float Scale;
         public int NameFootroom;
         public DisplayArea(string id, Rectangle work, float scale) { Id = id; Work = work; Scale = scale; }
-        public Size PetSize(Size source) { return new Size((int)Math.Ceiling(source.Width * 2 * Scale), (int)Math.Ceiling(source.Height * 2 * Scale)); }
+        public Size PetSize(Size source) { return new Size((int)Math.Ceiling(source.Width * SpriteMagnification * Scale), (int)Math.Ceiling(source.Height * SpriteMagnification * Scale)); }
         public RectangleF Allowed(Size source,bool includeName=true)
         {
             Size size = PetSize(source);

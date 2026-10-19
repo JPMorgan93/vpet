@@ -44,6 +44,7 @@ namespace Vpet
                     var crossing=MakerField<LayeredWindow>(pet,"crossingWindow");
                     using(var g=Graphics.FromImage(image))g.Clear(Color.MediumPurple);
                     var items=new LayeredWindow[]{pet.Toys.Ball,pet.Toys.Triangle,pet.Toys.Coin,pet.Toys.Card,pet.Toys.Die,pet.Plate,pet.Joystick};
+                    MatchingItemWindows(pet,items);
                     foreach(LayerMode mode in new[]{LayerMode.OverEverything,LayerMode.Dynamic,LayerMode.UnderAll,LayerMode.OverEverything})
                     {
                         pet.Model.Settings.Layer=mode;pet.ApplyLayer();

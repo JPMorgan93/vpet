@@ -10,9 +10,10 @@ namespace Vpet
     {
         static void ReferenceItemArt()
         {
+            MatchingItemResolution();
             var names=new[]{"Chest - Closed.png","Chest - Open.png","Rubber Ball.png","Triangle.png","Gold Coin.png","Card.png","D20 Dice.png"};
             foreach(float scale in new[]{1f,1.25f,2f})
-            using(var preview=new Bitmap(560,140))using(var graphics=Graphics.FromImage(preview))
+            using(var preview=new Bitmap(980,150))using(var graphics=Graphics.FromImage(preview))
             {
                 graphics.Clear(Color.FromArgb(235,235,235));
                 var images=new[]{ToyArtwork.Chest(scale),ToyArtwork.Chest(scale,true),ToyArtwork.Ball(scale),ToyArtwork.Triangle(scale),GameArtwork.Coin(scale,0),GameArtwork.Card(scale,-1,false,0),GameArtwork.Die(scale,0,20,true)};
@@ -26,7 +27,7 @@ namespace Vpet
                         for(int y=0;y<image.Height;y++)for(int x=0;x<image.Width;x++)
                         {var pixel=image.GetPixel(x,y);if(pixel.A>1)visible=true;if(pixel.A==255)clean&=palette.Contains(pixel.ToArgb());}
                         Check(visible&&clean&&image.GetPixel(0,0).A==0,"Reference pixels stay sharp with transparent corners: "+names[i]+" scale "+scale);
-                        graphics.DrawImageUnscaled(image,i*80,0);
+                        graphics.DrawImageUnscaled(image,i*140,0);
                     }
                     Check(SpriteProject.VisibleBounds(images[0]).Bottom==SpriteProject.VisibleBounds(images[1]).Bottom,"Opening the chest keeps its base at the same height");
                     using(var coin=GameArtwork.Coin(scale,1/12f))

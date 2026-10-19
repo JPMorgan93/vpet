@@ -21,8 +21,8 @@ namespace Vpet
                     toys.DragGame(target,point);if(target==PlayTarget.Card)toys.PressCard(now);else toys.PressCoin(now);
                     Until(toys,pet,ref now,()=>target==PlayTarget.Card?toys.WaitingForCardChoice:toys.Fetch==FetchPhase.Pausing);
                     var size=pet.Current.PetSize(cell);var body=new RectangleF(pet.Position.X-size.Width/2f,pet.Position.Y-size.Height,size.Width,size.Height);
-                    var center=target==PlayTarget.Card?toys.Card:toys.Coin;float height=(target==PlayTarget.Card?64:46)*scale;
-                    var toy=new RectangleF(center.X-23*scale,center.Y-height/2,46*scale,height);
+                    var center=target==PlayTarget.Card?toys.Card:toys.Coin;var half=ItemArtwork.HalfSize(target==PlayTarget.Card?"Card.png":"Gold Coin.png",scale);
+                    var toy=new RectangleF(center.X-half.Width,center.Y-half.Height,half.Width*2,half.Height*2);
                     Check(!body.IntersectsWith(toy)&&ToyModel.ContainsInclusive(pet.Current.Allowed(cell),pet.Position),"Pet stands clear of "+target+" and stays on screen at edges: "+scale+" / "+cell+" / "+point);
                 }
             }
@@ -52,15 +52,15 @@ namespace Vpet
                 }
                 Check(clear&&visible,"All D20 values stay inside their face without painting over edge lines at scale/angle "+scale+" / "+angle+collision);
             }
-            foreach(int scale in new[]{1,3})using(var sheet=new Bitmap(5*50*scale,4*50*scale))using(var g=Graphics.FromImage(sheet))
+            foreach(int scale in new[]{1,3})using(var sheet=new Bitmap(5*72*scale,4*72*scale))using(var g=Graphics.FromImage(sheet))
             {
-                g.Clear(Color.White);for(int n=1;n<=20;n++)using(var die=GameArtwork.Die(scale,0,n,false))g.DrawImageUnscaled(die,((n-1)%5)*50*scale,((n-1)/5)*50*scale);
+                g.Clear(Color.White);for(int n=1;n<=20;n++)using(var die=GameArtwork.Die(scale,0,n,false))g.DrawImageUnscaled(die,((n-1)%5)*72*scale,((n-1)/5)*72*scale);
                 sheet.Save(Path.Combine(artifacts,"d20-values-"+scale+"x.png"));
             }
-            using(var sheet=new Bitmap(5*100,110))using(var g=Graphics.FromImage(sheet))
+            using(var sheet=new Bitmap(5*140,144))using(var g=Graphics.FromImage(sheet))
             {
                 g.Clear(Color.White);
-                for(int i=0;i<5;i++)using(var coin=GameArtwork.Coin(2,i/24f))g.DrawImageUnscaled(coin,i*100,8);
+                for(int i=0;i<5;i++)using(var coin=GameArtwork.Coin(2,i/24f))g.DrawImageUnscaled(coin,i*140,8);
                 sheet.Save(Path.Combine(artifacts,"coin-x-axis-flip.png"));
             }
         }

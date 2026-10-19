@@ -23,7 +23,7 @@ namespace Vpet
                 image.Save(Path.Combine(artifacts,"joystick-reference-render.png"));
                 int red=0,cyan=0;for(int y=0;y<image.Height;y++)for(int x=0;x<image.Width;x++)
                 {var p=image.GetPixel(x,y);if(p.A>200&&p.R>150&&p.G<60&&p.B<60)red++;if(p.A>200&&p.R<30&&p.G>100&&p.B>150)cyan++;}
-                Check(image.Size==new Size(80,72)&&image.GetPixel(0,0).A==0&&red>100&&cyan>100,"Supplied joystick artwork renders with red stick, cyan base, and transparent corners");
+                Check(image.Size==new Size(64,64)&&image.GetPixel(0,0).A==0&&red>100&&cyan>100,"Supplied joystick artwork renders on the shared pixel grid with red stick, cyan base, and transparent corners");
             }
             foreach(int grade in new[]{10,20})
             {

@@ -35,9 +35,9 @@ namespace Vpet
         public ToyAnnouncement Announcement {get;private set;}
         public event Action<int> ReactionPlayed;
         public bool DieRolling {get{return DieVelocity!=PointF.Empty;}}
-        public RectangleF CoinBounds {get{return RectangleF.Inflate(Zone,-25*Scale,-25*Scale);}}
-        public RectangleF CardBounds {get{return RectangleF.Inflate(Zone,-25*Scale,-35*Scale);}}
-        public float DieRadius {get{return 23*Scale*DieSizeMultiplier;}}
+        public RectangleF CoinBounds {get{var size=ItemArtwork.HalfSize("Gold Coin.png",Scale);return RectangleF.Inflate(Zone,-size.Width-2*Scale,-size.Height-2*Scale);}}
+        public RectangleF CardBounds {get{var size=ItemArtwork.HalfSize("Card.png",Scale);return RectangleF.Inflate(Zone,-size.Width-2*Scale,-size.Height-2*Scale);}}
+        public float DieRadius {get{return ItemArtwork.Radius("D20 Dice.png",Scale);}}
         float ToyMinimumSpan {get{return (DieRadius+Scale)*2;}}
         public RectangleF DieBounds {get{return RectangleF.Inflate(Zone,-DieRadius-Scale,-DieRadius-Scale);}}
         public float CoinFlip {get{return Target==PlayTarget.Coin&&Fetch==FetchPhase.Flipping?Math.Min(1,phaseTime/1.1f):0;}}
@@ -109,8 +109,8 @@ namespace Vpet
         }
         public void DragDie(PointF point,double now)
         {if(!HasDie)return;Die=Geometry.Clamp(point,DieBounds);DieVelocity=PointF.Empty;if(Target==PlayTarget.D20&&Fetch!=FetchPhase.None&&Fetch!=FetchPhase.Approaching)FinishFetch(now);}
-        PointF CoinApproach(){return BesideToy(Coin,23*Scale,23*Scale);}
-        PointF CardApproach(){return BesideToy(Card,23*Scale,32*Scale);}
+        PointF CoinApproach(){var size=ItemArtwork.HalfSize("Gold Coin.png",Scale);return BesideToy(Coin,size.Width,size.Height);}
+        PointF CardApproach(){var size=ItemArtwork.HalfSize("Card.png",Scale);return BesideToy(Card,size.Width,size.Height);}
         PointF DieApproach(){return BesideToy(Die,DieRadius,DieRadius);}
         PointF BesideToy(PointF center,float halfWidth,float halfHeight)
         {
