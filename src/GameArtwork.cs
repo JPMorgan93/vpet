@@ -48,7 +48,7 @@ namespace Vpet
             {
                 g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(w/2f,h/2f);
                 float squeeze=flip>0?Math.Max(.05f,(float)Math.Abs(Math.Cos(flip*Math.PI))):1;g.ScaleTransform(scale*squeeze,scale);
-                var crop=SpriteProject.VisibleBounds(ItemArtwork.Source("Card.png"));
+                var crop=ItemArtwork.Bounds("Card.png");
                 var rect=ItemArtwork.Fit(crop,new RectangleF(-21,-30,42,60));ItemArtwork.Draw(g,"Card.png",rect,crop);
                 if(revealed&&value>=0)
                 {
@@ -67,7 +67,7 @@ namespace Vpet
             using(var g=Graphics.FromImage(image))
             {
                 g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(size/2f,size/2f);g.ScaleTransform(scale,scale);g.RotateTransform(angle);
-                var crop=SpriteProject.VisibleBounds(ItemArtwork.Source("D20 Dice.png"));
+                var crop=ItemArtwork.Bounds("D20 Dice.png");
                 ItemArtwork.Draw(g,"D20 Dice.png",ItemArtwork.Fit(crop,new RectangleF(-21,-21,42,42)),crop);
                 if(!rolling)using(var font=new FontFamily("Segoe UI"))using(var label=new GraphicsPath())using(var format=StringFormat.GenericTypographic)
                 {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Vpet
 {
@@ -43,6 +44,24 @@ namespace Vpet
                 using(var stream=new MemoryStream()){image.Save(stream,System.Drawing.Imaging.ImageFormat.Png);stages.Add(Convert.ToBase64String(stream.ToArray()));}
             }
             Check(stages.Count==4,"Whole, partially eaten, final portion and empty plate are distinct");
+        }
+        static void ChestMenuArtwork(PetWindow pet)
+        {
+            var windows=pet.Toys;var bounds=windows.Chest.PresentedBounds;
+            Check(!MakerField<bool>(windows,"shownChestOpen"),"Chest starts with the closed reference artwork");
+            var point=Point.Round(windows.Model.Chest);
+            ToyMouse(windows.Chest,0x204,point);ToyMouse(windows.Chest,0x205,point);Application.DoEvents();
+            Check(windows.Menu.Visible&&MakerField<bool>(windows,"shownChestOpen"),"Right-clicking chest immediately displays the open reference artwork");
+            for(int i=0;i<5;i++)windows.Update();
+            Check(windows.Menu.Visible&&MakerField<bool>(windows,"shownChestOpen")&&bounds==windows.Chest.PresentedBounds,"Chest remains open without moving during menu updates");
+            windows.Menu.Close(ToolStripDropDownCloseReason.Keyboard);Application.DoEvents();
+            Check(!windows.Menu.Visible&&!MakerField<bool>(windows,"shownChestOpen"),"Keyboard dismissal immediately restores closed chest artwork");
+            windows.Menu.Show(windows.Chest,new Point(10,10));Application.DoEvents();
+            MakerField<MenuDismissal>(windows,"dismissal").MouseDownAt(new Point(windows.Menu.Right+50,windows.Menu.Bottom+50));Application.DoEvents();
+            Check(!windows.Menu.Visible&&!MakerField<bool>(windows,"shownChestOpen"),"Clicking away closes the menu and chest lid");
+            System.ComponentModel.CancelEventHandler cancel=delegate(object sender,System.ComponentModel.CancelEventArgs e){e.Cancel=true;};
+            windows.Menu.Opening+=cancel;windows.Menu.Show(windows.Chest,new Point(10,10));Application.DoEvents();windows.Menu.Opening-=cancel;
+            Check(!windows.Menu.Visible&&!MakerField<bool>(windows,"shownChestOpen"),"Canceled menu opening keeps the chest closed");
         }
     }
 }

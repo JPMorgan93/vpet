@@ -352,7 +352,7 @@ namespace Vpet
         public static Bitmap Triangle(float scale)
         {
             var image=new Bitmap((int)Math.Ceiling(44*scale),(int)Math.Ceiling(44*scale),PixelFormat.Format32bppArgb);
-            var crop=SpriteProject.VisibleBounds(ItemArtwork.Source("Triangle.png"));
+            var crop=ItemArtwork.Bounds("Triangle.png");
             var target=ItemArtwork.Fit(crop,new RectangleF(2*scale,2*scale,image.Width-4*scale,image.Height-4*scale));
             using(var g=Graphics.FromImage(image))
             {
