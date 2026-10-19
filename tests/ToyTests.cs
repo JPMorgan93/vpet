@@ -206,6 +206,8 @@ namespace Vpet
                     Check(windows.HelpAt(hover,application.Handle)==null,"A covering application prevents toy hover help");
                     pet.Present(image,new Point(pet.Model.Current.Work.Left+10,pet.Model.Current.Work.Top+10));
                     Cursor.Position=hover;Application.DoEvents();windows.Update();Application.DoEvents();
+                    // Layered hit maps can lag presentation; allow subsequent normal UI ticks.
+                    for(int attempt=0;attempt<10&&!windows.Help.Visible;attempt++){System.Threading.Thread.Sleep(10);Application.DoEvents();windows.Update();}
                     IntPtr hoverWindow=Native.WindowFromPoint(new Native.POINT(hover.X,hover.Y));
                     Check(windows.Help.Visible,"Hovering the actual ball displays help (hit "+hoverWindow+", ball "+windows.Ball.Handle+", pet "+pet.Handle+", fence "+windows.Fence.Handle+", help "+windows.Help.Handle+")");
                     Native.RECT helpBounds,chestBounds;Native.GetWindowRect(windows.Help.Handle,out helpBounds);Native.GetWindowRect(windows.Chest.Handle,out chestBounds);
