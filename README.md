@@ -1,10 +1,10 @@
-# Vpet 1.12.3
+# Vpet 1.12.4
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.3-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.4-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -133,6 +133,8 @@ Right-click your pet and select **Display Items > Toy Chest**. Display Items is 
 
 The zone fits inside one monitor's usable area, avoiding taskbars and gaps between screens. Move its center onto another monitor to move the play space there. It defaults to 480 × 320 pixels at 100% scaling; minimum dimensions expand to fit the full pet, and its maximum is the monitor's working area. Toy size follows the app's launch display scale. The chest, fence, and toys follow **Window Location**, stay below the pet, and never take keyboard focus. Empty transparent space passes clicks through.
 
+The chest uses **Chest - Closed.png** normally and **Chest - Open.png** while its right-click menu is open, keeping the same base position. Toys use the supplied **Rubber Ball.png**, **Triangle.png**, **Gold Coin.png**, **Card.png**, and **D20 Dice.png**, with sharp pixel scaling and transparent surroundings. The card reveals its selected value on the front; the die keeps its current number inside the central face.
+
 Right-click the chest for **Display Play Zone**, **Clean Up Toys**, toy toggles for **Ball**, **Triangle**, **Coin**, **Card**, and **D20**, followed by **Help Messages** and **Close Toy Chest**. Clean Up Toys removes all toys and cancels active play while leaving the chest and fence available. It is greyed out when no toys are present and becomes available as soon as any toy is added. Toggle a toy off to remove it and cancel its active interaction. Hiding the fence keeps its boundaries active. Help Messages stays directly above Close Toy Chest at the bottom of the menu. It defaults on and displays hints above the chest only while hovering over the fence border/center or a toy; disable it to hide those hints. The fence uses a plus-shaped center control.
 
 Left-click the ball for three bounces, each reaching half the previous height. **Left-drag to reposition** it inside the fence; **right-drag to aim** in the opposite direction. Release the right button to launch along the solid red arrow; a longer pull increases power up to a limit. The ball reflects off the fence and slows to a stop. Pet return shots vary randomly in both direction and strength.
@@ -165,7 +167,7 @@ Choose **Display Items > Plate** to show or hide a white plate. Left-drag it aro
 
 The plate and pudding are 75% of their original size. At 100% Windows scaling their shared transparent canvas is 72 × 63 pixels; both artwork and interaction placement follow display scaling.
 
-Right-click the plate and select **Pudding** to make it the default food and serve it. Left-click an empty plate to serve the default again. Pudding has caramel, whipped cream, and a strawberry, with whole, two-thirds, and one-third portions. Clicking a nonempty plate leaves its food intact; selecting Pudding from the menu serves a fresh portion.
+Right-click the plate and select **Pudding** to make it the default food and serve it. Left-click an empty plate to serve the default again. The supplied **Plate.png** remains beneath **Pudding - 1.png** (whole), **Pudding - 2.png** (after one bite), and **Pudding - 3.png** (after two bites). After the third bite, only the plate remains. All stages share the same position. Clicking a nonempty plate leaves its food intact; selecting Pudding from the menu serves a fresh portion.
 
 Serving food interrupts the pet's current action and temporarily overrides Static, zero speed, and movement fences. The pet shows Hunger and walks to a position just above the plate, behind the food. For each bite, it shakes for one eighth of a second, pauses for another eighth of a second, then removes one third of the food. A brief rest separates the bites. After three bites the plate is empty and normal movement resumes; restricted pets walk back inside their fence. Moving the plate redirects the pet and delays eating until release. Picking up the pet or starting another toy interaction interrupts the visit. Choose **Remove Plate** in the plate menu to hide it, clear the food, and end feeding. The pet menu can display it again.
 

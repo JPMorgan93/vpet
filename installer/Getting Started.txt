@@ -98,6 +98,8 @@ or Rarely: 90-120 seconds, separately from spontaneous toy visits.
 
 TOY CHEST
 Right-click the pet > Display Items > Toy Chest to show a chest and fence.
+The supplied closed chest opens its lid while the chest menu is displayed.
+The ball, triangle, coin, card back, and D20 use the supplied pixel artwork.
 Drag the middle control to move the play space; drag its edges or corners to
 resize it. Drag the chest to place it inside. The zone fits one monitor's usable
 area; move its center onto another monitor to move the play space there.
@@ -128,8 +130,9 @@ a white plate. Left-drag it anywhere on the desktop, independently of fences.
 It follows Window Location and remains available when the chest is closed.
 The plate and pudding are 75% of their original size.
 Right-click the plate > Pudding to select the default food and serve it.
-Left-click an empty plate to serve the default again. Pudding has caramel,
-whipped cream and a strawberry, with whole, two-thirds and one-third portions.
+Left-click an empty plate to serve the default again. The supplied Plate.png
+stays beneath Pudding - 1, then Pudding - 2 after the first bite, Pudding - 3
+after the second, and no pudding after the third. The plate stays aligned.
 Food interrupts the pet's current action. It shows Hunger and walks above the
 plate, behind the food, even in Static mode or outside movement fences.
 Each bite has a one-eighth-second shake, then a one-eighth-second pause before
