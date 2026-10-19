@@ -39,18 +39,18 @@ namespace Vpet
             Check(contained&&!dice.DieRolling,"The original-size full die remains inside the minimum fence throughout ricochets");
             foreach(float scale in new[]{1f,2f})foreach(float angle in new[]{0f,45f,135f})
             {
-                bool clear=true,visible=true;
+                bool clear=true,visible=true;string collision="";
                 using(var blank=GameArtwork.Die(scale,angle,20,true))for(int number=1;number<=20;number++)using(var die=GameArtwork.Die(scale,angle,number,false))
                 {
                     bool found=false;
                     for(int y=0;y<die.Height;y++)for(int x=0;x<die.Width;x++)
                     {
                         if(die.GetPixel(x,y).ToArgb()==blank.GetPixel(x,y).ToArgb())continue;
-                        found=true;clear&=blank.GetPixel(x,y).ToArgb()==Color.FromArgb(196,175,238).ToArgb();
+                        found=true;bool inside=blank.GetPixel(x,y).ToArgb()==Color.FromArgb(170,63,255).ToArgb();if(!inside&&collision=="")collision=" value "+number+" at "+x+","+y+" on "+blank.GetPixel(x,y);clear&=inside;
                     }
                     visible&=found;
                 }
-                Check(clear&&visible,"All D20 values stay inside their face without painting over edge lines at scale/angle "+scale+" / "+angle);
+                Check(clear&&visible,"All D20 values stay inside their face without painting over edge lines at scale/angle "+scale+" / "+angle+collision);
             }
             foreach(int scale in new[]{1,3})using(var sheet=new Bitmap(5*50*scale,4*50*scale))using(var g=Graphics.FromImage(sheet))
             {

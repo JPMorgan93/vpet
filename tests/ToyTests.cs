@@ -107,6 +107,7 @@ namespace Vpet
         }
         static void ToyArt()
         {
+            ReferenceItemArt();
             using(var preview=new Bitmap(560,380))using(var g=Graphics.FromImage(preview))
             using(var fence=ToyArtwork.Fence(new Size(480,320),1))using(var chest=ToyArtwork.Chest(1))using(var ball=ToyArtwork.Ball(1))
             {

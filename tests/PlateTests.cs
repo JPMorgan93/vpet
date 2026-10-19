@@ -133,7 +133,12 @@ namespace Vpet
                 foreach(int remaining in new[]{3,2,1,0})using(var image=PlateArtwork.Draw(remaining,1))
                 {
                     Check(image.Size==new Size(72,63)&&image.GetPixel(0,0).A==0&&image.GetPixel(36,55).A==255,"Plate state "+remaining+" is 75% size with transparent surroundings and an opaque white rim");
-                    Check(image.GetPixel(45,30).A==(remaining==3?255:0),"First bite visibly removes the right food section");
+                    using(var empty=PlateArtwork.Draw(0,1))
+                    {
+                        bool sameBase=true,food=false;for(int y=0;y<image.Height;y++)for(int px=0;px<image.Width;px++)
+                        {bool differs=image.GetPixel(px,y).ToArgb()!=empty.GetPixel(px,y).ToArgb();food|=differs;if(y>=50)sameBase&=!differs;}
+                        Check(sameBase&&food==(remaining>0),"Each pudding stage changes food while preserving the plate's aligned base");
+                    }
                     int x=(3-remaining)*110+7;g.DrawImageUnscaled(image,x,10);g.DrawString(remaining==0?"Empty":remaining+"/3 remaining",SystemFonts.DefaultFont,Brushes.Black,x,106);
                 }
                 preview.Save(Path.Combine(artifacts,"pudding-states.png"));

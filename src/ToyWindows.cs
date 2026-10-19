@@ -29,7 +29,8 @@ namespace Vpet
         internal readonly ContextMenuStrip TriangleMenu=new ContextMenuStrip();
         readonly ToolStripMenuItem cleanUp;
         readonly MenuDismissal dismissal,triangleDismissal;
-        readonly Bitmap chestImage,ballImage,triangleImage;
+        readonly Bitmap chestImage,openChestImage,ballImage,triangleImage;
+        bool shownChestOpen;
         readonly ToyChime chime;
         Point? chestLocation,ballLocation,triangleLocation;
         Bitmap helpImage;
@@ -69,7 +70,7 @@ namespace Vpet
         public ToyWindows(PetModel pet,LayeredWindow petWindow,LayeredWindow crossingWindow,Action save,Func<double> now,Random random)
         {
             this.pet=pet;this.petWindow=petWindow;this.crossingWindow=crossingWindow;this.save=save;this.now=now;
-            Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);ballImage=ToyArtwork.Ball(Model.Scale);triangleImage=ToyArtwork.Triangle(Model.Scale);
+            Model=new ToyModel(pet,random);chestImage=ToyArtwork.Chest(Model.Scale);openChestImage=ToyArtwork.Chest(Model.Scale,true);ballImage=ToyArtwork.Ball(Model.Scale);triangleImage=ToyArtwork.Triangle(Model.Scale);
             Games=new GameArtwork(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"assets","reference"));
             chime=new ToyChime(()=>Model.Settings.Sound,()=>Model.Settings.Volume);Model.ChimePlayed+=chime.Play;
             foreach(var window in Windows)
@@ -104,6 +105,7 @@ namespace Vpet
             help.Click+=delegate{Model.Settings.HelpMessages=help.Checked;Update();save();};Menu.Items.Add(help);
             Menu.Items.Add("Close Toy Chest",null,delegate{SetVisible(false);});
             Menu.Opening+=delegate{TriangleMenu.Close();cleanUp.Enabled=HasToys;display.Checked=Model.Settings.DisplayZone;ball.Checked=Model.HasBall;triangle.Checked=Model.HasTriangle;coin.Checked=Model.HasCoin;card.Checked=Model.HasCard;die.Checked=Model.HasDie;help.Checked=Model.Settings.HelpMessages;Help.Hide();};
+            Menu.Opened+=delegate{Update();};Menu.Closed+=delegate{Update();};
             Chest.ContextMenuStrip=Menu;dismissal=new MenuDismissal(Menu);
             TriangleMenu.Items.Add("Sound Setting",null,delegate
             {
@@ -215,7 +217,8 @@ namespace Vpet
             if(!Model.Settings.DisplayChest){foreach(var window in Windows)if(window!=Fence&&window!=FenceLabel)window.Hide();UpdateFence();ArrangeLayers();return;}
             ArrangeLayers();
             var chestPoint=new Point((int)Math.Round(Model.Chest.X-chestImage.Width/2f),(int)Math.Round(Model.Chest.Y-chestImage.Height/2f));
-            if(chestLocation!=chestPoint||!Chest.Visible){Present(Chest,chestImage,chestPoint);chestLocation=chestPoint;}
+            bool chestOpen=Menu.Visible;
+            if(chestLocation!=chestPoint||!Chest.Visible||shownChestOpen!=chestOpen){Present(Chest,chestOpen?openChestImage:chestImage,chestPoint);chestLocation=chestPoint;shownChestOpen=chestOpen;}
             if(Model.HasBall)
             {
                 // Bounce toward the table's interior near the top, so even a ball against that wall visibly bounces.
@@ -339,26 +342,30 @@ namespace Vpet
             if(soundWindow!=null)soundWindow.Close();
             Model.ChimePlayed-=chime.Play;chime.Dispose();
             Games.Dispose();
-            foreach(var window in Windows)window.Close();chestImage.Dispose();ballImage.Dispose();triangleImage.Dispose();if(helpImage!=null)helpImage.Dispose();
+            foreach(var window in Windows)window.Close();chestImage.Dispose();openChestImage.Dispose();ballImage.Dispose();triangleImage.Dispose();if(helpImage!=null)helpImage.Dispose();
         }
     }
 
-    // Draw at the desktop scale without introducing extra bitmap assets or opaque window backgrounds.
+    // Pixel artwork uses the existing desktop footprints; fences and help remain drawn controls.
     internal static class ToyArtwork
     {
         public static Bitmap Triangle(float scale)
         {
             var image=new Bitmap((int)Math.Ceiling(44*scale),(int)Math.Ceiling(44*scale),PixelFormat.Format32bppArgb);
-            using(var g=Graphics.FromImage(image))using(var outline=new Pen(Color.FromArgb(62,58,82),6))using(var metal=new Pen(Color.FromArgb(213,223,238),3))using(var stick=new Pen(Color.FromArgb(119,79,37),3))
+            var crop=SpriteProject.VisibleBounds(ItemArtwork.Source("Triangle.png"));
+            var target=ItemArtwork.Fit(crop,new RectangleF(2*scale,2*scale,image.Width-4*scale,image.Height-4*scale));
+            using(var g=Graphics.FromImage(image))
             {
-                g.ScaleTransform(scale,scale);g.SmoothingMode=SmoothingMode.AntiAlias;
+                ItemArtwork.Draw(g,"Triangle.png",target,crop);
                 // Layered windows pass alpha-zero pixels through before hit testing.
-                // One alpha step makes the hollow interior clickable without a visible fill.
-                using(var inputFill=new SolidBrush(Color.FromArgb(1,213,223,238)))
-                    g.FillPolygon(inputFill,new[]{new PointF(6,36),new PointF(22,8),new PointF(38,36)});
-                var points=new[]{new PointF(30,36),new PointF(6,36),new PointF(22,8),new PointF(38,36)};
-                outline.LineJoin=metal.LineJoin=LineJoin.Round;g.DrawLines(outline,points);g.DrawLines(metal,points);
-                g.DrawLine(Pens.SlateGray,22,1,22,8);g.DrawLine(stick,24,31,40,20);
+                // Keep the hollow part clickable without filling its visible artwork.
+                float factor=target.Width/crop.Width;
+                using(var interior=new GraphicsPath())
+                {
+                    interior.AddPolygon(new[]{new PointF(target.X+14*factor,target.Y+2*factor),new PointF(target.X+3*factor,target.Y+20*factor),new PointF(target.X+25*factor,target.Y+20*factor)});
+                    for(int y=0;y<image.Height;y++)for(int x=0;x<image.Width;x++)
+                        if(image.GetPixel(x,y).A==0&&interior.IsVisible(x+.5f,y+.5f))image.SetPixel(x,y,Color.FromArgb(1,213,223,238));
+                }
             }
             return image;
         }
@@ -384,31 +391,14 @@ namespace Vpet
                 return image;
             }
         }
-        public static Bitmap Chest(float scale)
+        public static Bitmap Chest(float scale,bool open=false)
         {
-            var image=new Bitmap((int)Math.Ceiling(64*scale),(int)Math.Ceiling(50*scale),PixelFormat.Format32bppArgb);
-            using(var g=Graphics.FromImage(image))
-            using(var wood=new SolidBrush(Color.FromArgb(164,86,42)))
-            using(var lid=new SolidBrush(Color.FromArgb(208,128,63)))
-            using(var gold=new SolidBrush(Color.FromArgb(255,210,94)))
-            using(var edge=new Pen(Color.FromArgb(75,45,38),2))
-            {
-                g.ScaleTransform(scale,scale);
-                g.FillRectangle(wood,5,18,54,27);g.FillRectangle(lid,5,9,54,16);g.FillRectangle(lid,10,5,44,4);
-                g.DrawRectangle(edge,5,9,54,36);g.DrawLine(edge,10,5,54,5);g.DrawLine(edge,10,5,5,9);g.DrawLine(edge,54,5,59,9);
-                g.FillRectangle(gold,12,9,5,35);g.FillRectangle(gold,47,9,5,35);g.DrawLine(edge,5,25,59,25);
-                g.DrawLine(edge,19,36,44,36);g.FillRectangle(gold,27,21,10,12);g.DrawRectangle(edge,27,21,10,12);
-                g.FillRectangle(Brushes.SaddleBrown,31,24,3,5);
-            }
-            return image;
+            // A shared crop anchors both bases identically as the lid opens.
+            return ItemArtwork.Fit(open?"Chest - Open.png":"Chest - Closed.png",new Size((int)Math.Ceiling(64*scale),(int)Math.Ceiling(50*scale)),2*scale,new Rectangle(1,1,29,29));
         }
         public static Bitmap Ball(float scale)
         {
-            int size=(int)Math.Ceiling(26*scale);var image=new Bitmap(size,size,PixelFormat.Format32bppArgb);
-            using(var g=Graphics.FromImage(image))using(var fill=new LinearGradientBrush(new Rectangle(0,0,size,size),Color.FromArgb(255,94,88),Color.FromArgb(190,24,37),55))
-            using(var edge=new Pen(Color.FromArgb(125,24,39),1.5f*scale))
-            {g.SmoothingMode=SmoothingMode.AntiAlias;g.FillEllipse(fill,scale,scale,size-2*scale,size-2*scale);g.DrawEllipse(edge,scale,scale,size-2*scale,size-2*scale);g.FillEllipse(Brushes.MistyRose,6*scale,4*scale,6*scale,4*scale);}
-            return image;
+            int size=(int)Math.Ceiling(26*scale);return ItemArtwork.Fit("Rubber Ball.png",new Size(size,size),scale);
         }
         public static Point FenceTitlePosition(Rectangle fence,Size title,Rectangle work,float scale)
         {return new Point(Math.Max(work.Left,Math.Min(work.Right-title.Width,fence.Left)),Math.Max(work.Top,fence.Top-title.Height-(int)Math.Ceiling(3*scale)));}
