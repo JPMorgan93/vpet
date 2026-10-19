@@ -31,30 +31,29 @@ namespace Vpet
         }
         internal static Bitmap Coin(float scale,float flip)
         {
-            int size=(int)Math.Ceiling(46*scale);var image=new Bitmap(size,size,PixelFormat.Format32bppArgb);
+            var size=ItemArtwork.CanvasSize(scale);var image=new Bitmap(size.Width,size.Height,PixelFormat.Format32bppArgb);
             using(var g=Graphics.FromImage(image))
             {
                 // Rotation about the horizontal X axis foreshortens height, not width.
-                float height=flip>0?Math.Max(3*scale,(size-4*scale)*(float)Math.Abs(Math.Cos(flip*Math.PI*6))):size-4*scale;
-                var rect=new RectangleF(2*scale,(size-height)/2,size-4*scale,height);
-                ItemArtwork.Draw(g,"Gold Coin.png",rect);
+                float squeeze=flip>0?Math.Max(1/16f,(float)Math.Abs(Math.Cos(flip*Math.PI*6))):1;
+                float height=size.Height*squeeze;
+                ItemArtwork.Draw(g,"Gold Coin.png",new RectangleF(0,(size.Height-height)/2,size.Width,height),ItemArtwork.Canvas);
             }
             return image;
         }
         internal static Bitmap Card(float scale,int value,bool revealed,float flip)
         {
-            int w=(int)Math.Ceiling(46*scale),h=(int)Math.Ceiling(64*scale);var image=new Bitmap(w,h,PixelFormat.Format32bppArgb);
+            var size=ItemArtwork.CanvasSize(scale);var image=new Bitmap(size.Width,size.Height,PixelFormat.Format32bppArgb);
             using(var g=Graphics.FromImage(image))
             {
-                g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(w/2f,h/2f);
-                float squeeze=flip>0?Math.Max(.05f,(float)Math.Abs(Math.Cos(flip*Math.PI))):1;g.ScaleTransform(scale*squeeze,scale);
-                var crop=ItemArtwork.Bounds("Card.png");
-                var rect=ItemArtwork.Fit(crop,new RectangleF(-21,-30,42,60));ItemArtwork.Draw(g,"Card.png",rect,crop);
+                g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(size.Width/2f,size.Height/2f);
+                float pixel=ItemArtwork.PixelScale(scale),squeeze=flip>0?Math.Max(.05f,(float)Math.Abs(Math.Cos(flip*Math.PI))):1;g.ScaleTransform(pixel*squeeze,pixel);
+                ItemArtwork.Draw(g,"Card.png",new RectangleF(-16,-16,32,32),ItemArtwork.Canvas);
                 if(revealed&&value>=0)
                 {
-                    float border=rect.Width*2/crop.Width;rect.Inflate(-border,-border);g.FillRectangle(Brushes.White,rect);
+                    var rect=new RectangleF(-7,-10,14,20);g.FillRectangle(Brushes.White,rect);
                     using(var format=new StringFormat{Alignment=StringAlignment.Center,LineAlignment=StringAlignment.Center})
-                    using(var font=new Font("Segoe UI Symbol",19,FontStyle.Bold,GraphicsUnit.Pixel))
+                    using(var font=new Font("Segoe UI Symbol",9,FontStyle.Bold,GraphicsUnit.Pixel))
                     using(var ink=new SolidBrush(CardColor(value)))g.DrawString(CardText(value),font,ink,rect,format);
                 }
             }
@@ -62,19 +61,17 @@ namespace Vpet
         }
         internal static Bitmap Die(float scale,float angle,int number,bool rolling)
         {
-            scale*=ToyModel.DieSizeMultiplier;
-            int size=(int)Math.Ceiling(46*scale);var image=new Bitmap(size,size,PixelFormat.Format32bppArgb);
+            var size=ItemArtwork.CanvasSize(scale);var image=new Bitmap(size.Width,size.Height,PixelFormat.Format32bppArgb);
             using(var g=Graphics.FromImage(image))
             {
-                g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(size/2f,size/2f);g.ScaleTransform(scale,scale);g.RotateTransform(angle);
-                var crop=ItemArtwork.Bounds("D20 Dice.png");
-                ItemArtwork.Draw(g,"D20 Dice.png",ItemArtwork.Fit(crop,new RectangleF(-21,-21,42,42)),crop);
+                g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(size.Width/2f,size.Height/2f);g.ScaleTransform(ItemArtwork.PixelScale(scale),ItemArtwork.PixelScale(scale));g.RotateTransform(angle);
+                ItemArtwork.Draw(g,"D20 Dice.png",new RectangleF(-16,-16,32,32),ItemArtwork.Canvas);
                 if(!rolling)using(var font=new FontFamily("Segoe UI"))using(var label=new GraphicsPath())using(var format=StringFormat.GenericTypographic)
                 {
-                    label.AddString(number.ToString(),font,(int)FontStyle.Bold,7,PointF.Empty,format);
-                    var ink=label.GetBounds();float fit=Math.Min(1,Math.Min(8/ink.Width,5/ink.Height));
+                    label.AddString(number.ToString(),font,(int)FontStyle.Bold,4.5f,PointF.Empty,format);
+                    var ink=label.GetBounds();float fit=Math.Min(1,Math.Min(5.5f/ink.Width,3/ink.Height));
                     // Keep the ink inside the wider lower portion of the central triangular face.
-                    using(var placement=new Matrix(fit,0,0,fit,-(ink.X+ink.Width/2)*fit,4.5f-(ink.Y+ink.Height/2)*fit))label.Transform(placement);
+                    using(var placement=new Matrix(fit,0,0,fit,-(ink.X+ink.Width/2)*fit,2.75f-(ink.Y+ink.Height/2)*fit))label.Transform(placement);
                     g.FillPath(Brushes.White,label);
                 }
             }

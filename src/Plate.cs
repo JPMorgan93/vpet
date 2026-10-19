@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
@@ -25,9 +24,8 @@ namespace Vpet
         public int FoodRemaining {get;private set;}
         public bool PlateDragging;
         public bool HasPlate {get{return pet.Settings.Plate.Visible;}}
-        float PlateScale {get{return Scale*PlateArtwork.SizeMultiplier;}}
-        public PointF EatingPosition {get{return new PointF(PlatePosition.X,PlatePosition.Y-16*PlateScale);}}
-        public RectangleF PlateBounds {get{return new RectangleF(new PointF(PlatePosition.X-48*PlateScale,PlatePosition.Y-66*PlateScale),PlateArtwork.CanvasSize(Scale));}}
+        public PointF EatingPosition {get{return new PointF(PlatePosition.X,PlatePosition.Y-6*ItemArtwork.PixelScale(Scale));}}
+        public RectangleF PlateBounds {get{var anchor=PlateArtwork.Anchor(Scale);return new RectangleF(new PointF(PlatePosition.X-anchor.X,PlatePosition.Y-anchor.Y),PlateArtwork.CanvasSize(Scale));}}
         void StorePlate(){pet.Settings.Plate.X=PlatePosition.X;pet.Settings.Plate.Y=PlatePosition.Y;}
         void PlacePlate(PointF requested)
         {
@@ -36,8 +34,9 @@ namespace Vpet
             {
                 var work=display.Work;
                 var size=PlateArtwork.CanvasSize(Scale);
-                var allowed=RectangleF.FromLTRB(work.Left+48*PlateScale,work.Top+66*PlateScale,
-                    Math.Max(work.Left+48*PlateScale,work.Right-size.Width+48*PlateScale),Math.Max(work.Top+66*PlateScale,work.Bottom-size.Height+66*PlateScale));
+                var anchor=PlateArtwork.Anchor(Scale);
+                var allowed=RectangleF.FromLTRB(work.Left+anchor.X,work.Top+anchor.Y,
+                    Math.Max(work.Left+anchor.X,work.Right-size.Width+anchor.X),Math.Max(work.Top+anchor.Y,work.Bottom-size.Height+anchor.Y));
                 var point=Geometry.Clamp(requested,allowed);float distance=Geometry.Distance(point,requested);
                 if(distance<score){best=display;result=point;score=distance;}
             }
@@ -160,8 +159,8 @@ namespace Vpet
 
     internal static class PlateArtwork
     {
-        internal const float SizeMultiplier=.75f;
-        internal static Size CanvasSize(float scale){return new Size((int)Math.Ceiling(96*scale*SizeMultiplier),(int)Math.Ceiling(84*scale*SizeMultiplier));}
+        internal static PointF Anchor(float scale){float pixel=ItemArtwork.PixelScale(scale);return new PointF(16*pixel,25*pixel);}
+        internal static Size CanvasSize(float scale){return ItemArtwork.CanvasSize(scale);}
         // Four states share exactly the same ground anchor; only the food is removed between bites.
         public static Bitmap Draw(int remaining,float scale)
         {

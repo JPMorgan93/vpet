@@ -351,18 +351,15 @@ namespace Vpet
     {
         public static Bitmap Triangle(float scale)
         {
-            var image=new Bitmap((int)Math.Ceiling(44*scale),(int)Math.Ceiling(44*scale),PixelFormat.Format32bppArgb);
-            var crop=ItemArtwork.Bounds("Triangle.png");
-            var target=ItemArtwork.Fit(crop,new RectangleF(2*scale,2*scale,image.Width-4*scale,image.Height-4*scale));
+            var image=ItemArtwork.Sprite("Triangle.png",scale);
             using(var g=Graphics.FromImage(image))
             {
-                ItemArtwork.Draw(g,"Triangle.png",target,crop);
                 // Layered windows pass alpha-zero pixels through before hit testing.
                 // Keep the hollow part clickable without filling its visible artwork.
-                float factor=target.Width/crop.Width;
+                float factor=ItemArtwork.PixelScale(scale);
                 using(var interior=new GraphicsPath())
                 {
-                    interior.AddPolygon(new[]{new PointF(target.X+14*factor,target.Y+2*factor),new PointF(target.X+3*factor,target.Y+20*factor),new PointF(target.X+25*factor,target.Y+20*factor)});
+                    interior.AddPolygon(new[]{new PointF(15*factor,5*factor),new PointF(4*factor,23*factor),new PointF(26*factor,23*factor)});
                     for(int y=0;y<image.Height;y++)for(int x=0;x<image.Width;x++)
                         if(image.GetPixel(x,y).A==0&&interior.IsVisible(x+.5f,y+.5f))image.SetPixel(x,y,Color.FromArgb(1,213,223,238));
                 }
@@ -393,12 +390,11 @@ namespace Vpet
         }
         public static Bitmap Chest(float scale,bool open=false)
         {
-            // A shared crop anchors both bases identically as the lid opens.
-            return ItemArtwork.Fit(open?"Chest - Open.png":"Chest - Closed.png",new Size((int)Math.Ceiling(64*scale),(int)Math.Ceiling(50*scale)),2*scale,new Rectangle(1,1,29,29));
+            return ItemArtwork.Sprite(open?"Chest - Open.png":"Chest - Closed.png",scale);
         }
         public static Bitmap Ball(float scale)
         {
-            int size=(int)Math.Ceiling(26*scale);return ItemArtwork.Fit("Rubber Ball.png",new Size(size,size),scale);
+            return ItemArtwork.Sprite("Rubber Ball.png",scale);
         }
         public static Point FenceTitlePosition(Rectangle fence,Size title,Rectangle work,float scale)
         {return new Point(Math.Max(work.Left,Math.Min(work.Right-title.Width,fence.Left)),Math.Max(work.Top,fence.Top-title.Height-(int)Math.Ceiling(3*scale)));}

@@ -132,7 +132,7 @@ namespace Vpet
                 g.Clear(Color.FromArgb(236,230,246));
                 foreach(int remaining in new[]{3,2,1,0})using(var image=PlateArtwork.Draw(remaining,1))
                 {
-                    Check(image.Size==new Size(72,63)&&image.GetPixel(0,0).A==0&&image.GetPixel(36,55).A==255,"Plate state "+remaining+" is 75% size with transparent surroundings and an opaque white rim");
+                    Check(image.Size==new Size(64,64)&&image.GetPixel(0,0).A==0&&image.GetPixel(32,56).A==255,"Plate state "+remaining+" uses the default pet's 2x pixel scale with transparent surroundings and an opaque rim");
                     using(var empty=PlateArtwork.Draw(0,1))
                     {
                         bool sameBase=true,food=false;for(int y=0;y<image.Height;y++)for(int px=0;px<image.Width;px++)
