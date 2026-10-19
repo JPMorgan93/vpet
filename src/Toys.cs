@@ -64,13 +64,13 @@ namespace Vpet
         float bounceTime=1,phaseTime;
         PointF approach;
         string approachDisplay;
-        public float Radius {get{return 13*Scale;}}
-        public SizeF ChestSize {get{return new SizeF(64*Scale,50*Scale);}}
+        public float Radius {get{return ItemArtwork.HalfSize("Rubber Ball.png",Scale).Width;}}
+        public SizeF ChestSize {get{return ItemArtwork.CanvasSize(Scale);}}
         public PointF Center {get{return new PointF(Zone.X+Zone.Width/2,Zone.Y+Zone.Height/2);}}
         public bool Rolling {get{return Velocity.X!=0||Velocity.Y!=0;}}
         public RectangleF BallBounds {get{return RectangleF.Inflate(Zone,-Radius-3*Scale,-Radius-3*Scale);}}
         RectangleF ChestBounds {get{return RectangleF.Inflate(Zone,-ChestSize.Width/2-3*Scale,-ChestSize.Height/2-3*Scale);}}
-        public RectangleF TriangleBounds {get{return RectangleF.Inflate(Zone,-25*Scale,-25*Scale);}}
+        public RectangleF TriangleBounds {get{var size=ItemArtwork.HalfSize("Triangle.png",Scale);return RectangleF.Inflate(Zone,-size.Width-3*Scale,-size.Height-3*Scale);}}
         public float BounceHeight {get{return BounceOffset(bounceTime,Scale);}}
         internal static float BounceOffset(float time,float scale)
         {
