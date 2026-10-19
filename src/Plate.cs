@@ -166,8 +166,8 @@ namespace Vpet
         {
             var size=CanvasSize(scale);
             var image=new Bitmap(size.Width,size.Height,PixelFormat.Format32bppArgb);
-            var source=new Rectangle(0,0,32,32);
-            var target=ItemArtwork.Fit(source,new RectangleF(0,0,size.Width,size.Height));
+            var source=ItemArtwork.Canvas;
+            var target=new RectangleF(0,0,size.Width,size.Height);
             using(var graphics=Graphics.FromImage(image))
             {
                 ItemArtwork.Draw(graphics,"Plate.png",target,source);
