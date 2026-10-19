@@ -100,6 +100,10 @@ TOY CHEST
 Right-click the pet > Display Items > Toy Chest to show a chest and fence.
 The supplied closed chest opens its lid while the chest menu is displayed.
 The ball, triangle, coin, card back, and D20 use the supplied pixel artwork.
+Every desktop item uses a 32 x 32 logical canvas and the default pet's 2x
+pixel scale: 64 x 64 screen pixels at 100% Windows scaling. Transparent
+padding and natural proportions are retained; the ball stays smaller than
+the chest. The joystick is prepared on the same grid before display.
 Drag the middle control to move the play space; drag its edges or corners to
 resize it. Drag the chest to place it inside. The zone fits one monitor's usable
 area; move its center onto another monitor to move the play space there.
@@ -128,7 +132,7 @@ PLATE AND FOOD
 Display Items is the first entry in the pet menu. Choose Plate to show or hide
 a white plate. Left-drag it anywhere on the desktop, independently of fences.
 It follows Window Location and remains available when the chest is closed.
-The plate and pudding are 75% of their original size.
+The plate and pudding share the same 32 x 32 grid and 2x pixel scale.
 Right-click the plate > Pudding to select the default food and serve it.
 Left-click an empty plate to serve the default again. The supplied Plate.png
 stays beneath Pudding - 1, then Pudding - 2 after the first bite, Pudding - 3

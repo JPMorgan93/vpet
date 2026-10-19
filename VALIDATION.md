@@ -1,5 +1,13 @@
 # Vpet validation
 
+## Version 1.12.5
+
+6,790 automated assertions passed. New checks verify that the chest states, five toys, joystick, and four plate/pudding states share 32 x 32 logical canvases and the default pet's 2x scale at simulated display scales 0.5, 1, 1.25, 1.5, 2, and 3. Integer-scale checks compare every opaque source pixel against every expanded destination pixel, including the prepared 32 x 32 joystick. Visible toy bounds stay inside the fence at opposite extremes, including a rotated D20. Existing containment, ricochet, approaches beside the card/coin, feeding, monitor recovery, card/coin flips, chest states, and D20 label checks pass. The pet/item comparison, food stages, card faces, and D20 values were visually inspected.
+
+673 native UI checks passed: 85 toy chest, 18 plate/Hunger, 206 item/layer/menu, and 364 arcade/music/joystick. New native checks verify the displayed item canvas sizes and actual Win32 window bounds match the default sprite's rendered width. Input, hover help, menu lid changes, feeding, dragging, launches, fence limits, overlap stability, crossing, layering, joystick arrival, and arcade behavior remain valid. The hover test now permits subsequent UI ticks for Windows' layered hit map to catch up with presentation. All three arcade songs were prepared in 0.501 seconds; native arcade audio was muted.
+
+Validated on this development PC on 2026-10-18. Other physical display/DPI configurations and subjective speaker quality were not assessed. Version 1.12.5 follows AGENTS.md's patch policy for resizing existing items.
+
 ## Version 1.12.4
 
 6,644 automated assertions passed. New artwork checks cover supplied PNG palettes without interpolation colors at 1x, 1.25x, and 2x, transparent corners, a shared chest-base anchor, coin X-axis and card edge-on flips, four distinct plate states with a stable plate base, and progressively eaten pudding. Existing tests verify every D20 value stays clear of the new face's lines at multiple scales and rotations, three feeding shakes and eighth-second pauses, interaction interruption, fences, monitor changes, and saved preferences. Rendered toys, D20 values, and pudding stages were visually inspected.

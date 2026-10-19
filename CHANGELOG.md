@@ -1,4 +1,10 @@
-# Vpet 1.12.4
+# Vpet 1.12.5
+
+- Give every desktop item the default pet's pixel scale: a 32 x 32 logical canvas displayed at 2x, or 64 x 64 pixels at 100% Windows scaling. Keep the natural size and transparent padding of the chest, ball, triangle, coin, card, D20, plate, and pudding artwork instead of fitting each image to a different footprint.
+- Prepare the high-resolution joystick on the same 32 x 32 grid once, then display it with the same sharp pixel scaling as the pet and other items.
+- Match fence containment, ball and D20 collision bounds, coin/card approach positions, plate feeding placement, and joystick positioning to the new sizes. Preserve chest lid states, food stages, toy controls, monitor recovery, and window layering.
+
+## Vpet 1.12.4
 
 - Replace the Toy Chest with the supplied Chest - Closed PNG. Show Chest - Open while its right-click menu is displayed, then close the lid when the menu is dismissed, without shifting the chest's base.
 - Replace the ball, triangle, coin, card back, and D20 with the supplied pixel artwork. Preserve dragging, launches, bounces, card reveals and flips, coin flips around the horizontal axis, triangle sounds and hollow-interior input, and readable D20 values inside its face.
