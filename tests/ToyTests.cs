@@ -107,6 +107,7 @@ namespace Vpet
         }
         static void ToyArt()
         {
+            ReferenceItemArt();
             using(var preview=new Bitmap(560,380))using(var g=Graphics.FromImage(preview))
             using(var fence=ToyArtwork.Fence(new Size(480,320),1))using(var chest=ToyArtwork.Chest(1))using(var ball=ToyArtwork.Ball(1))
             {
@@ -135,6 +136,7 @@ namespace Vpet
                     var toggle=items.DropDownItems.Cast<ToolStripItem>().First(i=>i.Text=="Toy Chest") as ToolStripMenuItem;
                     Check(items.Text=="Display Items"&&toggle!=null&&!toys.Settings.DisplayChest,"First pet submenu provides Toy Chest, default off");toggle.PerformClick();Application.DoEvents();
                     Check(windows.Chest.Visible&&windows.Fence.Visible,"Toggling chest shows chest and fence");
+                    ChestMenuArtwork(pet);
                     Check(windows.Menu.Items[0].Text=="Display Play Zone"&&windows.Menu.Items[1].Text=="Clean Up Toys","Chest menu begins with fence toggle followed by cleanup");
                     Check(windows.Menu.Items.Count==10&&windows.Menu.Items[3].Text=="Triangle"&&windows.Menu.Items[7] is ToolStripSeparator&&windows.Menu.Items[8].Text=="Help Messages"&&windows.Menu.Items[9].Text=="Close Toy Chest","Chest menu keeps toys above its footer, with Help Messages directly above Close Toy Chest");
                     Item(windows.Menu,"Ball").PerformClick();Check(windows.Ball.Visible,"Ball menu creates the red ball");

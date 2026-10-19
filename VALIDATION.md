@@ -1,5 +1,15 @@
 # Vpet validation
 
+## Version 1.12.4
+
+6,644 automated assertions passed. New artwork checks cover supplied PNG palettes without interpolation colors at 1x, 1.25x, and 2x, transparent corners, a shared chest-base anchor, coin X-axis and card edge-on flips, four distinct plate states with a stable plate base, and progressively eaten pudding. Existing tests verify every D20 value stays clear of the new face's lines at multiple scales and rotations, three feeding shakes and eighth-second pauses, interaction interruption, fences, monitor changes, and saved preferences. Rendered toys, D20 values, and pudding stages were visually inspected.
+
+293 native UI checks passed: 85 toy chest, 18 plate/Hunger, and 190 item/layer/menu checks. Real right-click input opens the chest artwork immediately and keeps it open through menu redraws without moving the chest. Keyboard and outside-click dismissal close it immediately; canceled menu opening leaves it closed. Tests retain triangle hollow-interior input, sound menus, toy input, drag/launch behavior, feeding, all Window Location modes, display crossings, and zero intermediate item reorderings during overlapping redraws.
+
+The 1.12.4 EXE installer compiled successfully. Isolated fresh installation and progress-only upgrades verified all eleven new PNGs and the existing reference artwork/music against their supplied hashes. Icon/shortcut paths, prior destination and shortcut choices, skipped-version notes, legacy updater support, completion/relaunch, and cleanup passed. The regular Vpet installation and personal preferences were unchanged.
+
+Validated on this development PC on 2026-10-18. Subjective speaker sound and other DPI configurations were not assessed. Version 1.12.4 follows AGENTS.md's patch policy for replacing the artwork of existing items.
+
 ## Version 1.12.3
 
 6,609 automated assertions passed, retaining movement, interaction, sprite pixels and speeds, project/package compatibility, toys, reminders, Brick Battle sounds and physics, and the other arcade games.

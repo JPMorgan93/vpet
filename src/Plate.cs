@@ -165,44 +165,14 @@ namespace Vpet
         // Four states share exactly the same ground anchor; only the food is removed between bites.
         public static Bitmap Draw(int remaining,float scale)
         {
-            var size=CanvasSize(scale);scale*=SizeMultiplier;
+            var size=CanvasSize(scale);
             var image=new Bitmap(size.Width,size.Height,PixelFormat.Format32bppArgb);
-            using(var g=Graphics.FromImage(image))
-            using(var rim=new Pen(Color.FromArgb(139,147,165),1.5f))
+            var source=new Rectangle(0,0,32,32);
+            var target=ItemArtwork.Fit(source,new RectangleF(0,0,size.Width,size.Height));
+            using(var graphics=Graphics.FromImage(image))
             {
-                g.ScaleTransform(scale,scale);g.SmoothingMode=SmoothingMode.AntiAlias;
-                using(var shadow=new SolidBrush(Color.FromArgb(45,46,39,63)))g.FillEllipse(shadow,4,57,88,24);
-                g.FillEllipse(Brushes.White,3,50,90,28);g.DrawEllipse(rim,3,50,90,28);
-                using(var groove=new Pen(Color.FromArgb(224,227,236),1.2f))g.DrawEllipse(groove,14,55,68,16);
-                if(remaining>0)
-                {
-                    var state=g.Save();
-                    // Each bite removes a third of the food's width, including its toppings.
-                    g.SetClip(new RectangleF(20,0,56*Math.Min(3,remaining)/3f,70));
-                    using(var sauce=new SolidBrush(Color.FromArgb(164,79,28)))g.FillEllipse(sauce,19,51,58,18);
-                    using(var custard=new LinearGradientBrush(new Rectangle(22,32,52,34),Color.FromArgb(255,228,142),Color.FromArgb(232,171,75),LinearGradientMode.Horizontal))
-                    using(var body=new GraphicsPath())
-                    {
-                        body.AddLine(30,33,23,57);body.AddBezier(23,57,28,69,68,69,73,57);body.AddLine(73,57,66,33);body.CloseFigure();
-                        g.FillPath(custard,body);using(var outline=new Pen(Color.FromArgb(180,117,49),1.2f))g.DrawPath(outline,body);
-                    }
-                    using(var caramel=new SolidBrush(Color.FromArgb(176,87,32)))
-                    {g.FillEllipse(caramel,29,27,38,14);g.FillEllipse(caramel,31,32,7,16);g.FillEllipse(caramel,57,32,5,10);}
-                    using(var cream=new SolidBrush(Color.FromArgb(255,253,235)))
-                    using(var edge=new Pen(Color.FromArgb(225,208,177),1))
-                    {
-                        g.FillEllipse(cream,35,23,27,11);g.DrawArc(edge,35,23,27,11,0,180);
-                        g.FillEllipse(cream,39,17,20,10);g.FillEllipse(cream,43,12,12,9);
-                    }
-                    using(var berry=new GraphicsPath())
-                    {
-                        berry.AddBezier(53,16,49,4,67,3,67,12);berry.AddBezier(67,12,65,19,60,25,58,24);berry.CloseFigure();
-                        using(var red=new SolidBrush(Color.FromArgb(222,53,65)))g.FillPath(red,berry);
-                        using(var seed=new Pen(Color.FromArgb(255,222,135),1.1f)){g.DrawLine(seed,56,13,57,15);g.DrawLine(seed,61,10,62,12);g.DrawLine(seed,61,17,62,19);}
-                        using(var leaf=new SolidBrush(Color.FromArgb(64,144,74)))g.FillPolygon(leaf,new[]{new Point(55,8),new Point(56,2),new Point(60,6),new Point(66,3),new Point(65,9)});
-                    }
-                    g.Restore(state);
-                }
+                ItemArtwork.Draw(graphics,"Plate.png",target,source);
+                if(remaining>0)ItemArtwork.Draw(graphics,"Pudding - "+(4-Math.Min(3,remaining))+".png",target,source);
             }
             return image;
         }

@@ -31,6 +31,7 @@ New-Item -ItemType Directory -Path $referenceDirectory -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\reference\Blue Dragon.png') -Destination $referenceDirectory -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\reference\Vpet.ico') -Destination $referenceDirectory -Force
 foreach ($image in @('Heads.png','Tails.png','Joystick.png','Dance Floor.png','Simon Floor.png')) { Copy-Item -LiteralPath (Join-Path $projectRoot ('assets\reference\'+$image)) -Destination $referenceDirectory -Force }
+foreach ($image in @('Chest - Closed.png','Chest - Open.png','Rubber Ball.png','Triangle.png','Gold Coin.png','Card.png','D20 Dice.png','Plate.png','Pudding - 1.png','Pudding - 2.png','Pudding - 3.png')) { Copy-Item -LiteralPath (Join-Path $projectRoot ('assets\reference\'+$image)) -Destination $referenceDirectory -Force }
 foreach ($song in @('Easy.mp3','Normal.mp3','Hard.mp3')) { Copy-Item -LiteralPath (Join-Path $projectRoot ('assets\reference\'+$song)) -Destination $referenceDirectory -Force }
 Write-Output "Built $appPath"
 if ($Test) {

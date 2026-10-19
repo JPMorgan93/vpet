@@ -1,4 +1,11 @@
-# Vpet 1.12.3
+# Vpet 1.12.4
+
+- Replace the Toy Chest with the supplied Chest - Closed PNG. Show Chest - Open while its right-click menu is displayed, then close the lid when the menu is dismissed, without shifting the chest's base.
+- Replace the ball, triangle, coin, card back, and D20 with the supplied pixel artwork. Preserve dragging, launches, bounces, card reveals and flips, coin flips around the horizontal axis, triangle sounds and hollow-interior input, and readable D20 values inside its face.
+- Replace the plate and pudding artwork. Serve Pudding - 1, switch to Pudding - 2 after the first bite and Pudding - 3 after the second, then leave the empty plate after the third. Keep all stages aligned and retain the eating pauses and shakes.
+- Render the PNGs with sharp pixel scaling and transparency, decode them once for animation reuse, and include all eleven replacement assets in the installer and updates.
+
+## Vpet 1.12.3
 
 - Simplify the pet's right-click menu: remove Movement settings, Emote frequency, and Upload Vpet shortcuts. Place Location directly below Type in Movement Controls. Keep those settings available in Settings.
 - Give Sprite Maker separate Idle and Walk button rows, with an Animation types title and instructions. Group frame buttons into rows 1-5 and 6-10, place Set and Clear underneath, and explain frame selection above the numbered rows.

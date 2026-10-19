@@ -41,6 +41,17 @@ Source: "..\bin\release\assets\reference\Tails.png"; DestDir: "{app}\assets\refe
 Source: "..\bin\release\assets\reference\Joystick.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Dance Floor.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Simon Floor.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Chest - Closed.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Chest - Open.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Rubber Ball.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Triangle.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Gold Coin.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Card.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\D20 Dice.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Plate.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Pudding - 1.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Pudding - 2.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
+Source: "..\bin\release\assets\reference\Pudding - 3.png"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Easy.mp3"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Normal.mp3"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
 Source: "..\bin\release\assets\reference\Hard.mp3"; DestDir: "{app}\assets\reference"; Flags: ignoreversion
