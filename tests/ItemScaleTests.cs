@@ -56,5 +56,17 @@ namespace Vpet
                 finally{foreach(var image in images)image.Dispose();}
             }
         }
+        static void MatchingItemWindows(PetWindow pet,LayeredWindow[] items)
+        {
+            RefreshItems(pet);var expected=ItemArtwork.CanvasSize(pet.Toys.Model.Scale);
+            Check(expected.Width==pet.Model.Current.PetSize(pet.Sprites.Cell).Width,"Desktop item canvas width matches the default pet's rendered frame width");
+            foreach(var item in items)
+            {
+                Native.RECT rectangle;Native.GetWindowRect(item.Handle,out rectangle);
+                Check(item.Visible&&item.PresentedBounds.Size==expected,"Displayed item uses the shared canvas: "+item.Text);
+                Check(rectangle.Right-rectangle.Left==expected.Width&&rectangle.Bottom-rectangle.Top==expected.Height,"Native item window matches rendered artwork size: "+item.Text);
+            }
+            Check(pet.Toys.Chest.PresentedBounds.Size==expected,"Chest uses the same native canvas as the toys");
+        }
     }
 }
