@@ -6,6 +6,8 @@
 
 673 native UI checks passed: 85 toy chest, 18 plate/Hunger, 206 item/layer/menu, and 364 arcade/music/joystick. New native checks verify the displayed item canvas sizes and actual Win32 window bounds match the default sprite's rendered width. Input, hover help, menu lid changes, feeding, dragging, launches, fence limits, overlap stability, crossing, layering, joystick arrival, and arcade behavior remain valid. The hover test now permits subsequent UI ticks for Windows' layered hit map to catch up with presentation. All three arcade songs were prepared in 0.501 seconds; native arcade audio was muted.
 
+The 1.12.5 EXE installer compiled successfully. Isolated fresh installation and progress-only upgrades verified the supplied assets, icon and shortcut paths, retained destination and shortcut choices, skipped-version notes, legacy updater support, completion/relaunch, and cleanup. The regular Vpet installation and personal settings were unchanged.
+
 Validated on this development PC on 2026-10-18. Other physical display/DPI configurations and subjective speaker quality were not assessed. Version 1.12.5 follows AGENTS.md's patch policy for resizing existing items.
 
 ## Version 1.12.4
