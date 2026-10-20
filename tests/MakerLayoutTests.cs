@@ -27,7 +27,8 @@ namespace Vpet
                 {
                     MakerField<CheckBox>(maker,"diagonal").Checked=diagonals;maker.ClientSize=size;Application.DoEvents();
                     AnimationRows(maker,cycles,"Maker "+size+" diagonals="+diagonals);
-                    Check(slots.Take(5).Select(button=>OnForm(maker,button).Top).Distinct().Count()==1&&slots.Skip(5).Select(button=>OnForm(maker,button).Top).Distinct().Count()==1&&OnForm(maker,slots[5]).Top>OnForm(maker,slots[4]).Bottom,"Frames 1-5 and 6-10 have separate complete rows at "+size);
+                    CaptureForm(maker,"maker-side-layout");
+                    Check(slots.Take(5).Select(button=>OnForm(maker,button).Top).Distinct().Count()==1&&slots.Skip(5).Select(button=>OnForm(maker,button).Top).Distinct().Count()==1&&OnForm(maker,slots[5]).Top>OnForm(maker,slots[4]).Bottom,"Frames 1-5 and 6-10 have separate complete rows at "+size+" "+string.Join(";",slots.Select(button=>button.Text+":"+OnForm(maker,button)+" row="+button.Parent.Size)));
                     var set=FindButton(maker,"Set");var clear=FindButton(maker,"Clear");
                     Check(OnForm(maker,set).Top>slots.Max(button=>OnForm(maker,button).Bottom)&&OnForm(maker,clear).Top==OnForm(maker,set).Top,"Set and Clear share a row below all ten frame buttons");
                     var instructions=Descendants(maker).OfType<Label>().Single(label=>label.Name=="AnimationFramesDescription");
