@@ -1,10 +1,10 @@
-# Vpet 1.12.5
+# Vpet 1.12.6
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.5-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.6-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -13,6 +13,8 @@ The installer installs for the current user and provides an uninstaller in Windo
 **Settings > Advanced > Load Vpet on PC startup** offers **No (Default)** and **Yes**. Yes launches the pet when you sign in to your Windows account; No disables it. The choice is saved, requires no administrator access, and uninstall removes this installation's startup entry.
 
 **Settings > Personality** starts with an optional pet name. Leave it blank to display nothing, or choose **Hide name**, **Show on hover**, or **Always display**. Names sit below the pet with white outlines around the letters and no background box. Up to 40 characters are saved; long names use an ellipsis on screen. Space is reserved below named pets to keep names clear of the taskbar. Clicking outside the right-click menu closes it, including when clicking another application.
+
+Settings stays above the pet, reactions, toys, plate, joystick, and fences in every **Window Location** mode. It uses ordinary application stacking, so other applications can appear above it. Closing Settings restores the pet and items to their selected layers.
 
 **Settings > Advanced > Auto-update on app startup**, directly below the Windows startup option, offers **No (Default)** and **Yes**. Yes checks and automatically installs the newest public release when Vpet starts, with download/installation progress and no continue prompt. No keeps startup checks as notifications. Checks every six hours while running remain notifications, so automatic installation happens at startup. Offline checks leave the pet running normally.
 
@@ -136,6 +138,8 @@ The zone fits inside one monitor's usable area, avoiding taskbars and gaps betwe
 The chest uses **Chest - Closed.png** normally and **Chest - Open.png** while its right-click menu is open, keeping the same base position. Toys use the supplied **Rubber Ball.png**, **Triangle.png**, **Gold Coin.png**, **Card.png**, and **D20 Dice.png**, with sharp pixel scaling and transparent surroundings. The card reveals its selected value on the front; the die keeps its current number inside the central face.
 
 Every desktop item uses a **32 × 32 logical canvas** at the default pet's **2× pixel scale**: **64 × 64 screen pixels** at 100% Windows scaling. The default pet uses 32 × 36 frames displayed at 64 × 72. Artwork retains its native proportions and transparent padding, so a ball remains smaller than a chest while their pixels match the pet. The joystick is prepared on the same 32 × 32 grid before display. Fence bounds, interaction positions, and monitor-edge placement account for the item sizes.
+
+The card is enlarged proportionally inside its shared canvas to match the resting D20's visible height (54 screen pixels at 100% scaling). Its flip, revealed face, fence limits, and the pet's approach use the enlarged dimensions.
 
 Right-click the chest for **Display Play Zone**, **Clean Up Toys**, toy toggles for **Ball**, **Triangle**, **Coin**, **Card**, and **D20**, followed by **Help Messages** and **Close Toy Chest**. Clean Up Toys removes all toys and cancels active play while leaving the chest and fence available. It is greyed out when no toys are present and becomes available as soon as any toy is added. Toggle a toy off to remove it and cancel its active interaction. Hiding the fence keeps its boundaries active. Help Messages stays directly above Close Toy Chest at the bottom of the menu. It defaults on and displays hints above the chest only while hovering over the fence border/center or a toy; disable it to hide those hints. The fence uses a plus-shaped center control.
 

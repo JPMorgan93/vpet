@@ -1,4 +1,11 @@
-# Vpet 1.12.5
+# Vpet 1.12.6
+
+- Enlarge the card proportionally to match the resting D20's visible height. Keep its face values, flip animation, transparent canvas, fence containment, and the pet's approach position aligned with the new size.
+- Keep Settings above the pet, reactions, toys, plate, joystick, and fences in every Window Location mode. Preserve ordinary application stacking and keyboard focus, and restore the selected desktop layers when Settings closes.
+- Reorganize Sprite Maker into two equal halves beneath a separator: animation types, frame buttons, and validation on the left; sheet preview and zoom controls on the right. Resize the window to grow the preview, with no internal drag bars. Preserve scrolling, zoom, selections, and saved projects.
+- Give Set a pale green background and Clear a pale red background, remove the obsolete upload placeholder, and keep How to Guide and Tweak and Complete in a separate footer at the bottom left. Retain separate Idle/Walk rows and frame rows 1-5 and 6-10.
+
+## Vpet 1.12.5
 
 - Give every desktop item the default pet's pixel scale: a 32 x 32 logical canvas displayed at 2x, or 64 x 64 pixels at 100% Windows scaling. Keep the natural size and transparent padding of the chest, ball, triangle, coin, card, D20, plate, and pudding artwork instead of fitting each image to a different footprint.
 - Prepare the high-resolution joystick on the same 32 x 32 grid once, then display it with the same sharp pixel scaling as the pet and other items.

@@ -8,6 +8,8 @@ Open Vpet from the Start menu or optional desktop shortcut.
 Right-click the pet or notification-area icon to open settings.
 Left-click for Love and a brief shake. Drag to move your pet.
 Choose Close Vpet from its menu to quit; closing Settings keeps it running.
+Settings stays above the pet, reactions, toys, plate, joystick, and fences.
+Other apps can appear above Settings; closing it restores your chosen layers.
 Movement Controls contains Type, Location, and Display restricted area.
 Use Settings for full movement, reaction frequency, and Sprite options.
 
@@ -50,7 +52,12 @@ Settings > Sprite > Open Sprite Maker lets you select animation frames from a
 transparent PNG sheet. Set 1-10 frames per animation, then Tweak and Complete.
 Choose Idle animations on the first Animation types row or Walk on the next.
 Animation frames are grouped into rows 1-5 and 6-10, with Set and Clear below.
-Scroll the upper controls if needed; the sheet preview scrolls independently.
+Below the separator, the left half contains animation types, frame buttons,
+and validation messages. Set is pale green; Clear is pale red. The right half
+contains the sheet preview with zoom controls above it. Resize the whole
+window to grow the preview. There are no internal drag bars. Scroll either
+half independently. How to Guide and Tweak and Complete stay in a separate
+footer at the bottom left.
 Tweak and Complete also separates Idle and Walk; scroll its animation choices
 to reach any optional emote animations with saved frames.
 Each animation type has its own frame size, shared by all frames of that type.
@@ -104,6 +111,7 @@ Every desktop item uses a 32 x 32 logical canvas and the default pet's 2x
 pixel scale: 64 x 64 screen pixels at 100% Windows scaling. Transparent
 padding and natural proportions are retained; the ball stays smaller than
 the chest. The joystick is prepared on the same grid before display.
+The card is enlarged proportionally to the resting D20's visible height.
 Drag the middle control to move the play space; drag its edges or corners to
 resize it. Drag the chest to place it inside. The zone fits one monitor's usable
 area; move its center onto another monitor to move the play space there.
