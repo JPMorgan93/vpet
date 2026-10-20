@@ -112,11 +112,11 @@ namespace Vpet
                 int index=i;string title=SpriteProject.Cycles[i];int space=title.IndexOf(' ');
                 string label=i<10?title.Substring(0,space)+Environment.NewLine+title.Substring(space+1).Replace("Left/Right","Left /"+Environment.NewLine+"Right").Replace("Diag ","Diag"+Environment.NewLine):title;
                 cycles[i]=MakerUi.Button(label,delegate{ChooseCycle(index);});
-                cycles[i].AccessibleName=title;cycles[i].AutoSize=false;cycles[i].MinimumSize=cycles[i].Size=i<10?new Size(62,62):new Size(76,38);cycles[i].Margin=new Padding(2,4,2,4);cycles[i].Font=new Font("Segoe UI",9);
+                cycles[i].AccessibleName=title;cycles[i].AutoSize=false;cycles[i].MinimumSize=i<10?new Size(62,62):new Size(76,38);cycles[i].Size=cycles[i].MinimumSize;cycles[i].Margin=new Padding(2,4,2,4);cycles[i].Font=new Font("Segoe UI",9);
             }
             animationChoices=MakerUi.AnimationChoices(cycles,"Choose the animation you want to edit.");root.Controls.Add(animationChoices,0,0);
             var frameChoices=MakerUi.ChoiceSection("AnimationFrames","Animation frames","Set each frame in the chosen animation's cycle, in playback order.");root.Controls.Add(frameChoices,0,1);
-            for(int i=0;i<slots.Length;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].AutoSize=false;slots[i].MinimumSize=slots[i].Size=new Size(48,34);}
+            for(int i=0;i<slots.Length;i++){int index=i;slots[i]=MakerUi.Button((i+1).ToString(),delegate{ChooseSlot(index);});slots[i].AutoSize=false;slots[i].MinimumSize=new Size(48,34);slots[i].Size=slots[i].MinimumSize;}
             MakerUi.ChoiceRow(frameChoices,"FramesOneToFive",slots.Take(5).ToArray());MakerUi.ChoiceRow(frameChoices,"FramesSixToTen",slots.Skip(5).ToArray());
             var set=MakerUi.Button("Set",delegate{SetFrame();});set.BackColor=Color.FromArgb(220,242,222);set.FlatAppearance.BorderColor=Color.FromArgb(134,176,140);
             var clear=MakerUi.Button("Clear",delegate{ClearFrame();});clear.BackColor=Color.FromArgb(252,222,222);clear.FlatAppearance.BorderColor=Color.FromArgb(205,154,154);
