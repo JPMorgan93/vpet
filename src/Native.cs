@@ -130,7 +130,7 @@ namespace Vpet
             {
                 var position=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));
                 IntPtr ceiling=ForegroundCeiling;bool behindForeground=ceiling!=IntPtr.Zero,bandMatches=IsTopmost==(layerMode==LayerMode.OverEverything&&!behindForeground),noZOrder=(position.Flags&4u)!=0;
-                IntPtr? target=behindForeground?ceiling:BehindWindow!=IntPtr.Zero?BehindWindow:AboveCompanions?
+                IntPtr? target=behindForeground?(BehindWindow!=IntPtr.Zero&&Native.IsAbove(ceiling,BehindWindow)?BehindWindow:ceiling):BehindWindow!=IntPtr.Zero?BehindWindow:AboveCompanions?
                     Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,bandMatches&&noZOrder&&!correctingLayer):layerMode==LayerMode.UnderAll?(IntPtr?)Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle):null;
                 if(layerMode==LayerMode.UnderAll&&AboveCompanions)
                 {
