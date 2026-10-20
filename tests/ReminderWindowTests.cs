@@ -50,7 +50,7 @@ namespace Vpet
                 maker.ClientSize=new Size(800,650);Application.DoEvents();float zoom=sheet.Zoom;var draft=sheet.Draft;var size=viewport.Size;
                 maker.ClientSize=new Size(1200,900);Application.DoEvents();
                 Check(viewport.Width>size.Width&&viewport.Height>size.Height&&sheet.Zoom==zoom&&sheet.Draft==draft,"Resizing the window grows the right preview without changing zoom or selection");
-                Check(!Descendants(maker).OfType<SplitContainer>().Any(),"Maker no longer has internal draggable dividers");
+                Check(!Descendants(maker).OfType<SplitContainer>().Any()&&Descendants(maker).Count(control=>control.Name=="MakerDivider")==1,"Maker has one invisible vertical divider and no visible split bars");
                 maker.ClientSize=new Size(800,650);Application.DoEvents();Check(viewport.Height>=150,"Preview retains usable minimum at smallest maker size");
                 foreach(string caption in new[]{"How to Guide","Tweak and Complete"}){var button=FindButton(maker,caption);Check(maker.ClientRectangle.Contains(new Rectangle(maker.PointToClient(button.PointToScreen(Point.Empty)),button.Size)),"Maker footer stays fully visible: "+caption);}
                 CaptureForm(maker,"maker-resizable-preview");maker.Dirty=false;maker.Close();
