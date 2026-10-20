@@ -96,6 +96,7 @@ namespace Vpet
                     Check(IsAbove(pet.Handle,restricted.HandleWindow)&&restricted.RingWindows.All(handle=>IsAbove(pet.Handle,handle)),"Separate restricted fence remains below the sprite");
                     pet.Toys.Menu.Show(pet.Toys.Chest,new Point(10,10));RefreshItems(pet);Check(items.All(item=>IsAbove(item.Handle,pet.Handle)),"Opening the toy menu preserves foreground item ordering");pet.Toys.Menu.Close();
                     OverlappingItems(pet,items);
+                    SettingsAboveDesktopAssets(pet,items,app);
                     pet.Toys.SetVisible(false);RefreshItems(pet);Check(!pet.Toys.Chest.Visible&&pet.Plate.Visible&&pet.Joystick.Visible&&IsAbove(pet.Plate.Handle,pet.Handle)&&IsAbove(pet.Joystick.Handle,pet.Handle),"Plate and joystick remain above pet when chest is hidden");
                     pet.Close();
                 }
