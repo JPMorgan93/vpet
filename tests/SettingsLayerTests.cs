@@ -28,6 +28,7 @@ namespace Vpet
                 Check(Native.GetForegroundWindow()==foreground,"Desktop updates never steal keyboard focus from the active application in "+mode);
                 Check(items.All(item=>IsAbove(settings.Handle,item.Handle))&&IsAbove(settings.Handle,pet.Handle),"Settings remains above overlapping items and pet after redraws in "+mode);
                 Check(IsAbove(pet.Handle,pet.Toys.Chest.Handle)&&IsAbove(pet.Handle,pet.Toys.Fence.Handle)&&IsAbove(pet.Handle,pet.Toys.FenceLabel.Handle),"Chest and play fence remain below the pet while Settings is open in "+mode);
+                Check(items.All(item=>IsAbove(item.Handle,pet.Handle)),"Foreground toys, plate, and joystick stay above the pet while Settings is open in "+mode);
             }
             pet.Model.Settings.Layer=LayerMode.OverEverything;pet.ApplyLayer();settings.Close();Application.DoEvents();RefreshItems(pet);
             Check(Native.SettingsForeground==IntPtr.Zero&&Native.SettingsPet==IntPtr.Zero,"Closing Settings clears the desktop layering boundary");
