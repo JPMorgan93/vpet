@@ -1,5 +1,17 @@
 # Vpet validation
 
+## Version 1.12.7
+
+7,124 automated assertions passed in the release build, retaining movement, interactions, sprites, toys, reminders, arcade games, persistence, and update behavior.
+
+973 native UI checks passed: 437 sprite editors, 147 expanded Settings/toys, 76 reminder/editor adjustments, and 313 item/layer/menu checks. New editor checks use native mouse input to resize the invisible divider, verify both pane widths and useful limits, retain the chosen ratio when resizing the window, and end dragging on capture loss. Zoom, draft selection, animation/slot selection, and dirty state remain unchanged. Minimum/default/wide layouts retain usable previews, matching section headings, a footer separator, and right-aligned Guide/Complete buttons. Existing frame mapping, ten-frame, zoom/scroll, source replacement, project, and Tweak workflows pass.
+
+Settings checks read the native Pyro cue banner, verify it leaves the stored name empty, and confirm Try emotes wording, Current pet and preview heading order, removed text/button, and immediate current-sheet download placement. Importing and restoring a custom sprite updates the status and retains a typed name. Responsive text and controls fit both tested widths. Settings remains above desktop assets in all Window Location modes while preserving normal application stacking, keyboard focus, item hierarchy, and layer restoration on close.
+
+The 1.12.7 EXE installer compiled successfully. Isolated fresh installation and progress-only upgrades passed supplied artwork/music/icon hashes, retained destination and shortcut choices, skipped-version descriptions, legacy updating, completion/relaunch, and cleanup. The regular installation and personal preferences were unchanged.
+
+Settings and Sprite Maker captures were visually inspected. Validated on this development PC on 2026-10-20. Other physical display/DPI configurations were not directly assessed. Version 1.12.7 follows AGENTS.md's patch policy for adjustments to existing features.
+
 ## Version 1.12.6
 
 7,124 automated assertions passed. New card checks cover visible height matching the resting D20 at simulated scales 0.5, 1, 1.25, 1.5, 2, and 3, retained aspect ratio, transparent margins without clipping, edge-on flipping, and all 52 revealed faces. Existing fence containment, approaches beside the card, game outcomes, shared canvases for other items, and persistence checks remain valid.
