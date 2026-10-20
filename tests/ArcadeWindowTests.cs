@@ -55,7 +55,7 @@ namespace Vpet
                 {
                     try
                     {
-                        pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();typeof(PetWindow).GetField("smokeStep",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(pet,99);
+                        typeof(PetWindow).GetField("smokeStep",BindingFlags.Instance|BindingFlags.NonPublic).SetValue(pet,99);pet.Show();Application.DoEvents();MakerField<Timer>(pet,"timer").Stop();
                         pet.Model.Settings.Movement=MovementMode.Static;pet.Model.Settings.Frequency=Frequency.Off;pet.Model.Settings.Arcade.Volume=0;
                         var menu=MakerField<ContextMenuStrip>(pet,"menu");var items=(ToolStripMenuItem)Item(menu,"Display Items");var joystick=(ToolStripMenuItem)items.DropDownItems.Cast<ToolStripItem>().Single(i=>i.Text=="Joystick");
                         joystick.PerformClick();Check(pet.Joystick.Visible&&pet.Toys.Model.HasJoystick,"Display Items > Joystick shows the independent desktop item");
