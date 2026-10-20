@@ -12,6 +12,7 @@ namespace Vpet
     {
         internal static readonly HashSet<IntPtr> BackgroundAdornments=new HashSet<IntPtr>();
         internal static IntPtr ArcadeForeground;
+        internal static IntPtr SettingsForeground,SettingsPet;
         [StructLayout(LayoutKind.Sequential)] public struct POINT { public int X,Y; public POINT(int x,int y){X=x;Y=y;} }
         [StructLayout(LayoutKind.Sequential)] public struct SIZE { public int Width,Height; public SIZE(int w,int h){Width=w;Height=h;} }
         [StructLayout(LayoutKind.Sequential, Pack=1)] public struct BLEND { public byte Op,Flags,Alpha,Format; }
@@ -128,8 +129,8 @@ namespace Vpet
             if(m.Msg==0x46&&m.LParam!=IntPtr.Zero)
             {
                 var position=(Native.WINDOWPOS)Marshal.PtrToStructure(m.LParam,typeof(Native.WINDOWPOS));
-                bool behindArcade=BehindArcade,bandMatches=IsTopmost==(layerMode==LayerMode.OverEverything&&!behindArcade),noZOrder=(position.Flags&4u)!=0;
-                IntPtr? target=behindArcade?Native.ArcadeForeground:BehindWindow!=IntPtr.Zero?BehindWindow:AboveCompanions?
+                IntPtr ceiling=ForegroundCeiling;bool behindForeground=ceiling!=IntPtr.Zero,bandMatches=IsTopmost==(layerMode==LayerMode.OverEverything&&!behindForeground),noZOrder=(position.Flags&4u)!=0;
+                IntPtr? target=behindForeground?(BehindWindow!=IntPtr.Zero&&Native.IsAbove(ceiling,BehindWindow)?BehindWindow:ceiling):BehindWindow!=IntPtr.Zero?BehindWindow:AboveCompanions?
                     Native.AboveCompanionTarget(Handle,CompanionHandle,OtherCompanionHandle,layerMode,bandMatches&&noZOrder&&!correctingLayer):layerMode==LayerMode.UnderAll?(IntPtr?)Native.UnderAllTarget(Handle,CompanionHandle,OtherCompanionHandle):null;
                 if(layerMode==LayerMode.UnderAll&&AboveCompanions)
                 {
@@ -140,7 +141,7 @@ namespace Vpet
                 {
                     // Keep correct existing ordering. Re-inserting each item just above the pet on
                     // every layered redraw makes overlapping toys exchange layers and visibly blink.
-                    bool aboveRule=AboveCompanions&&!behindArcade&&BehindWindow==IntPtr.Zero;
+                    bool aboveRule=AboveCompanions&&!behindForeground&&BehindWindow==IntPtr.Zero;
                     bool preserve=!correctingLayer&&noZOrder&&bandMatches&&(aboveRule?!target.HasValue:!target.HasValue||target.Value==new IntPtr(-2)||target.Value.ToInt64()>0&&Native.IsAbove(target.Value,Handle));
                     if(preserve)position.Flags|=4u; // Keep NOZORDER for content and position refreshes.
                     else if(target.HasValue){position.InsertAfter=target.Value;position.Flags&=~4u;}
@@ -150,7 +151,17 @@ namespace Vpet
             }
             base.WndProc(ref m);
         }
-        bool BehindArcade {get{return layerMode!=LayerMode.UnderAll&&Native.ArcadeForeground!=IntPtr.Zero&&Native.BackgroundAdornments.Contains(Handle)&&Native.IsWindowVisible(Native.ArcadeForeground);}}
+        IntPtr ForegroundCeiling
+        {
+            get
+            {
+                if(layerMode==LayerMode.UnderAll)return IntPtr.Zero;
+                bool adornment=Native.BackgroundAdornments.Contains(Handle);
+                if(Native.SettingsForeground!=IntPtr.Zero&&Native.IsWindowVisible(Native.SettingsForeground)&&
+                    (adornment||Handle==Native.SettingsPet||CompanionHandle==Native.SettingsPet||OtherCompanionHandle==Native.SettingsPet))return Native.SettingsForeground;
+                return adornment&&Native.ArcadeForeground!=IntPtr.Zero&&Native.IsWindowVisible(Native.ArcadeForeground)?Native.ArcadeForeground:IntPtr.Zero;
+            }
+        }
         bool IsTopmost {get{return (Native.GetWindowLongPtr(Handle,-20).ToInt64()&8)!=0;}}
         public void Present(Bitmap image,Point screenPosition,byte opacity=255)
         {
@@ -175,7 +186,7 @@ namespace Vpet
         {
             bool changed=!layerConfigured||layerMode!=mode;layerConfigured=true;
             layerMode=mode;
-            bool topmost=mode==LayerMode.OverEverything&&!BehindArcade;
+            bool topmost=mode==LayerMode.OverEverything&&ForegroundCeiling==IntPtr.Zero;
             if(changed||IsTopmost!=topmost)CorrectLayer(topmost?new IntPtr(-1):new IntPtr(-2));
             EnforceUnderAll();
         }

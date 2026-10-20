@@ -180,6 +180,13 @@ namespace Vpet
             if(!SettingsOpen){settingsWindow=new SettingsWindow(this);settingsWindow.FormClosed+=delegate{settingsWindow=null;Save();};settingsWindow.Show();}
             settingsWindow.SelectTab(tab);settingsWindow.Activate();
         }
+        internal void SettingsLayerChanged(IntPtr settings,bool visible)
+        {
+            if(visible){Native.SettingsForeground=settings;Native.SettingsPet=Handle;}
+            else if(Native.SettingsForeground==settings){Native.SettingsForeground=Native.SettingsPet=IntPtr.Zero;}
+            else return;
+            if(!closing){ApplyLayer();RefreshDesktopAssetLayers();}
+        }
         internal void OpenReminders()
         {
             if(reminderWindow==null||reminderWindow.IsDisposed)

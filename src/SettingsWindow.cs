@@ -27,6 +27,7 @@ namespace Vpet
         CheckBox restrictedAreaCheckbox;
         TableLayoutPanel customEmoteList;
         readonly ToolTip customEmoteNames=new ToolTip();
+        IntPtr layerHandle;
 
         public SettingsWindow(PetWindow pet)
         {
@@ -45,7 +46,10 @@ namespace Vpet
                 MinimumSize=new Size(Math.Min(MinimumSize.Width,work.Width),Math.Min(MinimumSize.Height,work.Height));
                 Size=new Size(Math.Min(Width,work.Width),Math.Min(Height,work.Height));
                 Location=new Point(work.Left+(work.Width-Width)/2,work.Top+(work.Height-Height)/2);
+                layerHandle=Handle;pet.SettingsLayerChanged(layerHandle,true);
             };
+            FormClosed+=delegate{if(layerHandle!=IntPtr.Zero)pet.SettingsLayerChanged(layerHandle,false);};
+            HandleDestroyed+=delegate{if(layerHandle!=IntPtr.Zero){pet.SettingsLayerChanged(layerHandle,false);layerHandle=IntPtr.Zero;}};
             previewTimer.Tick+=delegate{if(animationPreview!=null&&tabs.SelectedIndex==2)animationPreview.Invalidate();};previewTimer.Start();
             pet.AssetsChanged+=AssetsChanged;
             FormClosed+=delegate{pet.AssetsChanged-=AssetsChanged;previewTimer.Dispose();customEmoteNames.Dispose();if(pending!=null)pending.Dispose();if(sheetPreview.Image!=null)sheetPreview.Image.Dispose();if(emotePreview.Image!=null)emotePreview.Image.Dispose();};

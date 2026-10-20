@@ -1,5 +1,17 @@
 # Vpet validation
 
+## Version 1.12.6
+
+7,124 automated assertions passed. New card checks cover visible height matching the resting D20 at simulated scales 0.5, 1, 1.25, 1.5, 2, and 3, retained aspect ratio, transparent margins without clipping, edge-on flipping, and all 52 revealed faces. Existing fence containment, approaches beside the card, game outcomes, shared canvases for other items, and persistence checks remain valid.
+
+1,422 native UI checks passed: 427 sprite editors, 313 item/layer/menu, 85 toy chest, 18 plate/Hunger, 364 arcade/music/joystick, 76 reminder/editor adjustments, and 139 expanded Settings/toy checks. Sprite Maker checks verify equal left/right halves, separator placement, complete Idle/Walk and frame rows, colored Set/Clear, no internal drag bars, a useful resizable preview with zoom above it, a separate bottom-left footer, and preserved editing, ten-frame, zoom/scroll, project, replacement-sheet, and Tweak workflows. Settings tests cover every Window Location, all visible scene items and the pet, attempted topmost promotions, normal apps above Settings, unchanged keyboard focus, redraws, close/dispose cleanup, and restored Over Everything layers. While Settings is open, foreground toys/plate/joystick remain above the pet and the chest/play fence remain below it. Prior overlap and display-crossing checks pass. The expanded test's legacy D20 size expectation now uses the shared canvas introduced in 1.12.5. Native arcade audio was muted; all songs prepared in 0.440 seconds.
+
+The native Arcade fixture disables scripted smoke actions before showing the pet, preventing slow startup from opening its demonstration Settings menu during input checks.
+
+The 1.12.6 EXE installer compiled successfully. Isolated fresh installation and progress-only upgrades passed supplied asset hashes, icon and shortcut paths, retained destination and shortcut choices, skipped-version descriptions, legacy updater support, completion/relaunch, and cleanup. The regular installation and personal settings were unchanged.
+
+Editor and artwork captures were visually inspected. Validated on this development PC on 2026-10-20. Other physical display/DPI configurations and subjective speaker quality were not assessed. Version 1.12.6 follows AGENTS.md's patch policy for adjustments to existing features.
+
 ## Version 1.12.5
 
 6,790 automated assertions passed. New checks verify that the chest states, five toys, joystick, and four plate/pudding states share 32 x 32 logical canvases and the default pet's 2x scale at simulated display scales 0.5, 1, 1.25, 1.5, 2, and 3. Integer-scale checks compare every opaque source pixel against every expanded destination pixel, including the prepared 32 x 32 joystick. Visible toy bounds stay inside the fence at opposite extremes, including a rotated D20. Existing containment, ricochet, approaches beside the card/coin, feeding, monitor recovery, card/coin flips, chest states, and D20 label checks pass. The pet/item comparison, food stages, card faces, and D20 values were visually inspected.

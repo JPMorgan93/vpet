@@ -46,11 +46,12 @@ namespace Vpet
             }
             using(var maker=new SpriteMakerWindow())
             {
-                maker.SetProject(MakerFixture(),null);maker.Show();Application.DoEvents();var split=MakerField<SplitContainer>(maker,"editorSplit");var viewport=MakerField<SpriteSheetViewport>(maker,"viewport");var sheet=MakerField<SpriteSheetView>(maker,"sheet");
-                float zoom=sheet.Zoom;var draft=sheet.Draft;int height=viewport.Height;split.SplitterDistance-=30;Application.DoEvents();
-                Check(viewport.Height<height&&sheet.Zoom==zoom&&sheet.Draft==draft,"Internal splitter resizes preview without changing zoom or selection");
-                var workspace=MakerField<SplitContainer>(maker,"workspaceSplit");height=viewport.Height;workspace.SplitterDistance-=60;Application.DoEvents();Check(viewport.Height>height&&sheet.Zoom==zoom,"Upper divider gives the edit canvas more room without changing zoom");
-                maker.ClientSize=new Size(800,650);Application.DoEvents();Check(viewport.Height>=split.Panel1MinSize,"Preview retains usable minimum at smallest maker size");
+                maker.SetProject(MakerFixture(),null);maker.Show();Application.DoEvents();var viewport=MakerField<SpriteSheetViewport>(maker,"viewport");var sheet=MakerField<SpriteSheetView>(maker,"sheet");
+                maker.ClientSize=new Size(800,650);Application.DoEvents();float zoom=sheet.Zoom;var draft=sheet.Draft;var size=viewport.Size;
+                maker.ClientSize=new Size(1200,900);Application.DoEvents();
+                Check(viewport.Width>size.Width&&viewport.Height>size.Height&&sheet.Zoom==zoom&&sheet.Draft==draft,"Resizing the window grows the right preview without changing zoom or selection");
+                Check(!Descendants(maker).OfType<SplitContainer>().Any(),"Maker no longer has internal draggable dividers");
+                maker.ClientSize=new Size(800,650);Application.DoEvents();Check(viewport.Height>=150,"Preview retains usable minimum at smallest maker size");
                 foreach(string caption in new[]{"How to Guide","Tweak and Complete"}){var button=FindButton(maker,caption);Check(maker.ClientRectangle.Contains(new Rectangle(maker.PointToClient(button.PointToScreen(Point.Empty)),button.Size)),"Maker footer stays fully visible: "+caption);}
                 CaptureForm(maker,"maker-resizable-preview");maker.Dirty=false;maker.Close();
             }

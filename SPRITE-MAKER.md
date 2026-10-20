@@ -1,8 +1,8 @@
 # Create a custom Vpet
 
-Open **Settings > Sprite > Open Sprite Maker**. **Tweak and Complete** sits at the bottom right, with **How to Guide** immediately to its left. The Tweak and Complete window uses the same footer arrangement with **Complete** and **How to Guide**.
+Open **Settings > Sprite > Open Sprite Maker**. **How to Guide** and **Tweak and Complete** sit together in a separate footer at the bottom left, outside both editing halves. In the Tweak and Complete window, **Complete** remains at the bottom right with **How to Guide** immediately to its left.
 
-Resize the display/edit area inside Sprite Maker by dragging the horizontal divider above **Preview zoom**. The controls above it scroll independently when space is limited. Drag the second divider beneath the sheet to change the space reserved for validation messages. Both dividers preserve zoom, frame selections, and saved mappings; the guide and completion buttons stay at the bottom.
+A line separates the upload/project commands and frame dimensions from two equal editing halves. Animation types, frame buttons, and validation messages occupy the left half; scroll it when space is limited. The sprite sheet preview occupies the right half, with its zoom controls above it. Resize the whole window to enlarge the preview; there are no draggable internal dividers. Resizing preserves zoom, frame selections, and saved mappings.
 
 ## Step 1 — Upload the sprite sheet
 
@@ -20,7 +20,7 @@ Use **Save Project** to embed the revised sheet and retained mappings, then **Tw
 
 Choose an animation type and set its frame width and height, up to 100 × 150 pixels. Every frame of that type shares its dimensions; other types can have different sizes.
 
-Under **Animation types**, Idle buttons share one row and Walk buttons share the next. **Animation frames** shows slots **1-5** on the first row and **6-10** on the second, with **Set** and **Clear** beneath them. Instructions above each group explain what to choose. The upper controls scroll independently of the sheet preview when space is limited.
+Under **Animation types**, Idle buttons share one row and Walk buttons share the next. **Animation frames** shows slots **1-5** on the first row and **6-10** on the second, with pale green **Set** and pale red **Clear** beneath them. Instructions above each group explain what to choose. The left controls scroll independently of the right sheet preview when space is limited.
 
 Choose a numbered slot, from **1 through 10**. Click the sheet to place the red frame, drag its border to move it, or drag a corner to resize all frames of this animation type. Choose **Set** to save the selection and advance to the next slot; setting frame 10 keeps that slot selected. The scroll position stays fixed. **Clear** removes a slot. Each required animation needs **1–10 nonempty selections**, played in numbered order. Gaps in slot numbering are allowed. Optional reaction animations also allow up to ten frames.
 

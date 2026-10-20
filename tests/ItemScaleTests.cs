@@ -19,7 +19,7 @@ namespace Vpet
                     {
                         Check(images[i].Size==new Size(expected,expected)&&images[i].Width==petSize.Width,"Item canvas matches default pet resolution: "+names[i]+" scale "+scale);
                         var source=ItemArtwork.Source(names[i]);Check(source.Size==new Size(32,32),"Every item has a 32x32 logical sprite, including the high-resolution joystick");
-                        if(scale==1||scale==2)
+                        if((scale==1||scale==2)&&names[i]!="Card.png")
                         {
                             int magnification=(int)(scale*2);bool matches=true;
                             for(int y=0;y<32;y++)for(int x=0;x<32;x++)if(source.GetPixel(x,y).A==255)
@@ -43,6 +43,7 @@ namespace Vpet
                 finally{foreach(var image in images)image.Dispose();}
             }
             var model=Pet(MovementMode.Static);var toys=Toys(model);toys.SpawnBall(0);toys.SpawnTriangle();toys.SpawnCoin();toys.SpawnCard();toys.SpawnDie();
+            CardMatchesDie();
             foreach(var point in new[]{new PointF(-100000,-100000),new PointF(100000,100000)})
             {
                 toys.DragBall(point,0);toys.DragTriangle(point);toys.DragGame(PlayTarget.Coin,point);toys.DragGame(PlayTarget.Card,point);toys.DragDie(point,0);
@@ -54,6 +55,20 @@ namespace Vpet
                     {var ink=SpriteProject.VisibleBounds(images[i]);var location=new PointF(centers[i].X-images[i].Width/2f,centers[i].Y-images[i].Height/2f);var bounds=new RectangleF(location.X+ink.X,location.Y+ink.Y,ink.Width,ink.Height);Check(toys.Zone.Contains(bounds),"Matching-scale toy artwork stays inside the fence at either extreme: "+i);}
                 }
                 finally{foreach(var image in images)image.Dispose();}
+            }
+        }
+        static void CardMatchesDie()
+        {
+            foreach(float scale in new[]{.5f,1f,1.25f,1.5f,2f,3f})
+            using(var card=GameArtwork.Card(scale,-1,false,0))using(var die=GameArtwork.Die(scale,0,20,true))
+            {
+                var bounds=SpriteProject.VisibleBounds(card);var dice=SpriteProject.VisibleBounds(die);
+                Check(Math.Abs(bounds.Height-dice.Height)<=1,"Card matches the resting D20's visible height at scale "+scale);
+                Near(bounds.Width/(float)bounds.Height,18/24f,.05f,"Enlarged card preserves the supplied artwork's proportions");
+                Check(bounds.Left>0&&bounds.Top>0&&bounds.Right<card.Width&&bounds.Bottom<card.Height,"Enlarged card keeps transparent margins without clipping");
+                using(var edge=GameArtwork.Card(scale,-1,false,.5f))Check(SpriteProject.VisibleBounds(edge).Width<bounds.Width/4f,"Larger card keeps its edge-on flip");
+                for(int value=0;value<52;value++)using(var face=GameArtwork.Card(scale,value,true,0))
+                    Check(SpriteProject.VisibleBounds(face)==bounds,"Revealed card value retains the resized face bounds: "+value+" / "+scale);
             }
         }
         static void MatchingItemWindows(PetWindow pet,LayeredWindow[] items)
