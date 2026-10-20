@@ -110,8 +110,9 @@ namespace Vpet
             for(int i=0;i<cycles.Length;i++)
             {
                 int index=i;string title=SpriteProject.Cycles[i];int space=title.IndexOf(' ');
-                cycles[i]=MakerUi.Button(i<10?title.Substring(0,space)+Environment.NewLine+title.Substring(space+1):title,delegate{ChooseCycle(index);});
-                cycles[i].AccessibleName=title;cycles[i].AutoSize=false;cycles[i].MinimumSize=new Size(62,54);cycles[i].Size=new Size(62,54);cycles[i].Margin=new Padding(2,4,2,4);cycles[i].Font=new Font("Segoe UI",9);
+                string label=i<10?title.Substring(0,space)+Environment.NewLine+title.Substring(space+1).Replace("Left/Right","Left /"+Environment.NewLine+"Right").Replace("Diag ","Diag"+Environment.NewLine):title;
+                cycles[i]=MakerUi.Button(label,delegate{ChooseCycle(index);});
+                cycles[i].AccessibleName=title;cycles[i].AutoSize=false;cycles[i].MinimumSize=cycles[i].Size=i<10?new Size(62,62):new Size(76,38);cycles[i].Margin=new Padding(2,4,2,4);cycles[i].Font=new Font("Segoe UI",9);
             }
             animationChoices=MakerUi.AnimationChoices(cycles,"Choose the animation you want to edit.");root.Controls.Add(animationChoices,0,0);
             var frameChoices=MakerUi.ChoiceSection("AnimationFrames","Animation frames","Set each frame in the chosen animation's cycle, in playback order.");root.Controls.Add(frameChoices,0,1);
