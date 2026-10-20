@@ -47,7 +47,7 @@ namespace Vpet
             using(var g=Graphics.FromImage(image))
             {
                 g.SmoothingMode=SmoothingMode.AntiAlias;g.TranslateTransform(size.Width/2f,size.Height/2f);
-                float pixel=ItemArtwork.PixelScale(scale),squeeze=flip>0?Math.Max(.05f,(float)Math.Abs(Math.Cos(flip*Math.PI))):1;g.ScaleTransform(pixel*squeeze,pixel);
+                float pixel=ItemArtwork.PixelScale(scale)*ItemArtwork.CardMagnification,squeeze=flip>0?Math.Max(.05f,(float)Math.Abs(Math.Cos(flip*Math.PI))):1;g.ScaleTransform(pixel*squeeze,pixel);
                 ItemArtwork.Draw(g,"Card.png",new RectangleF(-16,-16,32,32),ItemArtwork.Canvas);
                 if(revealed&&value>=0)
                 {

@@ -34,6 +34,7 @@ namespace Vpet
                     Check(OnForm(maker,instructions).Bottom<OnForm(maker,slots[0]).Top&&instructions.Text.Contains("playback order"),"Frame instructions precede all numbered slots");
                     scroll.ScrollControlIntoView(set);Application.DoEvents();Check(scroll.RectangleToScreen(scroll.ClientRectangle).Contains(set.RectangleToScreen(set.ClientRectangle))&&scroll.RectangleToScreen(scroll.ClientRectangle).Contains(clear.RectangleToScreen(clear.ClientRectangle)),"Frame actions remain reachable at "+size);
                     Check(MakerField<SpriteSheetViewport>(maker,"viewport").Height>=80,"Grouping buttons retains a usable resizable sheet preview");
+                    MakerSideBySideLayout(maker);
                 }
                 MakerField<CheckBox>(maker,"diagonal").Checked=true;maker.ClientSize=new Size(1000,800);scroll.AutoScrollPosition=Point.Empty;Application.DoEvents();CaptureForm(maker,"maker-grouped-buttons");
                 scroll.ScrollControlIntoView(Descendants(maker).OfType<TableLayoutPanel>().Single(panel=>panel.Name=="AnimationFrames"));Application.DoEvents();CaptureForm(maker,"maker-frame-rows");
@@ -57,6 +58,26 @@ namespace Vpet
                 }
                 maker.Dirty=false;maker.Close();
             }
+        }
+        static void MakerSideBySideLayout(SpriteMakerWindow maker)
+        {
+            var workspace=MakerField<TableLayoutPanel>(maker,"workspace");var left=MakerField<Panel>(maker,"controlScroll");
+            var right=Descendants(maker).OfType<TableLayoutPanel>().Single(panel=>panel.Name=="MakerPreview");
+            var line=Descendants(maker).Single(control=>control.Name=="MakerWorkspaceSeparator");var footer=Descendants(maker).Single(control=>control.Name=="MakerFooter");
+            Check(workspace.ColumnCount==2&&workspace.GetColumn(left)==0&&workspace.GetColumn(right)==1&&Math.Abs(workspace.GetColumnWidths()[0]-workspace.GetColumnWidths()[1])<=1,"Sprite Maker has equal left controls and right preview columns");
+            Check(!Descendants(maker).OfType<SplitContainer>().Any(),"Sprite Maker removes all draggable pane bars");
+            Check(OnForm(maker,line).Top>OnForm(maker,MakerField<NumericUpDown>(maker,"frameHeight")).Bottom&&OnForm(maker,line).Bottom<OnForm(maker,workspace).Top,"Separator is below frame dimensions and above both workspace halves");
+            foreach(var button in MakerField<Button[]>(maker,"cycles").Concat(MakerField<Button[]>(maker,"slots")))
+                if(button.Visible)Check(left.Contains(button),"Animation and frame buttons belong to the left half: "+button.Text);
+            var viewport=MakerField<SpriteSheetViewport>(maker,"viewport");var zoom=MakerField<PreviewZoomBar>(maker,"zoom");
+            Check(right.Contains(viewport)&&right.Contains(zoom)&&OnForm(maker,zoom).Bottom<=OnForm(maker,viewport).Top,"Right preview has zoom controls above the sheet");
+            Check(OnForm(maker,viewport).Height>150&&OnForm(maker,viewport).Width>250,"Preview grows within the right half and retains useful size");
+            var set=FindButton(maker,"Set");var clear=FindButton(maker,"Clear");
+            Check(set.BackColor.G>set.BackColor.R&&set.BackColor.R>200&&clear.BackColor.R>clear.BackColor.G&&clear.BackColor.G>200,"Set is pale green and Clear is pale red");
+            Check(OnForm(maker,footer).Top>=OnForm(maker,workspace).Bottom&&!workspace.Contains(footer),"Footer is separate below both halves");
+            var guide=FindButton(maker,"How to Guide");var complete=FindButton(maker,"Tweak and Complete");
+            Check(guide.Parent==footer&&complete.Parent==footer&&OnForm(maker,guide).Left<40&&OnForm(maker,complete).Left>OnForm(maker,guide).Right,"Guide and completion stay together at the bottom left");
+            Check(!Descendants(maker).Any(control=>control.Text=="Upload a transparent PNG to begin."),"Obsolete upload placeholder is removed");
         }
         static void UpdatedPetMenu(PetWindow pet)
         {

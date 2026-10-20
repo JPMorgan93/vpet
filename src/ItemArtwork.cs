@@ -16,9 +16,10 @@ namespace Vpet
         static readonly Dictionary<string,Rectangle> bounds=new Dictionary<string,Rectangle>();
         static readonly Dictionary<string,float> radii=new Dictionary<string,float>();
         internal static float PixelScale(float scale){return DisplayArea.SpriteMagnification*scale;}
+        internal static float CardMagnification {get{return Bounds("D20 Dice.png").Height/(float)Bounds("Card.png").Height;}}
         internal static Size CanvasSize(float scale){int side=(int)Math.Ceiling(Cell*PixelScale(scale));return new Size(side,side);}
         internal static SizeF HalfSize(string name,float scale)
-        {var box=Bounds(name);float pixel=PixelScale(scale);return new SizeF(Math.Max(Cell/2-box.Left,box.Right-Cell/2)*pixel,Math.Max(Cell/2-box.Top,box.Bottom-Cell/2)*pixel);}
+        {var box=Bounds(name);float pixel=PixelScale(scale)*(name=="Card.png"?CardMagnification:1);return new SizeF(Math.Max(Cell/2-box.Left,box.Right-Cell/2)*pixel,Math.Max(Cell/2-box.Top,box.Bottom-Cell/2)*pixel);}
         internal static float Radius(string name,float scale)
         {
             float radius;
