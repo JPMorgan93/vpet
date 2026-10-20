@@ -1,10 +1,10 @@
-# Vpet 1.12.6
+# Vpet 1.12.7
 
 A native Windows desktop companion with custom sprites, personalities, names, and reactions. The pet works offline; public-release update checks use GitHub when connected.
 
 ## Install the public release
 
-Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.6-Windows-x64.exe`.
+Download the installer from [the latest GitHub release](https://github.com/JPMorgan93/vpet/releases/latest). It includes the application, artwork, icon, arcade songs, and getting-started guide. Run the installer, then open **Vpet** from the Start menu or optional desktop shortcut. No developer tools are needed. Requires 64-bit Windows 10 version 1903 or later, or Windows 11, with .NET Framework 4.8 or later. Local builds output `dist/Vpet-Setup-1.12.7-Windows-x64.exe`.
 
 The installer installs for the current user and provides an uninstaller in Windows Settings. Close any running Vpet before installing. Settings and custom artwork are preserved during updates and uninstall. The existing `VpetPrototype` user-data folder is retained for compatibility. The installer is currently unsigned; see `RELEASE.md` for validation, signing, and rebuild details.
 
@@ -69,18 +69,18 @@ The shortcut circles the pet and dims all connected displays, following the pet 
 - Over Everything, ordinary Dynamic stacking, and Under All, which locks the pet and reactions beneath other application windows.
 - Three personalities, nine native Windows emoji, weighted random selection, adjustable frequency, and live custom PNG emote loading.
 - Replace any default emote image with your own PNG, or restore its original symbol. Replacements work for both interactions and random reactions.
-- Sprite-sheet validation, animated previews, Apply, Restore Default, and template export.
+- Sprite-sheet validation, animated previews, Apply, Restore Default, and current-sheet export.
 - Saved settings, position, facing, fence geometry, and imported artwork; tray controls and single-instance protection.
 
 ## Sprite sheets
 
 Use [Sprite Maker](SPRITE-MAKER.md) to turn a PNG sheet into a `.vpetsprite` package, with frame selections, optional diagonals and reactions, alignment, and independent animation speeds. Upload Custom Sprite accepts these packages. Previously installed legacy PNG pets still load.
 
-The bundled default is `assets/reference/Blue Dragon.png`, a 352 × 360 transparent PNG with 32 × 36 cells. Its source rows alternate idle and walking from Down through Up; the final column is unused. Use Sprite Maker to map the source sheet when creating a custom pet.
+The bundled default, labeled **Pyro** in Sprite settings, is `assets/reference/Blue Dragon.png`, a 352 × 360 transparent PNG with 32 × 36 cells. Its source rows alternate idle and walking from Down through Up; the final column is unused. Use Sprite Maker to map the source sheet when creating a custom pet. Pyro is also the example in the empty optional pet-name field; no name is assigned until you type one.
 
-Use **Settings → Sprite → Save default template** to export a transparent PNG. Default cells are **32 × 36**, in a **320 × 360** sheet with the rows below. Custom sheets can have any layout; Sprite Maker accepts **1–10 frames per animation**, each at most **100 × 150** pixels.
+Use **Settings → Sprite → Download current sprite sheet** to export a transparent PNG. Choose **Restore default** first to export Pyro's runtime sheet. Default cells are **32 × 36**, in a **320 × 360** sheet with the rows below. Custom sheets can have any layout; Sprite Maker accepts **1–10 frames per animation**, each at most **100 × 150** pixels.
 
-Use **Download current sprite sheet**, below the default template button, to save the active pet's transparent PNG. Edit that image and upload it to Sprite Maker to select frames and export a .vpetsprite. Directional rows in downloaded sheets face left; optional emote rows follow the ten movement rows. The PNG alone does not contain frame-count metadata.
+The download button is directly below the runtime sheet preview. Edit the downloaded image and upload it to Sprite Maker to select frames and export a .vpetsprite. Directional rows in downloaded sheets face left; optional emote rows follow the ten movement rows. The PNG alone does not contain frame-count metadata.
 
 | Row | Cycle | Active frames |
 | --- | --- | --- |
