@@ -17,12 +17,14 @@ namespace Vpet
             b.FlatAppearance.BorderColor=Color.FromArgb(190,179,208);if(click!=null)b.Click+=click;return b;
         }
         public static Label Label(string text){return new Label{Text=text,AutoSize=true,Margin=new Padding(8,11,4,4)};}
+        public static Label SectionTitle(string name,string text)
+        {return new Label{Name=name,Text=text,AutoSize=true,Font=new Font("Segoe UI",10,FontStyle.Bold),ForeColor=Purple,Margin=new Padding(8,6,4,2)};}
         public static TableLayoutPanel ChoiceSection(string name,string title,string description)
         {
             var section=new TableLayoutPanel{Name=name,Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=1,RowCount=2};
             section.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             section.RowStyles.Add(new RowStyle(SizeType.AutoSize));section.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            section.Controls.Add(new Label{Name=name+"Title",Text=title,AutoSize=true,Font=new Font("Segoe UI",10,FontStyle.Bold),ForeColor=Purple,Margin=new Padding(8,6,4,2)},0,0);
+            section.Controls.Add(SectionTitle(name+"Title",title),0,0);
             var help=new Label{Name=name+"Description",Text=description,AutoSize=true,Margin=new Padding(8,0,4,4)};section.Controls.Add(help,0,1);
             section.SizeChanged+=delegate{var size=new Size(Math.Max(100,section.ClientSize.Width-16),0);if(help.MaximumSize!=size)help.MaximumSize=size;LayoutChoiceRows(section);};
             return section;
@@ -78,7 +80,11 @@ namespace Vpet
         readonly TableLayoutPanel animationChoices;
         readonly Panel controlScroll=new Panel{Dock=DockStyle.Fill,AutoScroll=true};
         readonly SpriteSheetView sheet=new SpriteSheetView();
-        readonly TableLayoutPanel workspace=new TableLayoutPanel{Name="MakerWorkspace",Dock=DockStyle.Fill,ColumnCount=2,RowCount=1,Margin=Padding.Empty};
+        readonly TableLayoutPanel workspace=new TableLayoutPanel{Name="MakerWorkspace",Dock=DockStyle.Fill,ColumnCount=3,RowCount=1,Margin=Padding.Empty};
+        readonly Panel workspaceDivider=new Panel{Name="MakerDivider",Dock=DockStyle.Fill,Margin=Padding.Empty,Cursor=Cursors.VSplit,AccessibleName="Resize animation controls and sprite sheet preview"};
+        float controlsShare=.5f;
+        bool resizingWorkspace;
+        int dividerGrabOffset;
         readonly Button complete,loadLast,updateSheet;
         bool syncing;
         public string ExportedPath {get;private set;}
@@ -87,8 +93,8 @@ namespace Vpet
             this.preferences=preferences??new Preferences();this.savePreferences=savePreferences;
             Text="Vpet Sprite Maker";Font=new Font("Segoe UI",10);ClientSize=new Size(1100,800);MinimumSize=new Size(800,650);
             StartPosition=FormStartPosition.CenterParent;BackColor=Color.FromArgb(248,247,252);AutoScaleMode=AutoScaleMode.Dpi;
-            var outer=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=5,Padding=new Padding(12)};outer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));outer.RowStyles.Add(new RowStyle(SizeType.Absolute,17));outer.RowStyles.Add(new RowStyle(SizeType.Percent,100));outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(outer);
+            var outer=new TableLayoutPanel{Dock=DockStyle.Fill,ColumnCount=1,RowCount=6,Padding=new Padding(12)};outer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
+            outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));outer.RowStyles.Add(new RowStyle(SizeType.Absolute,17));outer.RowStyles.Add(new RowStyle(SizeType.Percent,100));outer.RowStyles.Add(new RowStyle(SizeType.Absolute,17));outer.RowStyles.Add(new RowStyle(SizeType.AutoSize));Controls.Add(outer);
             var commands=MakerUi.Flow();outer.Controls.Add(commands,0,0);
             commands.Controls.Add(MakerUi.Button("Upload Sprite Sheet",Upload));
             updateSheet=MakerUi.Button("Update Sprite Sheet",UpdateSheet);commands.Controls.Add(updateSheet);
@@ -96,15 +102,16 @@ namespace Vpet
             commands.Controls.Add(MakerUi.Button("Save Project As…",delegate{SaveProject(true);}));
             commands.Controls.Add(MakerUi.Button("Load Project",LoadProject));
             loadLast=MakerUi.Button("Load Last Project",delegate{OpenProject(this.preferences.LastSpriteProject);});commands.Controls.Add(loadLast);
-            var bottom=MakerUi.Flow();bottom.Name="MakerFooter";outer.Controls.Add(bottom,0,4);
-            bottom.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,false);}));
+            var bottom=MakerUi.Flow();bottom.Name="MakerFooter";bottom.FlowDirection=FlowDirection.RightToLeft;outer.Controls.Add(bottom,0,5);
             complete=MakerUi.Button("Tweak and Complete",OpenTweak);bottom.Controls.Add(complete);
+            bottom.Controls.Add(MakerUi.Button("How to Guide",delegate{MakerGuide.Show(this,false);}));
+            outer.Controls.Add(new Panel{Name="MakerFooterSeparator",Dock=DockStyle.Fill,Margin=new Padding(4,8,4,8),BackColor=Color.FromArgb(190,179,208)},0,4);
             var options=MakerUi.Flow();outer.Controls.Add(options,0,1);
             options.Controls.Add(diagonal);options.Controls.Add(MakerUi.Label("Animation frame width"));options.Controls.Add(frameWidth);options.Controls.Add(MakerUi.Label("Height"));options.Controls.Add(frameHeight);
             options.Controls.Add(MakerUi.Label("Sheet faces"));facing.Items.AddRange(new object[]{"Left","Right"});facing.SelectedIndex=0;options.Controls.Add(facing);options.Controls.Add(emotes);
             outer.Controls.Add(new Panel{Name="MakerWorkspaceSeparator",Dock=DockStyle.Fill,Margin=new Padding(4,8,4,8),BackColor=Color.FromArgb(190,179,208)},0,2);
-            workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,50));workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,50));workspace.RowStyles.Add(new RowStyle(SizeType.Percent,100));outer.Controls.Add(workspace,0,3);
-            controlScroll.Margin=new Padding(0,0,8,0);workspace.Controls.Add(controlScroll,0,0);
+            workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,50));workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,10));workspace.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,50));workspace.RowStyles.Add(new RowStyle(SizeType.Percent,100));outer.Controls.Add(workspace,0,3);
+            controlScroll.Margin=Padding.Empty;workspace.Controls.Add(controlScroll,0,0);workspaceDivider.BackColor=BackColor;workspace.Controls.Add(workspaceDivider,1,0);
             var root=new TableLayoutPanel{Dock=DockStyle.Top,AutoSize=true,AutoSizeMode=AutoSizeMode.GrowAndShrink,ColumnCount=1,RowCount=3};root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.AutoSize));root.RowStyles.Add(new RowStyle(SizeType.Absolute,100));controlScroll.Controls.Add(root);
             for(int i=0;i<cycles.Length;i++)
@@ -124,8 +131,13 @@ namespace Vpet
             selectionHelp.MaximumSize=new Size(300,0);
             MakerUi.ChoiceRow(frameChoices,"FrameSelectionHelp",selectionHelp);
             root.Controls.Add(status,0,2);
-            var preview=new TableLayoutPanel{Name="MakerPreview",Dock=DockStyle.Fill,ColumnCount=1,RowCount=2,Margin=new Padding(8,0,0,0)};preview.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));preview.RowStyles.Add(new RowStyle(SizeType.AutoSize));preview.RowStyles.Add(new RowStyle(SizeType.Percent,100));workspace.Controls.Add(preview,1,0);
-            preview.Controls.Add(zoom,0,0);viewport.Controls.Add(sheet);preview.Controls.Add(viewport,0,1);
+            var preview=new TableLayoutPanel{Name="MakerPreview",Dock=DockStyle.Fill,ColumnCount=1,RowCount=3,Margin=Padding.Empty};preview.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));preview.RowStyles.Add(new RowStyle(SizeType.AutoSize));preview.RowStyles.Add(new RowStyle(SizeType.AutoSize));preview.RowStyles.Add(new RowStyle(SizeType.Percent,100));workspace.Controls.Add(preview,2,0);
+            preview.Controls.Add(MakerUi.SectionTitle("SpriteSheetPreviewTitle","Sprite Sheet Preview"),0,0);preview.Controls.Add(zoom,0,1);viewport.Controls.Add(sheet);preview.Controls.Add(viewport,0,2);
+            workspaceDivider.MouseDown+=delegate(object sender,MouseEventArgs e){if(e.Button==MouseButtons.Left){dividerGrabOffset=e.X;resizingWorkspace=true;workspaceDivider.Capture=true;}};
+            workspaceDivider.MouseMove+=delegate{if(resizingWorkspace)ResizeWorkspaceAt(Cursor.Position);};
+            workspaceDivider.MouseUp+=delegate(object sender,MouseEventArgs e){if(e.Button==MouseButtons.Left&&resizingWorkspace){ResizeWorkspaceAt(Cursor.Position);resizingWorkspace=false;workspaceDivider.Capture=false;}};
+            workspaceDivider.MouseCaptureChanged+=delegate{if(!workspaceDivider.Capture)resizingWorkspace=false;};
+            workspace.SizeChanged+=delegate{ApplyWorkspaceShare();};
             sheet.DimensionsChanged+=delegate(int w,int h){SetDimensions(w,h);};
             frameWidth.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};frameHeight.ValueChanged+=delegate{if(!syncing)SetDimensions((int)frameWidth.Value,(int)frameHeight.Value);};
             diagonal.CheckedChanged+=delegate{if(Project!=null&&!syncing){Project.Data.Diagonals=diagonal.Checked;Dirty=true;if(!Project.Enabled(Cycle))Cycle=0;ChooseCycle(Cycle);}};
@@ -136,6 +148,21 @@ namespace Vpet
             sheet.ZoomWheel+=delegate(int delta,Point point){zoom.Step(delta,viewport.PointToClient(sheet.PointToScreen(point)));};
             FormClosing+=delegate(object sender,FormClosingEventArgs e){if(!ConfirmDiscard())e.Cancel=true;};
             FormClosed+=delegate{if(Project!=null)Project.Dispose();};RefreshState();
+        }
+        void ResizeWorkspaceAt(Point screen)
+        {
+            int available=workspace.ClientSize.Width-workspace.GetColumnWidths()[1];
+            if(available<=0)return;
+            controlsShare=Math.Max(0,Math.Min(1,(workspace.PointToClient(screen).X-dividerGrabOffset)/(float)available));ApplyWorkspaceShare();
+        }
+        void ApplyWorkspaceShare()
+        {
+            int available=workspace.ClientSize.Width-workspace.GetColumnWidths()[1];if(available<=0)return;
+            float dpi=Math.Max(1,CurrentAutoScaleDimensions.Width/96f),minimumLeft=360*dpi,minimumRight=250*dpi;
+            float width=available<minimumLeft+minimumRight?available*.5f:Math.Max(minimumLeft,Math.Min(available-minimumRight,available*controlsShare));
+            float percent=100*width/available;
+            if(Math.Abs(workspace.ColumnStyles[0].Width-percent)<.001f)return;
+            workspace.ColumnStyles[0].Width=percent;workspace.ColumnStyles[2].Width=100-percent;
         }
         internal void SetProject(SpriteProject project,string path)
         {
