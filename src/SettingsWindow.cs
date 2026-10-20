@@ -81,7 +81,7 @@ namespace Vpet
         void UsePending(object sender,EventArgs e)
         {
             if(pending==null)return;
-            try{var candidate=pending;pet.UseCustom(candidate);pending=null;useButton.Enabled=false;importStatus.Text="Your custom pet is saved and active.";UpdateSheetPreview();}
+            try{var candidate=pending;pet.UseCustom(candidate);pending=null;useButton.Enabled=false;importStatus.Text="Current pet: custom artwork. Saved and active.";UpdateSheetPreview();}
             catch(Exception ex){ShowError(ex.Message);}
         }
         void UpdateSheetPreview()
