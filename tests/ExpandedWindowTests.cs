@@ -52,7 +52,7 @@ namespace Vpet
                     pet.Model.MoveRestrictedArea(center);toys.MoveZone(center);windows.SetVisible(true);
                     foreach(string toy in new[]{"Coin","Card","D20","Triangle"})Item(windows.Menu,toy).PerformClick();windows.Update();Application.DoEvents();
                     Check(windows.Coin.Visible&&windows.Card.Visible&&windows.Die.Visible,"Chest toggles show all three new native toy windows");
-                    Check(windows.Die.Width==(int)Math.Ceiling(46*toys.Scale)&&windows.Die.Height==(int)Math.Ceiling(46*toys.Scale),"Native D20 window returns to its original width and height");
+                    Check(windows.Die.PresentedBounds.Size==ItemArtwork.CanvasSize(toys.Scale),"Native D20 window uses the shared item canvas size");
                     Check(windows.Menu.Items[windows.Menu.Items.Count-2].Text=="Help Messages"&&windows.Menu.Items[windows.Menu.Items.Count-1].Text=="Close Toy Chest","New toys retain the help and close footer");
                     Item(windows.TriangleMenu,"Sound Setting").PerformClick();var sound=MakerField<ToySoundWindow>(windows,"soundWindow");
                     Check(sound.Visible&&windows.Busy&&!pet.ShowPause,"Sound Setting opens the volume dialog without the settings pause emote");
