@@ -93,6 +93,7 @@ namespace Vpet
                         }
                         settings.SelectTab(0);Check(Descendants(tabs.TabPages[0]).OfType<TrackBar>().Count()==1,"Movement settings retains walking speed and removes radius controls");
                         Check(!Descendants(tabs.TabPages[2]).Any(c=>c.Text.Contains("Legacy")),"Sprite settings removes legacy sheet instructions");
+                        SettingsTextAndPreviewOrder(settings,pet);
                         settings.SelectTab(3);var sync=Descendants(settings).OfType<CheckBox>().Single(c=>c.Name=="SyncPlayZone");Check(sync.Checked,"Advanced sync defaults on");sync.Checked=false;
                         Check(!pet.Model.Settings.SyncPlayZone&&pet.Model.RestrictedArea==pet.Model.OwnRestrictedArea,"Advanced switch restores the independent fence");settings.Close();
                     }

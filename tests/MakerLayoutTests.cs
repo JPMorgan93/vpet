@@ -39,6 +39,7 @@ namespace Vpet
                 }
                 MakerField<CheckBox>(maker,"diagonal").Checked=true;maker.ClientSize=new Size(1000,800);scroll.AutoScrollPosition=Point.Empty;Application.DoEvents();CaptureForm(maker,"maker-grouped-buttons");
                 scroll.ScrollControlIntoView(Descendants(maker).OfType<TableLayoutPanel>().Single(panel=>panel.Name=="AnimationFrames"));Application.DoEvents();CaptureForm(maker,"maker-frame-rows");
+                MakerDividerInteractions(maker);
                 using(var tweak=new SpriteTweakWindow(maker))
                 {
                     tweak.Show();Application.DoEvents();
@@ -65,19 +66,23 @@ namespace Vpet
             var workspace=MakerField<TableLayoutPanel>(maker,"workspace");var left=MakerField<Panel>(maker,"controlScroll");
             var right=Descendants(maker).OfType<TableLayoutPanel>().Single(panel=>panel.Name=="MakerPreview");
             var line=Descendants(maker).Single(control=>control.Name=="MakerWorkspaceSeparator");var footer=Descendants(maker).Single(control=>control.Name=="MakerFooter");
-            Check(workspace.ColumnCount==2&&workspace.GetColumn(left)==0&&workspace.GetColumn(right)==1&&Math.Abs(workspace.GetColumnWidths()[0]-workspace.GetColumnWidths()[1])<=1,"Sprite Maker has equal left controls and right preview columns");
-            Check(!Descendants(maker).OfType<SplitContainer>().Any(),"Sprite Maker removes all draggable pane bars");
+            Check(workspace.ColumnCount==3&&workspace.GetColumn(left)==0&&workspace.GetColumn(right)==2&&Math.Abs(workspace.GetColumnWidths()[0]-workspace.GetColumnWidths()[2])<=1,"Sprite Maker initially has equal editing halves around its divider");
+            var divider=MakerField<Panel>(maker,"workspaceDivider");
+            Check(!Descendants(maker).OfType<SplitContainer>().Any()&&divider.Cursor==Cursors.VSplit&&divider.BackColor==maker.BackColor&&workspace.GetColumn(divider)==1,"Divider blends into the background and exposes a horizontal resize cursor");
             Check(OnForm(maker,line).Top>OnForm(maker,MakerField<NumericUpDown>(maker,"frameHeight")).Bottom&&OnForm(maker,line).Bottom<OnForm(maker,workspace).Top,"Separator is below frame dimensions and above both workspace halves");
             foreach(var button in MakerField<Button[]>(maker,"cycles").Concat(MakerField<Button[]>(maker,"slots")))
                 if(button.Visible)Check(left.Contains(button),"Animation and frame buttons belong to the left half: "+button.Text);
             var viewport=MakerField<SpriteSheetViewport>(maker,"viewport");var zoom=MakerField<PreviewZoomBar>(maker,"zoom");
-            Check(right.Contains(viewport)&&right.Contains(zoom)&&OnForm(maker,zoom).Bottom<=OnForm(maker,viewport).Top,"Right preview has zoom controls above the sheet");
+            var previewTitle=Descendants(maker).OfType<Label>().Single(label=>label.Name=="SpriteSheetPreviewTitle");var animationTitle=Descendants(maker).OfType<Label>().Single(label=>label.Name=="AnimationTypesTitle");
+            Check(right.Contains(viewport)&&right.Contains(zoom)&&OnForm(maker,previewTitle).Bottom<=OnForm(maker,zoom).Top&&OnForm(maker,zoom).Bottom<=OnForm(maker,viewport).Top,"Right preview has its title and zoom controls above the sheet");
+            Check(previewTitle.Text=="Sprite Sheet Preview"&&previewTitle.Font.Equals(animationTitle.Font)&&previewTitle.ForeColor==animationTitle.ForeColor,"Sprite Sheet Preview uses the Animation types heading format");
             Check(OnForm(maker,viewport).Height>150&&OnForm(maker,viewport).Width>250,"Preview grows within the right half and retains useful size");
             var set=FindButton(maker,"Set");var clear=FindButton(maker,"Clear");
             Check(set.BackColor.G>set.BackColor.R&&set.BackColor.R>200&&clear.BackColor.R>clear.BackColor.G&&clear.BackColor.G>200,"Set is pale green and Clear is pale red");
-            Check(OnForm(maker,footer).Top>=OnForm(maker,workspace).Bottom&&!workspace.Contains(footer),"Footer is separate below both halves");
+            var footerLine=Descendants(maker).Single(control=>control.Name=="MakerFooterSeparator");
+            Check(OnForm(maker,footerLine).Top>=OnForm(maker,workspace).Bottom&&OnForm(maker,footerLine).Bottom<=OnForm(maker,footer).Top&&!workspace.Contains(footer),"A separator places the footer below both editing halves");
             var guide=FindButton(maker,"How to Guide");var complete=FindButton(maker,"Tweak and Complete");
-            Check(guide.Parent==footer&&complete.Parent==footer&&OnForm(maker,guide).Left<40&&OnForm(maker,complete).Left>OnForm(maker,guide).Right,"Guide and completion stay together at the bottom left");
+            Check(guide.Parent==footer&&complete.Parent==footer&&maker.ClientSize.Width-OnForm(maker,complete).Right<40&&OnForm(maker,complete).Left>OnForm(maker,guide).Right,"Guide and completion stay together at the bottom right");
             Check(!Descendants(maker).Any(control=>control.Text=="Upload a transparent PNG to begin."),"Obsolete upload placeholder is removed");
         }
         static void UpdatedPetMenu(PetWindow pet)

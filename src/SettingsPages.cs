@@ -48,7 +48,7 @@ namespace Vpet
         void AddPersonality()
         {
             var page=PageStack("Personality");Add(page,Copy("Pet name (optional)",true));
-            var name=new TextBox{Text=pet.Model.Settings.PetName,MaxLength=40,Width=285,Margin=new Padding(0,4,12,4)};
+            var name=new CueTextBox("Pyro"){Name="PetName",Text=pet.Model.Settings.PetName,MaxLength=40,Width=285,Margin=new Padding(0,4,12,4)};
             var display=Choice(new[]{"Hide name","Show on hover","Always display"},(int)pet.Model.Settings.NameDisplay,180);display.Enabled=!string.IsNullOrWhiteSpace(name.Text);Add(page,Row(name,display));
             Add(page,Copy("Leave blank for no name. Names appear below your pet with white-outlined letters and no background box."));
             name.TextChanged+=delegate{pet.Model.Settings.PetName=Preferences.CleanName(name.Text);display.Enabled=pet.Model.Settings.PetName.Length>0;pet.NameChanged();};
@@ -61,7 +61,7 @@ namespace Vpet
             };describe();personality.SelectedIndexChanged+=delegate{pet.Model.Settings.Personality=(Personality)personality.SelectedIndex;describe();pet.SettingsChanged(false);};
             Add(page,Copy("Random reactions",true));var frequency=Choice(new[]{"Rarely · 90–120 seconds","Sometimes · 30–60 seconds","Often · 15–30 seconds","Off"},(int)pet.Model.Settings.Frequency,330);Add(page,Row(frequency));
             frequency.SelectedIndexChanged+=delegate{pet.Model.Settings.Frequency=(Frequency)frequency.SelectedIndex;pet.SettingsChanged(true);};
-            Add(page,Copy("Try a reaction",true));var reactions=Row();for(int i=0;i<Reactions.Names.Length;i++){int index=i;reactions.Controls.Add(MakerUi.Button(Reactions.Names[i],delegate{pet.PreviewReaction(index);}));}Add(page,reactions);
+            Add(page,Copy("Try emotes",true));var reactions=Row();for(int i=0;i<Reactions.Names.Length;i++){int index=i;reactions.Controls.Add(MakerUi.Button(Reactions.Names[i],delegate{pet.PreviewReaction(index);}));}Add(page,reactions);
             Add(page,Copy("Replace a default emote",true));emoteChoice=Choice(Reactions.Names,0,225);emotePreview=new PictureBox{Size=new Size(68,62),Margin=new Padding(12,0,0,0)};Add(page,Row(emoteChoice,emotePreview));
             Add(page,Row(MakerUi.Button("Choose image…",delegate
             {
@@ -78,16 +78,17 @@ namespace Vpet
         void AddArtwork()
         {
             var page=PageStack("Sprite");
-            Add(page,Copy("Make this pet your own",true));Add(page,Copy("Create a sprite in Sprite Maker or upload a .vpetsprite file. Each animation can use frames up to 100 × 150 pixels."));
+            Add(page,Copy("Make this pet your own",true));Add(page,Copy("Create a sprite in Sprite Maker or upload a .vpetsprite file."));
+            importStatus.AutoSize=true;importStatus.Name="CurrentPet";importStatus.Text="Current pet: "+(pet.Model.Settings.CustomPet?"custom artwork":"Pyro");Add(page,importStatus);
             useButton.Text="Use this pet";useButton.AutoSize=true;useButton.MinimumSize=new Size(125,36);useButton.Enabled=false;useButton.Click+=UsePending;
             Add(page,Row(MakerUi.Button("Upload Custom Sprite",ChooseSheet),useButton,MakerUi.Button("Restore default",delegate
-            {try{pet.RestoreDefault();if(pending!=null){pending.Dispose();pending=null;}useButton.Enabled=false;importStatus.Text="Default pet restored.";UpdateSheetPreview();}catch(Exception ex){ShowError(ex.Message);}})));
+            {try{pet.RestoreDefault();if(pending!=null){pending.Dispose();pending=null;}useButton.Enabled=false;importStatus.Text="Current pet: Pyro";UpdateSheetPreview();}catch(Exception ex){ShowError(ex.Message);}})));
             Add(page,Row(MakerUi.Button("Open Sprite Maker",delegate
             {
                 using(var maker=new SpriteMakerWindow(pet.Model.Settings,pet.Save){Icon=Icon})
                 {maker.ShowDialog(this);if(maker.ExportedPath!=null)try{LoadSprite(maker.ExportedPath);}catch(Exception ex){ShowError(ex.Message);}}
             })));
-            importStatus.AutoSize=true;importStatus.Text="Current pet: "+(pet.Model.Settings.CustomPet?"custom artwork":"original purple companion");Add(page,importStatus);
+            var previewTitle=Copy("Runtime sheet preview",true);previewTitle.Name="RuntimePreviewTitle";Add(page,previewTitle);
             previewActivity=Choice(new[]{"Idle","Walk"},1,155);previewDirection=Choice(new[]{"Right","Down-right","Down","Down-left","Left","Up-left","Up","Up-right"},2,185);Add(page,Row(previewActivity,previewDirection));
             animationPreview=new DoubleBufferedPanel{Height=160,BackColor=Color.FromArgb(233,228,242)};Add(page,animationPreview);
             animationPreview.Paint+=delegate(object sender,PaintEventArgs e)
@@ -97,13 +98,7 @@ namespace Vpet
                 e.Graphics.InterpolationMode=InterpolationMode.NearestNeighbor;e.Graphics.PixelOffsetMode=PixelOffsetMode.Half;
                 e.Graphics.DrawImage(sprites.FrameAtPhase(walk,previewDirection.SelectedIndex,phase),new Rectangle((animationPreview.ClientSize.Width-w)/2,(animationPreview.ClientSize.Height-h)/2,w,h));
             };
-            Add(page,Copy("Runtime sheet preview",true));sheetPreview=new PictureBox{Height=300,SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.FromArgb(233,228,242)};Add(page,sheetPreview);UpdateSheetPreview();
-            Add(page,Copy("Rows: idle up, down, side, up-diagonal, down-diagonal; then the five walking animations. Optional emotes follow: Music, Love, Question, Anger, Sad, Fear, Disgust, Proud, Hunger. Downloaded directional artwork faces left."));
-            Add(page,Row(MakerUi.Button("Save default template…",delegate
-            {
-                using(var dialog=new SaveFileDialog{Filter="PNG image|*.png",FileName="vpet-template.png"})if(dialog.ShowDialog(this)==DialogResult.OK)
-                {try{using(var original=SpriteSet.FromReference(pet.ReferencePath))original.Sheet.Save(dialog.FileName,ImageFormat.Png);}catch(Exception ex){ShowError(ex.Message);}}
-            })));
+            sheetPreview=new PictureBox{Height=300,SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.FromArgb(233,228,242)};Add(page,sheetPreview);UpdateSheetPreview();
             Add(page,Row(MakerUi.Button("Download current sprite sheet…",delegate
             {
                 using(var dialog=new SaveFileDialog{Filter="PNG image|*.png",FileName="vpet-current-sheet.png"})if(dialog.ShowDialog(this)==DialogResult.OK)

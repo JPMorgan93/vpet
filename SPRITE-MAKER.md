@@ -1,12 +1,12 @@
 # Create a custom Vpet
 
-Open **Settings > Sprite > Open Sprite Maker**. **How to Guide** and **Tweak and Complete** sit together in a separate footer at the bottom left, outside both editing halves. In the Tweak and Complete window, **Complete** remains at the bottom right with **How to Guide** immediately to its left.
+Open **Settings > Sprite > Open Sprite Maker**. **How to Guide** and **Tweak and Complete** sit together at the bottom right in a separate footer below a horizontal line, outside both editing panes. How to Guide is immediately to the left of Tweak and Complete. The Tweak and Complete window uses the same arrangement for How to Guide and Complete.
 
-A line separates the upload/project commands and frame dimensions from two equal editing halves. Animation types, frame buttons, and validation messages occupy the left half; scroll it when space is limited. The sprite sheet preview occupies the right half, with its zoom controls above it. Resize the whole window to enlarge the preview; there are no draggable internal dividers. Resizing preserves zoom, frame selections, and saved mappings.
+A line separates the upload/project commands and frame dimensions from two editing panes, initially equal in width. Animation types, frame buttons, and validation messages occupy the left pane; scroll it when space is limited. **Sprite Sheet Preview** heads the right pane, above its zoom controls. Hover between the panes for the resize cursor, then drag the invisible divider to adjust their widths. Both panes keep a useful minimum width. Resizing the whole window retains your chosen proportions, zoom, frame selections, and saved mappings.
 
 ## Step 1 — Upload the sprite sheet
 
-Choose **Upload Sprite Sheet** and select a transparent PNG up to 4096 × 4096 pixels and 64 MiB. Sheets can use any arrangement. **Download current sprite sheet** in Sprite settings exports the active pet's PNG for editing; **Save default template** exports the original companion.
+Choose **Upload Sprite Sheet** and select a transparent PNG up to 4096 × 4096 pixels and 64 MiB. Sheets can use any arrangement. **Download current sprite sheet** in Sprite settings exports the active pet's PNG for editing. To export the bundled Pyro sheet, choose **Restore default** first.
 
 Set **Sheet faces** to **Left** or **Right**, matching the side-facing and diagonal artwork. Export normalizes the directional rows, then the app mirrors them for the opposite travel direction. Up/down and reaction artwork are kept as drawn. Downloaded runtime sheets face left.
 

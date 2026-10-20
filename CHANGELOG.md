@@ -1,4 +1,11 @@
-# Vpet 1.12.6
+# Vpet 1.12.7
+
+- Show Pyro as example text in the optional pet-name field without assigning a name, and rename the reaction preview section to Try emotes.
+- Simplify Sprite settings: show Current pet above Upload Custom Sprite, label the bundled pet Pyro, place Runtime sheet preview above its selectors, and remove the old frame-limit text, row explanation, and Save default template button. Keep Download current sprite sheet directly below the sheet.
+- Add an invisible draggable divider between Sprite Maker's animation controls and sheet preview. Keep both panes usable and retain their chosen proportions when resizing the window, without changing zoom, selections, or projects.
+- Add a matching Sprite Sheet Preview heading, separate the footer with a line, and place How to Guide and Tweak and Complete together at the bottom right. Update the guides to match.
+
+## Vpet 1.12.6
 
 - Enlarge the card proportionally to match the resting D20's visible height. Keep its face values, flip animation, transparent canvas, fence containment, and the pet's approach position aligned with the new size.
 - Keep Settings above the pet, reactions, toys, plate, joystick, and fences in every Window Location mode. Preserve ordinary application stacking and keyboard focus, and restore the selected desktop layers when Settings closes.
